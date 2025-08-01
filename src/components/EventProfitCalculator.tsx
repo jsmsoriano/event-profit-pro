@@ -273,14 +273,14 @@ const EventProfitCalculator = () => {
                             <Input
                               value={role.name}
                               onChange={(e) => updateLaborRole(role.id, e.target.value, role.cost)}
-                              className="flex-1"
+                              className="flex-1 input-modern"
                               placeholder="Role name"
                             />
                             <Input
                               type="number"
                               value={role.cost}
                               onChange={(e) => updateLaborRole(role.id, role.name, parseFloat(e.target.value) || 0)}
-                              className="w-24"
+                              className="w-24 input-modern"
                               placeholder="Cost"
                             />
                             <Button
@@ -318,14 +318,14 @@ const EventProfitCalculator = () => {
                         placeholder="Role name"
                         value={newLaborName}
                         onChange={(e) => setNewLaborName(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 input-modern"
                       />
                       <Input
                         type="number"
                         placeholder="Cost"
                         value={newLaborCost}
                         onChange={(e) => setNewLaborCost(e.target.value)}
-                        className="w-24"
+                        className="w-24 input-modern"
                       />
                       <Button onClick={addLaborRole} className="btn-primary">
                         <Plus className="w-4 h-4" />
@@ -393,14 +393,14 @@ const EventProfitCalculator = () => {
                             <Input
                               value={expense.name}
                               onChange={(e) => updateMiscExpense(expense.id, e.target.value, expense.cost)}
-                              className="flex-1"
+                              className="flex-1 input-modern"
                               placeholder="Expense name"
                             />
                             <Input
                               type="number"
                               value={expense.cost}
                               onChange={(e) => updateMiscExpense(expense.id, expense.name, parseFloat(e.target.value) || 0)}
-                              className="w-24"
+                              className="w-24 input-modern"
                               placeholder="Cost"
                             />
                             <Button
@@ -438,14 +438,14 @@ const EventProfitCalculator = () => {
                         placeholder="Expense name"
                         value={newExpenseName}
                         onChange={(e) => setNewExpenseName(e.target.value)}
-                        className="flex-1"
+                        className="flex-1 input-modern"
                       />
                       <Input
                         type="number"
                         placeholder="Cost"
                         value={newExpenseCost}
                         onChange={(e) => setNewExpenseCost(e.target.value)}
-                        className="w-24"
+                        className="w-24 input-modern"
                       />
                       <Button onClick={addMiscExpense} className="btn-primary">
                         <Plus className="w-4 h-4" />
