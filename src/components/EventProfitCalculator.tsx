@@ -140,14 +140,6 @@ const EventProfitCalculator = () => {
   return (
     <div className="min-h-screen p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Calculator className="w-8 h-8 text-white" />
-            <h1 className="text-4xl font-bold text-white">Event Profit Calculator</h1>
-          </div>
-          <p className="text-white/80 text-lg">Plan and optimize your event profitability</p>
-        </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
           {/* Left Column - Inputs */}
