@@ -7,15 +7,15 @@
 @layer base {
   :root {
     /* Gradient backgrounds */
-    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-primary: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
     --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
     --gradient-profit: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
     --gradient-expense: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
     
-    /* Color palette for calculator */
-    --background: 240 15% 9%;
-    --foreground: 0 0% 98%;
+    /* Light theme color palette */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
