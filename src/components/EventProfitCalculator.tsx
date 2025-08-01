@@ -24,6 +24,7 @@ const EventProfitCalculator = () => {
   const [pricePerPerson, setPricePerPerson] = useState(85);
   const [gratuityPercentage, setGratuityPercentage] = useState(18);
   const [gratuityMode, setGratuityMode] = useState<'18' | '20' | 'other'>('18');
+  const [gratuityEnabled, setGratuityEnabled] = useState(true);
   const [useSliders, setUseSliders] = useState(true);
 
   // Expenses states
@@ -54,7 +55,7 @@ const EventProfitCalculator = () => {
 
   // Revenue calculations
   const baseRevenue = useMemo(() => numberOfGuests * pricePerPerson, [numberOfGuests, pricePerPerson]);
-  const gratuityAmount = useMemo(() => baseRevenue * (gratuityPercentage / 100), [baseRevenue, gratuityPercentage]);
+  const gratuityAmount = useMemo(() => gratuityEnabled ? baseRevenue * (gratuityPercentage / 100) : 0, [baseRevenue, gratuityPercentage, gratuityEnabled]);
   const totalRevenue = useMemo(() => baseRevenue + gratuityAmount, [baseRevenue, gratuityAmount]);
 
   // Expense calculations
@@ -169,7 +170,7 @@ const EventProfitCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div>
                     <Label htmlFor="guests" className="text-card-foreground font-medium">Number of Guests</Label>
                     {useSliders ? (
@@ -224,52 +225,78 @@ const EventProfitCalculator = () => {
                   </div>
 
                   <div>
-                    <Label htmlFor="gratuity" className="text-card-foreground font-medium">Gratuity</Label>
-                    <div className="mt-2 space-y-3">
-                      <div className="flex gap-2">
-                        <Button
-                          variant={gratuityMode === '18' ? 'default' : 'outline'}
-                          onClick={() => {
-                            setGratuityMode('18');
-                            setGratuityPercentage(18);
-                          }}
-                          className="flex-1"
-                        >
-                          18%
-                        </Button>
-                        <Button
-                          variant={gratuityMode === '20' ? 'default' : 'outline'}
-                          onClick={() => {
-                            setGratuityMode('20');
-                            setGratuityPercentage(20);
-                          }}
-                          className="flex-1"
-                        >
-                          20%
-                        </Button>
-                        <Button
-                          variant={gratuityMode === 'other' ? 'default' : 'outline'}
-                          onClick={() => setGratuityMode('other')}
-                          className="flex-1"
-                        >
-                          Other
-                        </Button>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Label htmlFor="gratuity" className="text-card-foreground font-medium">Gratuity</Label>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setGratuityEnabled(!gratuityEnabled)}
+                        className={gratuityEnabled ? 'text-green-600' : 'text-red-600'}
+                      >
+                        {gratuityEnabled ? 'Enabled' : 'Disabled'}
+                      </Button>
+                    </div>
+                    {gratuityEnabled ? (
+                      <div className="space-y-3">
+                        <div className="flex gap-2">
+                          <Button
+                            variant={gratuityMode === '18' ? 'default' : 'outline'}
+                            onClick={() => {
+                              setGratuityMode('18');
+                              setGratuityPercentage(18);
+                            }}
+                            className="flex-1"
+                          >
+                            18%
+                          </Button>
+                          <Button
+                            variant={gratuityMode === '20' ? 'default' : 'outline'}
+                            onClick={() => {
+                              setGratuityMode('20');
+                              setGratuityPercentage(20);
+                            }}
+                            className="flex-1"
+                          >
+                            20%
+                          </Button>
+                          <Button
+                            variant={gratuityMode === 'other' ? 'default' : 'outline'}
+                            onClick={() => setGratuityMode('other')}
+                            className="flex-1"
+                          >
+                            Other
+                          </Button>
+                        </div>
+                        {gratuityMode === 'other' && (
+                          <Input
+                            id="gratuity"
+                            type="number"
+                            value={gratuityPercentage}
+                            onChange={(e) => setGratuityPercentage(parseFloat(e.target.value) || 0)}
+                            className="input-modern"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                            placeholder="Enter percentage"
+                          />
+                        )}
+                        <div className="text-center text-xl font-bold text-primary">
+                          {gratuityPercentage}% = {formatCurrency(gratuityAmount)}
+                        </div>
                       </div>
-                      {gratuityMode === 'other' && (
-                        <Input
-                          id="gratuity"
-                          type="number"
-                          value={gratuityPercentage}
-                          onChange={(e) => setGratuityPercentage(parseFloat(e.target.value) || 0)}
-                          className="input-modern"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          placeholder="Enter percentage"
-                        />
-                      )}
-                      <div className="text-center text-xl font-bold text-primary">
-                        {gratuityPercentage}% = {formatCurrency(gratuityAmount)}
+                    ) : (
+                      <div className="text-center text-lg text-muted-foreground">
+                        Gratuity disabled
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label className="text-card-foreground font-medium">Total Revenue</Label>
+                    <div className="mt-2 p-4 bg-white/50 rounded-lg text-center">
+                      <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
                       </div>
                     </div>
                   </div>
