@@ -2,39 +2,48 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Modern Event Calculator Design System - Financial Dashboard Style */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Gradient backgrounds */
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-accent: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    --gradient-profit: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    --gradient-expense: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    
+    /* Color palette for calculator */
+    --background: 240 15% 9%;
+    --foreground: 0 0% 98%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 240 10% 3.9%;
+    --card-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 240 10% 3.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 247 84% 57%;
+    --primary-foreground: 0 0% 98%;
+    --primary-glow: 247 84% 67%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 240 5.9% 90%;
+    --input: 0 0% 100%;
+    --input-border: 240 5.9% 90%;
+    --ring: 247 84% 57%;
 
     --radius: 0.5rem;
 
@@ -100,6 +109,45 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    background: var(--gradient-primary);
+    min-height: 100vh;
+    @apply text-foreground;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-card/95 backdrop-blur-sm border border-white/20 rounded-xl shadow-2xl;
+  }
+  
+  .input-modern {
+    @apply bg-input border border-input-border rounded-lg px-4 py-3 text-card-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primary-glow text-primary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+  }
+  
+  .btn-secondary {
+    @apply bg-white/10 hover:bg-white/20 text-foreground font-medium px-4 py-2 rounded-lg transition-all duration-200 border border-white/20;
+  }
+  
+  .profit-positive {
+    background: var(--gradient-profit);
+    @apply text-white;
+  }
+  
+  .profit-negative {
+    background: var(--gradient-expense);
+    @apply text-white;
+  }
+  
+  .progress-bar {
+    @apply w-full bg-white/20 rounded-full h-3 overflow-hidden;
+  }
+  
+  .progress-fill {
+    @apply h-full transition-all duration-500 ease-out rounded-full;
+    background: var(--gradient-profit);
   }
 }
