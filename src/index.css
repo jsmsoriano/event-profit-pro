@@ -125,7 +125,7 @@
   }
   
   .btn-primary {
-    @apply bg-primary hover:bg-primary-glow text-primary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
+    @apply bg-primary hover:bg-primary/90 text-primary-foreground font-medium px-6 py-3 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl;
   }
   
   .btn-secondary {
