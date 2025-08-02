@@ -7,6 +7,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import Index from "./pages/Index";
+import FinancialSummary from "./pages/FinancialSummary";
 import Team from "./pages/Team";
 import Quotes from "./pages/Quotes";
 import Contacts from "./pages/Contacts";
@@ -28,6 +29,7 @@ const App = () => (
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Index />} />
+                  <Route path="/financial-summary" element={<FinancialSummary />} />
                   <Route path="/team" element={<Team />} />
                   <Route path="/quotes" element={<Quotes />} />
                   <Route path="/contacts" element={<Contacts />} />

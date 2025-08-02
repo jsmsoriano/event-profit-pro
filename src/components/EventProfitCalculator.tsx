@@ -618,102 +618,36 @@ const EventProfitCalculator = () => {
             </Card>
           </div>
 
-          {/* Right Column - Summary */}
+          {/* Right Column - Quick Results */}
           <div className="xl:col-span-4 space-y-6">
-            {/* Combined Financial Summary */}
+            {/* Quick Results Card */}
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-card-foreground">
                   <TrendingUp className="w-5 h-5" />
-                  Financial Summary
+                  Quick Results
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Revenue Section */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Revenue</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Base Revenue</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(baseRevenue)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Gratuity ({gratuityPercentage}%)</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-card-foreground">Total Revenue</span>
-                        <span className="font-bold text-lg text-primary">{formatCurrency(totalRevenue)}</span>
-                      </div>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="p-4 bg-white/50 rounded-lg text-center">
+                    <span className="text-sm text-muted-foreground">Total Revenue</span>
+                    <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
+                  </div>
+                  <div className="p-4 bg-white/50 rounded-lg text-center">
+                    <span className="text-sm text-muted-foreground">Total Costs</span>
+                    <div className="text-2xl font-bold text-destructive">{formatCurrency(totalCosts)}</div>
+                  </div>
+                  <div className="p-4 bg-white/50 rounded-lg text-center">
+                    <span className="text-sm text-muted-foreground">Net Profit</span>
+                    <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {formatCurrency(netProfit)}
                     </div>
                   </div>
-                </div>
-
-                {/* Cost Section */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Costs</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Labor Costs</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Food Costs</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(foodCost)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Miscellaneous</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(totalMiscCosts)}</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-card-foreground">Total Costs</span>
-                        <span className="font-bold text-lg text-destructive">{formatCurrency(totalCosts)}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Profit Section */}
-                <div className="space-y-3">
-                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Profit Analysis</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Gross Profit</span>
-                      <span className={`font-bold ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(actualProfit)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Business Tax ({businessTaxPercentage}%)</span>
-                      <span className="font-bold text-card-foreground">{formatCurrency(businessTax)}</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between">
-                        <span className="font-semibold text-card-foreground">Net Profit</span>
-                        <span className={`font-bold text-xl ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {formatCurrency(netProfit)}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="mt-3">
-                      <div className="flex justify-between mb-2">
-                        <span className="text-muted-foreground">Profit Margin</span>
-                        <span className={`font-bold ${actualProfitPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                          {actualProfitPercentage.toFixed(1)}%
-                        </span>
-                      </div>
-                      <div className="progress-bar">
-                        <div 
-                          className={`progress-fill ${actualProfitPercentage < 0 ? 'profit-negative' : ''}`}
-                          style={{ width: `${Math.min(Math.abs(actualProfitPercentage), 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 p-3 bg-white/50 rounded-lg text-center">
-                      <span className="text-sm text-muted-foreground">Break-even Guests</span>
-                      <div className="text-2xl font-bold text-card-foreground">{breakEvenGuests}</div>
+                  <div className="p-4 bg-white/50 rounded-lg text-center">
+                    <span className="text-sm text-muted-foreground">Profit Margin</span>
+                    <div className={`text-xl font-bold ${actualProfitPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {actualProfitPercentage.toFixed(1)}%
                     </div>
                   </div>
                 </div>

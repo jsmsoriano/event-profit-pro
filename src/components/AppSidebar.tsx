@@ -1,4 +1,4 @@
-import { BarChart3, Users, FileText, Contact } from "lucide-react"
+import { BarChart3, Users, FileText, Contact, TrendingUp } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
 import {
@@ -15,6 +15,7 @@ import {
 
 const items = [
   { title: "Profit Analysis", url: "/", icon: BarChart3 },
+  { title: "Financial Summary", url: "/financial-summary", icon: TrendingUp },
   { title: "Team", url: "/team", icon: Users },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },
