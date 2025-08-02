@@ -185,8 +185,8 @@ const EventProfitCalculator = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="flex items-center gap-3">
-                    <Label htmlFor="guests" className="text-card-foreground font-medium min-w-fit">Number of Guests</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="guests" className="text-card-foreground font-medium min-w-[120px]">Number of Guests</Label>
                     <Input
                       id="guests"
                       type="number"
@@ -195,13 +195,13 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setNumberOfGuests(parseInt(cleanedValue) || 0);
                       }}
-                      className="input-modern"
+                      className="input-modern text-right"
                       min="1"
                     />
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <Label htmlFor="price" className="text-card-foreground font-medium min-w-fit">Price per Person</Label>
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="price" className="text-card-foreground font-medium min-w-[120px]">Price per Person</Label>
                     <Input
                       id="price"
                       type="number"
@@ -210,15 +210,15 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setPricePerPerson(parseFloat(cleanedValue) || 0);
                       }}
-                      className="input-modern"
+                      className="input-modern text-right"
                       min="0"
                       step="0.01"
                     />
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-fit">Gratuity</Label>
+                    <div className="flex items-center gap-2 mb-1">
+                      <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-[80px]">Gratuity</Label>
                       <Button
                         variant="outline"
                         size="sm"
@@ -268,36 +268,38 @@ const EventProfitCalculator = () => {
                               const cleanedValue = handleNumberInput(e.target.value);
                               setGratuityPercentage(parseFloat(cleanedValue) || 0);
                             }}
-                            className="input-modern"
+                            className="input-modern text-right"
                             min="0"
                             max="100"
                             step="0.1"
                             placeholder="Enter percentage"
                           />
                         )}
-                        <div className="text-center text-xl font-bold text-primary">
+                        <div className="text-center text-lg font-bold text-primary">
                           {gratuityPercentage}% = {formatCurrency(gratuityAmount)}
                         </div>
                       </div>
                     ) : (
-                      <div className="text-center text-lg text-muted-foreground">
+                      <div className="text-center text-sm text-muted-foreground">
                         Gratuity disabled
                       </div>
                     )}
                   </div>
 
-                  <div>
-                    <Label className="text-card-foreground font-medium">Total Revenue</Label>
-                    <div className="mt-1 p-3 bg-white/50 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                   <div>
+                     <div className="text-center">
+                       <Label className="text-card-foreground font-medium">Total Revenue</Label>
+                       <div className="mt-1 p-3 bg-white/50 rounded-lg">
+                         <div className="text-xl font-bold text-primary text-right">{formatCurrency(totalRevenue)}</div>
+                         <div className="text-xs text-muted-foreground text-right">
+                           Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
+                         </div>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </CardContent>
+             </Card>
 
             {/* Expenses */}
             <Card className="glass-card">
@@ -312,13 +314,13 @@ const EventProfitCalculator = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor Roles</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
                       <div className="col-span-6">Role</div>
-                      <div className="col-span-3 text-right">Cost</div>
-                      <div className="col-span-3 text-center">Actions</div>
+                      <div className="col-span-4 text-right">Cost</div>
+                      <div className="col-span-2 text-center">Actions</div>
                     </div>
                     {laborRoles.map((role, index) => (
-                      <div key={role.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                      <div key={role.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingLabor === role.id ? (
                           <>
                             <div className="col-span-6">
@@ -329,7 +331,7 @@ const EventProfitCalculator = () => {
                                 placeholder="Role name"
                               />
                             </div>
-                            <div className="col-span-3">
+                            <div className="col-span-4">
                               <Input
                                 type="number"
                                 value={role.cost}
@@ -341,7 +343,7 @@ const EventProfitCalculator = () => {
                                 placeholder="Cost"
                               />
                             </div>
-                            <div className="col-span-3 flex justify-center">
+                            <div className="col-span-2 flex justify-center">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -354,8 +356,8 @@ const EventProfitCalculator = () => {
                         ) : (
                           <>
                             <div className="col-span-6 font-medium text-card-foreground">{role.name}</div>
-                            <div className="col-span-3 font-bold text-card-foreground text-right">{formatCurrency(role.cost)}</div>
-                            <div className="col-span-3 flex justify-center gap-2">
+                            <div className="col-span-4 font-bold text-card-foreground text-right">{formatCurrency(role.cost)}</div>
+                            <div className="col-span-2 flex justify-center gap-1">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -375,7 +377,7 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-3">
+                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-2">
                       <div className="col-span-6">
                         <Input
                           placeholder="New role name"
@@ -384,7 +386,7 @@ const EventProfitCalculator = () => {
                           className="input-modern"
                         />
                       </div>
-                      <div className="col-span-3">
+                      <div className="col-span-4">
                         <Input
                           type="number"
                           placeholder="Cost"
@@ -393,24 +395,24 @@ const EventProfitCalculator = () => {
                           className="input-modern text-right"
                         />
                       </div>
-                      <div className="col-span-3 flex justify-center">
+                      <div className="col-span-2 flex justify-center">
                         <Button onClick={addLaborRole} className="btn-primary">
                           <Plus className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
-                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
-                      <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
-                      <div className="col-span-3"></div>
+                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
+                      <div className="col-span-2"></div>
                     </div>
                   </div>
                 </div>
 
                 {/* Food Costs */}
                 <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-lg font-semibold text-card-foreground">Food Costs</h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <h3 className="text-lg font-semibold text-card-foreground min-w-[120px]">Food Costs</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -421,8 +423,8 @@ const EventProfitCalculator = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {foodCostMode === 'percentage' ? (
-                      <div className="flex items-center gap-3">
-                        <Label className="text-card-foreground min-w-fit">Food Cost %</Label>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-card-foreground min-w-[120px]">Food Cost %</Label>
                         <Input
                           type="number"
                           value={foodCostPercentage}
@@ -430,15 +432,15 @@ const EventProfitCalculator = () => {
                             const cleanedValue = handleNumberInput(e.target.value);
                             setFoodCostPercentage(parseFloat(cleanedValue) || 0);
                           }}
-                          className="input-modern"
+                          className="input-modern text-right"
                           min="0"
                           max="100"
                           step="1"
                         />
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3">
-                        <Label className="text-card-foreground min-w-fit">Fixed Food Cost</Label>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-card-foreground min-w-[120px]">Fixed Food Cost</Label>
                         <Input
                           type="number"
                           value={foodCostFixed}
@@ -446,14 +448,14 @@ const EventProfitCalculator = () => {
                             const cleanedValue = handleNumberInput(e.target.value);
                             setFoodCostFixed(parseFloat(cleanedValue) || 0);
                           }}
-                          className="input-modern"
+                          className="input-modern text-right"
                         />
                       </div>
                     )}
                     <div className="flex items-end">
-                      <div className="p-4 bg-white/50 rounded-lg w-full text-center">
-                        <span className="text-sm text-muted-foreground">Food Cost</span>
-                        <div className="text-xl font-bold text-card-foreground">{formatCurrency(foodCost)}</div>
+                      <div className="p-3 bg-white/50 rounded-lg w-full">
+                        <div className="text-sm text-muted-foreground">Food Cost</div>
+                        <div className="text-lg font-bold text-card-foreground text-right">{formatCurrency(foodCost)}</div>
                       </div>
                     </div>
                   </div>
@@ -559,19 +561,19 @@ const EventProfitCalculator = () => {
                 </div>
 
                 {/* Total Expenses Summary */}
-                <div className="border-2 border-primary/30 bg-primary/10 rounded-lg p-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                    <div>
+                <div className="border-2 border-primary/30 bg-primary/10 rounded-lg p-3">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="text-center">
                       <div className="text-sm text-muted-foreground">Labor Costs</div>
                       <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</div>
                     </div>
-                    <div>
+                    <div className="text-center">
                       <div className="text-sm text-muted-foreground">Food + Misc</div>
                       <div className="text-lg font-bold text-card-foreground">{formatCurrency(foodCost + totalMiscCosts)}</div>
                     </div>
-                    <div>
+                    <div className="text-center">
                       <div className="text-sm text-muted-foreground">Total Expenses</div>
-                      <div className="text-2xl font-bold text-primary">{formatCurrency(totalCosts)}</div>
+                      <div className="text-xl font-bold text-primary">{formatCurrency(totalCosts)}</div>
                     </div>
                   </div>
                 </div>
