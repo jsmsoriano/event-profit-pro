@@ -103,6 +103,9 @@ const EventProfitCalculator = () => {
 
   const updateLaborRole = useCallback((id: string, name: string, cost: number) => {
     setLaborRoles(prev => prev.map(role => role.id === id ? { ...role, name, cost } : role));
+  }, []);
+
+  const saveEditingLabor = useCallback(() => {
     setEditingLabor(null);
   }, []);
 
@@ -126,6 +129,9 @@ const EventProfitCalculator = () => {
 
   const updateMiscExpense = useCallback((id: string, name: string, cost: number) => {
     setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, name, cost } : expense));
+  }, []);
+
+  const saveEditingExpense = useCallback(() => {
     setEditingExpense(null);
   }, []);
 
@@ -317,7 +323,7 @@ const EventProfitCalculator = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setEditingLabor(null)}
+                                onClick={saveEditingLabor}
                               >
                                 Save
                               </Button>
@@ -459,7 +465,7 @@ const EventProfitCalculator = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setEditingExpense(null)}
+                                onClick={saveEditingExpense}
                               >
                                 Save
                               </Button>
