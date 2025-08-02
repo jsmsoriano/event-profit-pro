@@ -164,9 +164,9 @@ const EventProfitCalculator = () => {
     <div className="min-h-screen p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
 
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-          {/* Left Column - Inputs */}
-          <div className="xl:col-span-8 space-y-6">
+        <div className="grid grid-cols-1 gap-6">
+          {/* Main Column - Inputs */}
+          <div className="space-y-6">
             {/* Event Details */}
             <Card className="glass-card">
               <CardHeader>
@@ -578,96 +578,6 @@ const EventProfitCalculator = () => {
               </CardContent>
             </Card>
 
-            {/* Profit Target */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-card-foreground">
-                  <Target className="w-5 h-5" />
-                  Profit Target
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="flex items-center gap-3">
-                    <Label className="text-card-foreground font-medium min-w-fit">Target Profit Margin (%)</Label>
-                    <Input
-                      type="number"
-                      value={targetProfitMargin}
-                      onChange={(e) => {
-                        const cleanedValue = handleNumberInput(e.target.value);
-                        setTargetProfitMargin(parseFloat(cleanedValue) || 0);
-                      }}
-                      className="input-modern"
-                      min="0"
-                      max="100"
-                      step="1"
-                    />
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Label className="text-card-foreground font-medium min-w-fit">Business Tax (%)</Label>
-                    <Input
-                      type="number"
-                      value={businessTaxPercentage}
-                      onChange={(e) => {
-                        const cleanedValue = handleNumberInput(e.target.value);
-                        setBusinessTaxPercentage(parseFloat(cleanedValue) || 0);
-                      }}
-                      className="input-modern"
-                      min="0"
-                      max="100"
-                      step="0.5"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Adjusted Price per Person</span>
-                    <div className="text-xl font-bold text-card-foreground">{formatCurrency(adjustedPricePerPerson)}</div>
-                  </div>
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Target Profit</span>
-                    <div className="text-xl font-bold text-card-foreground">{formatCurrency(adjustedProfit)}</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Right Column - Quick Results */}
-          <div className="xl:col-span-4 space-y-6">
-            {/* Quick Results Card */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-card-foreground">
-                  <TrendingUp className="w-5 h-5" />
-                  Quick Results
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Total Revenue</span>
-                    <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
-                  </div>
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Total Costs</span>
-                    <div className="text-2xl font-bold text-destructive">{formatCurrency(totalCosts)}</div>
-                  </div>
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Net Profit</span>
-                    <div className={`text-2xl font-bold ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(netProfit)}
-                    </div>
-                  </div>
-                  <div className="p-4 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Profit Margin</span>
-                    <div className={`text-xl font-bold ${actualProfitPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {actualProfitPercentage.toFixed(1)}%
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
