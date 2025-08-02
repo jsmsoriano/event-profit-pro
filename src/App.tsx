@@ -6,8 +6,10 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
+import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import FinancialSummary from "./pages/FinancialSummary";
+import Auth from "./pages/Auth";
 import Team from "./pages/Team";
 import Quotes from "./pages/Quotes";
 import Contacts from "./pages/Contacts";
@@ -17,31 +19,34 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full">
-            <AppSidebar />
-            <div className="flex-1 flex flex-col">
-              <AppHeader />
-              <main className="flex-1">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/financial-summary" element={<FinancialSummary />} />
-                  <Route path="/team" element={<Team />} />
-                  <Route path="/quotes" element={<Quotes />} />
-                  <Route path="/contacts" element={<Contacts />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
+    <AuthProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <SidebarProvider>
+            <div className="min-h-screen flex w-full">
+              <AppSidebar />
+              <div className="flex-1 flex flex-col">
+                <AppHeader />
+                <main className="flex-1">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/financial-summary" element={<FinancialSummary />} />
+                    <Route path="/auth" element={<Auth />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/quotes" element={<Quotes />} />
+                    <Route path="/contacts" element={<Contacts />} />
+                    {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </main>
+              </div>
             </div>
-          </div>
-        </SidebarProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+          </SidebarProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AuthProvider>
   </QueryClientProvider>
 );
 

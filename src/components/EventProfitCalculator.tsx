@@ -6,6 +6,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 
+// Utility function to handle number input values and remove leading zeros
+const handleNumberInput = (value: string): string => {
+  // Remove leading zeros but keep the value if it's just "0"
+  if (value === '' || value === '0') return value;
+  // Remove leading zeros
+  const cleanedValue = value.replace(/^0+/, '');
+  // If all digits were zeros, return "0"
+  return cleanedValue === '' ? '0' : cleanedValue;
+};
+
 interface LaborRole {
   id: string;
   name: string;
@@ -181,7 +191,10 @@ const EventProfitCalculator = () => {
                       id="guests"
                       type="number"
                       value={numberOfGuests}
-                      onChange={(e) => setNumberOfGuests(parseInt(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setNumberOfGuests(parseInt(cleanedValue) || 0);
+                      }}
                       className="input-modern mt-2"
                       min="1"
                     />
@@ -193,7 +206,10 @@ const EventProfitCalculator = () => {
                       id="price"
                       type="number"
                       value={pricePerPerson}
-                      onChange={(e) => setPricePerPerson(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setPricePerPerson(parseFloat(cleanedValue) || 0);
+                      }}
                       className="input-modern mt-2"
                       min="0"
                       step="0.01"
@@ -248,7 +264,10 @@ const EventProfitCalculator = () => {
                             id="gratuity"
                             type="number"
                             value={gratuityPercentage}
-                            onChange={(e) => setGratuityPercentage(parseFloat(e.target.value) || 0)}
+                            onChange={(e) => {
+                              const cleanedValue = handleNumberInput(e.target.value);
+                              setGratuityPercentage(parseFloat(cleanedValue) || 0);
+                            }}
                             className="input-modern"
                             min="0"
                             max="100"
@@ -314,7 +333,10 @@ const EventProfitCalculator = () => {
                               <Input
                                 type="number"
                                 value={role.cost}
-                                onChange={(e) => updateLaborRole(role.id, role.name, parseFloat(e.target.value) || 0)}
+                                onChange={(e) => {
+                                  const cleanedValue = handleNumberInput(e.target.value);
+                                  updateLaborRole(role.id, role.name, parseFloat(cleanedValue) || 0);
+                                }}
                                 className="input-modern text-right"
                                 placeholder="Cost"
                               />
@@ -367,7 +389,7 @@ const EventProfitCalculator = () => {
                           type="number"
                           placeholder="Cost"
                           value={newLaborCost}
-                          onChange={(e) => setNewLaborCost(e.target.value)}
+                          onChange={(e) => setNewLaborCost(handleNumberInput(e.target.value))}
                           className="input-modern text-right"
                         />
                       </div>
@@ -404,7 +426,10 @@ const EventProfitCalculator = () => {
                         <Input
                           type="number"
                           value={foodCostPercentage}
-                          onChange={(e) => setFoodCostPercentage(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const cleanedValue = handleNumberInput(e.target.value);
+                            setFoodCostPercentage(parseFloat(cleanedValue) || 0);
+                          }}
                           className="input-modern mt-2"
                           min="0"
                           max="100"
@@ -417,7 +442,10 @@ const EventProfitCalculator = () => {
                         <Input
                           type="number"
                           value={foodCostFixed}
-                          onChange={(e) => setFoodCostFixed(parseFloat(e.target.value) || 0)}
+                          onChange={(e) => {
+                            const cleanedValue = handleNumberInput(e.target.value);
+                            setFoodCostFixed(parseFloat(cleanedValue) || 0);
+                          }}
                           className="input-modern mt-2"
                         />
                       </div>
@@ -456,7 +484,10 @@ const EventProfitCalculator = () => {
                               <Input
                                 type="number"
                                 value={expense.cost}
-                                onChange={(e) => updateMiscExpense(expense.id, expense.name, parseFloat(e.target.value) || 0)}
+                                onChange={(e) => {
+                                  const cleanedValue = handleNumberInput(e.target.value);
+                                  updateMiscExpense(expense.id, expense.name, parseFloat(cleanedValue) || 0);
+                                }}
                                 className="input-modern text-right"
                                 placeholder="Cost"
                               />
@@ -509,7 +540,7 @@ const EventProfitCalculator = () => {
                           type="number"
                           placeholder="Cost"
                           value={newExpenseCost}
-                          onChange={(e) => setNewExpenseCost(e.target.value)}
+                          onChange={(e) => setNewExpenseCost(handleNumberInput(e.target.value))}
                           className="input-modern text-right"
                         />
                       </div>
@@ -562,7 +593,10 @@ const EventProfitCalculator = () => {
                     <Input
                       type="number"
                       value={targetProfitMargin}
-                      onChange={(e) => setTargetProfitMargin(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setTargetProfitMargin(parseFloat(cleanedValue) || 0);
+                      }}
                       className="input-modern mt-2"
                       min="0"
                       max="100"
@@ -574,7 +608,10 @@ const EventProfitCalculator = () => {
                     <Input
                       type="number"
                       value={businessTaxPercentage}
-                      onChange={(e) => setBusinessTaxPercentage(parseFloat(e.target.value) || 0)}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setBusinessTaxPercentage(parseFloat(cleanedValue) || 0);
+                      }}
                       className="input-modern mt-2"
                       min="0"
                       max="100"
