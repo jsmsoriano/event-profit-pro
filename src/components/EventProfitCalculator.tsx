@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, Play } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,7 +25,7 @@ const EventProfitCalculator = () => {
   const [gratuityPercentage, setGratuityPercentage] = useState(18);
   const [gratuityMode, setGratuityMode] = useState<'18' | '20' | 'other'>('18');
   const [gratuityEnabled, setGratuityEnabled] = useState(true);
-  const [useSliders, setUseSliders] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   // Expenses states
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([
@@ -137,6 +137,13 @@ const EventProfitCalculator = () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
 
+  const processInputs = useCallback(async () => {
+    setIsProcessing(true);
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsProcessing(false);
+  }, []);
+
   return (
     <div className="min-h-screen p-4 lg:p-8">
       <div className="max-w-7xl mx-auto">
@@ -151,13 +158,12 @@ const EventProfitCalculator = () => {
                   <Users className="w-5 h-5" />
                   Event Details
                   <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setUseSliders(!useSliders)}
+                    onClick={processInputs}
+                    disabled={isProcessing}
                     className="ml-auto"
                   >
-                    {useSliders ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
-                    {useSliders ? 'Sliders' : 'Inputs'}
+                    <Play className="w-4 h-4 mr-2" />
+                    {isProcessing ? 'Processing...' : 'Process Inputs'}
                   </Button>
                 </CardTitle>
               </CardHeader>
@@ -165,55 +171,27 @@ const EventProfitCalculator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div>
                     <Label htmlFor="guests" className="text-card-foreground font-medium">Number of Guests</Label>
-                    {useSliders ? (
-                      <div className="mt-2 space-y-2">
-                        <Slider
-                          value={[numberOfGuests]}
-                          onValueChange={(value) => setNumberOfGuests(value[0])}
-                          max={500}
-                          min={1}
-                          step={1}
-                          className="w-full"
-                        />
-                        <div className="text-center text-2xl font-bold text-primary">{numberOfGuests}</div>
-                      </div>
-                    ) : (
-                      <Input
-                        id="guests"
-                        type="number"
-                        value={numberOfGuests}
-                        onChange={(e) => setNumberOfGuests(parseInt(e.target.value) || 0)}
-                        className="input-modern mt-2"
-                        min="1"
-                      />
-                    )}
+                    <Input
+                      id="guests"
+                      type="number"
+                      value={numberOfGuests}
+                      onChange={(e) => setNumberOfGuests(parseInt(e.target.value) || 0)}
+                      className="input-modern mt-2"
+                      min="1"
+                    />
                   </div>
 
                   <div>
                     <Label htmlFor="price" className="text-card-foreground font-medium">Price per Person</Label>
-                    {useSliders ? (
-                      <div className="mt-2 space-y-2">
-                        <Slider
-                          value={[pricePerPerson]}
-                          onValueChange={(value) => setPricePerPerson(value[0])}
-                          max={500}
-                          min={10}
-                          step={5}
-                          className="w-full"
-                        />
-                        <div className="text-center text-2xl font-bold text-primary">{formatCurrency(pricePerPerson)}</div>
-                      </div>
-                    ) : (
-                      <Input
-                        id="price"
-                        type="number"
-                        value={pricePerPerson}
-                        onChange={(e) => setPricePerPerson(parseFloat(e.target.value) || 0)}
-                        className="input-modern mt-2"
-                        min="0"
-                        step="0.01"
-                      />
-                    )}
+                    <Input
+                      id="price"
+                      type="number"
+                      value={pricePerPerson}
+                      onChange={(e) => setPricePerPerson(parseFloat(e.target.value) || 0)}
+                      className="input-modern mt-2"
+                      min="0"
+                      step="0.01"
+                    />
                   </div>
 
                   <div>
@@ -417,17 +395,15 @@ const EventProfitCalculator = () => {
                     {foodCostMode === 'percentage' ? (
                       <div>
                         <Label className="text-card-foreground">Food Cost Percentage</Label>
-                        <div className="mt-2 space-y-2">
-                          <Slider
-                            value={[foodCostPercentage]}
-                            onValueChange={(value) => setFoodCostPercentage(value[0])}
-                            max={50}
-                            min={0}
-                            step={1}
-                            className="w-full"
-                          />
-                          <div className="text-center text-xl font-bold text-primary">{foodCostPercentage}%</div>
-                        </div>
+                        <Input
+                          type="number"
+                          value={foodCostPercentage}
+                          onChange={(e) => setFoodCostPercentage(parseFloat(e.target.value) || 0)}
+                          className="input-modern mt-2"
+                          min="0"
+                          max="100"
+                          step="1"
+                        />
                       </div>
                     ) : (
                       <div>
@@ -577,31 +553,27 @@ const EventProfitCalculator = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <Label className="text-card-foreground font-medium">Target Profit Margin (%)</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[targetProfitMargin]}
-                        onValueChange={(value) => setTargetProfitMargin(value[0])}
-                        max={50}
-                        min={0}
-                        step={1}
-                        className="w-full"
-                      />
-                      <div className="text-center text-xl font-bold text-primary">{targetProfitMargin}%</div>
-                    </div>
+                    <Input
+                      type="number"
+                      value={targetProfitMargin}
+                      onChange={(e) => setTargetProfitMargin(parseFloat(e.target.value) || 0)}
+                      className="input-modern mt-2"
+                      min="0"
+                      max="100"
+                      step="1"
+                    />
                   </div>
                   <div>
                     <Label className="text-card-foreground font-medium">Business Tax (%)</Label>
-                    <div className="mt-2 space-y-2">
-                      <Slider
-                        value={[businessTaxPercentage]}
-                        onValueChange={(value) => setBusinessTaxPercentage(value[0])}
-                        max={25}
-                        min={0}
-                        step={0.5}
-                        className="w-full"
-                      />
-                      <div className="text-center text-xl font-bold text-primary">{businessTaxPercentage}%</div>
-                    </div>
+                    <Input
+                      type="number"
+                      value={businessTaxPercentage}
+                      onChange={(e) => setBusinessTaxPercentage(parseFloat(e.target.value) || 0)}
+                      className="input-modern mt-2"
+                      min="0"
+                      max="100"
+                      step="0.5"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
