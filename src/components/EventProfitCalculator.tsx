@@ -161,12 +161,12 @@ const EventProfitCalculator = () => {
   }, []);
 
   return (
-    <div className="min-h-screen p-4 lg:p-8">
+    <div className="min-h-screen p-2 lg:p-4">
       <div className="max-w-7xl mx-auto">
 
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {/* Main Column - Inputs */}
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Event Details */}
             <Card className="glass-card">
               <CardHeader>
@@ -183,8 +183,8 @@ const EventProfitCalculator = () => {
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="flex items-center gap-3">
                     <Label htmlFor="guests" className="text-card-foreground font-medium min-w-fit">Number of Guests</Label>
                     <Input
@@ -217,7 +217,7 @@ const EventProfitCalculator = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex items-center gap-3 mb-1">
                       <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-fit">Gratuity</Label>
                       <Button
                         variant="outline"
@@ -229,7 +229,7 @@ const EventProfitCalculator = () => {
                       </Button>
                     </div>
                     {gratuityEnabled ? (
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <div className="flex gap-2">
                           <Button
                             variant={gratuityMode === '18' ? 'default' : 'outline'}
@@ -288,7 +288,7 @@ const EventProfitCalculator = () => {
 
                   <div>
                     <Label className="text-card-foreground font-medium">Total Revenue</Label>
-                    <div className="mt-2 p-4 bg-white/50 rounded-lg text-center">
+                    <div className="mt-1 p-3 bg-white/50 rounded-lg text-center">
                       <div className="text-2xl font-bold text-primary">{formatCurrency(totalRevenue)}</div>
                       <div className="text-sm text-muted-foreground">
                         Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
@@ -307,18 +307,18 @@ const EventProfitCalculator = () => {
                   Expenses
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
+              <CardContent className="space-y-4">
                 {/* Labor Costs */}
                 <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-3">Labor Roles</h3>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor Roles</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
                       <div className="col-span-6">Role</div>
                       <div className="col-span-3 text-right">Cost</div>
                       <div className="col-span-3 text-center">Actions</div>
                     </div>
                     {laborRoles.map((role, index) => (
-                      <div key={role.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                      <div key={role.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingLabor === role.id ? (
                           <>
                             <div className="col-span-6">
@@ -375,7 +375,7 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-3 grid grid-cols-12 gap-3">
+                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-3">
                       <div className="col-span-6">
                         <Input
                           placeholder="New role name"
@@ -399,7 +399,7 @@ const EventProfitCalculator = () => {
                         </Button>
                       </div>
                     </div>
-                    <div className="border-t-2 border-primary/20 bg-primary/5 p-3 grid grid-cols-12 gap-3">
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
                       <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
                       <div className="col-span-3"></div>
@@ -409,7 +409,7 @@ const EventProfitCalculator = () => {
 
                 {/* Food Costs */}
                 <div>
-                  <div className="flex items-center gap-3 mb-3">
+                  <div className="flex items-center gap-3 mb-2">
                     <h3 className="text-lg font-semibold text-card-foreground">Food Costs</h3>
                     <Button
                       variant="outline"
@@ -461,15 +461,15 @@ const EventProfitCalculator = () => {
 
                 {/* Miscellaneous Expenses */}
                 <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-3">Miscellaneous Expenses</h3>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Miscellaneous Expenses</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
                       <div className="col-span-6">Expense</div>
                       <div className="col-span-3 text-right">Cost</div>
                       <div className="col-span-3 text-center">Actions</div>
                     </div>
                     {miscExpenses.map((expense, index) => (
-                      <div key={expense.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
+                      <div key={expense.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingExpense === expense.id ? (
                           <>
                             <div className="col-span-6">
@@ -526,7 +526,7 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-3 grid grid-cols-12 gap-3">
+                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-3">
                       <div className="col-span-6">
                         <Input
                           placeholder="New expense name"
@@ -550,7 +550,7 @@ const EventProfitCalculator = () => {
                         </Button>
                       </div>
                     </div>
-                    <div className="border-t-2 border-primary/20 bg-primary/5 p-3 grid grid-cols-12 gap-3">
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Miscellaneous</div>
                       <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalMiscCosts)}</div>
                       <div className="col-span-3"></div>
