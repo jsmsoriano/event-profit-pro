@@ -155,10 +155,37 @@ const EventProfitCalculator = () => {
 
   const processInputs = useCallback(async () => {
     setIsProcessing(true);
+    
+    // Calculate and save data to localStorage for Financial Summary
+    const financialData = {
+      baseRevenue,
+      gratuityPercentage,
+      gratuityAmount,
+      totalRevenue,
+      totalLaborCosts,
+      foodCost,
+      totalMiscCosts,
+      totalCosts,
+      actualProfit,
+      businessTaxPercentage,
+      businessTax,
+      netProfit,
+      actualProfitPercentage,
+      breakEvenGuests,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('eventFinancialData', JSON.stringify(financialData));
+    
     // Simulate processing time
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsProcessing(false);
-  }, []);
+  }, [
+    baseRevenue, gratuityPercentage, gratuityAmount, totalRevenue,
+    totalLaborCosts, foodCost, totalMiscCosts, totalCosts,
+    actualProfit, businessTaxPercentage, businessTax, netProfit,
+    actualProfitPercentage, breakEvenGuests
+  ]);
 
   return (
     <div className="min-h-screen p-2 lg:p-4">
