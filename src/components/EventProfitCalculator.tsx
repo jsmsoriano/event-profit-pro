@@ -185,8 +185,8 @@ const EventProfitCalculator = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  <div>
-                    <Label htmlFor="guests" className="text-card-foreground font-medium">Number of Guests</Label>
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="guests" className="text-card-foreground font-medium min-w-fit">Number of Guests</Label>
                     <Input
                       id="guests"
                       type="number"
@@ -195,13 +195,13 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setNumberOfGuests(parseInt(cleanedValue) || 0);
                       }}
-                      className="input-modern mt-2"
+                      className="input-modern"
                       min="1"
                     />
                   </div>
 
-                  <div>
-                    <Label htmlFor="price" className="text-card-foreground font-medium">Price per Person</Label>
+                  <div className="flex items-center gap-3">
+                    <Label htmlFor="price" className="text-card-foreground font-medium min-w-fit">Price per Person</Label>
                     <Input
                       id="price"
                       type="number"
@@ -210,7 +210,7 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setPricePerPerson(parseFloat(cleanedValue) || 0);
                       }}
-                      className="input-modern mt-2"
+                      className="input-modern"
                       min="0"
                       step="0.01"
                     />
@@ -218,7 +218,7 @@ const EventProfitCalculator = () => {
 
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <Label htmlFor="gratuity" className="text-card-foreground font-medium">Gratuity</Label>
+                      <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-fit">Gratuity</Label>
                       <Button
                         variant="outline"
                         size="sm"
@@ -421,8 +421,8 @@ const EventProfitCalculator = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     {foodCostMode === 'percentage' ? (
-                      <div>
-                        <Label className="text-card-foreground">Food Cost Percentage</Label>
+                      <div className="flex items-center gap-3">
+                        <Label className="text-card-foreground min-w-fit">Food Cost %</Label>
                         <Input
                           type="number"
                           value={foodCostPercentage}
@@ -430,15 +430,15 @@ const EventProfitCalculator = () => {
                             const cleanedValue = handleNumberInput(e.target.value);
                             setFoodCostPercentage(parseFloat(cleanedValue) || 0);
                           }}
-                          className="input-modern mt-2"
+                          className="input-modern"
                           min="0"
                           max="100"
                           step="1"
                         />
                       </div>
                     ) : (
-                      <div>
-                        <Label className="text-card-foreground">Fixed Food Cost</Label>
+                      <div className="flex items-center gap-3">
+                        <Label className="text-card-foreground min-w-fit">Fixed Food Cost</Label>
                         <Input
                           type="number"
                           value={foodCostFixed}
@@ -446,7 +446,7 @@ const EventProfitCalculator = () => {
                             const cleanedValue = handleNumberInput(e.target.value);
                             setFoodCostFixed(parseFloat(cleanedValue) || 0);
                           }}
-                          className="input-modern mt-2"
+                          className="input-modern"
                         />
                       </div>
                     )}
@@ -588,8 +588,8 @@ const EventProfitCalculator = () => {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <Label className="text-card-foreground font-medium">Target Profit Margin (%)</Label>
+                  <div className="flex items-center gap-3">
+                    <Label className="text-card-foreground font-medium min-w-fit">Target Profit Margin (%)</Label>
                     <Input
                       type="number"
                       value={targetProfitMargin}
@@ -597,14 +597,14 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setTargetProfitMargin(parseFloat(cleanedValue) || 0);
                       }}
-                      className="input-modern mt-2"
+                      className="input-modern"
                       min="0"
                       max="100"
                       step="1"
                     />
                   </div>
-                  <div>
-                    <Label className="text-card-foreground font-medium">Business Tax (%)</Label>
+                  <div className="flex items-center gap-3">
+                    <Label className="text-card-foreground font-medium min-w-fit">Business Tax (%)</Label>
                     <Input
                       type="number"
                       value={businessTaxPercentage}
@@ -612,7 +612,7 @@ const EventProfitCalculator = () => {
                         const cleanedValue = handleNumberInput(e.target.value);
                         setBusinessTaxPercentage(parseFloat(cleanedValue) || 0);
                       }}
-                      className="input-modern mt-2"
+                      className="input-modern"
                       min="0"
                       max="100"
                       step="0.5"
