@@ -308,71 +308,95 @@ const EventProfitCalculator = () => {
                 {/* Labor Costs */}
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-3">Labor Roles</h3>
-                  <div className="space-y-2">
-                    {laborRoles.map((role) => (
-                      <div key={role.id} className="flex items-center gap-3 p-3 bg-white/50 rounded-lg">
+                  <div className="border border-border/20 rounded-lg overflow-hidden">
+                    <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                      <div className="col-span-6">Role</div>
+                      <div className="col-span-3 text-right">Cost</div>
+                      <div className="col-span-3 text-center">Actions</div>
+                    </div>
+                    {laborRoles.map((role, index) => (
+                      <div key={role.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingLabor === role.id ? (
                           <>
-                            <Input
-                              value={role.name}
-                              onChange={(e) => updateLaborRole(role.id, e.target.value, role.cost)}
-                              className="flex-1 input-modern"
-                              placeholder="Role name"
-                            />
-                            <Input
-                              type="number"
-                              value={role.cost}
-                              onChange={(e) => updateLaborRole(role.id, role.name, parseFloat(e.target.value) || 0)}
-                              className="w-24 input-modern"
-                              placeholder="Cost"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingLabor(null)}
-                            >
-                              Save
-                            </Button>
+                            <div className="col-span-6">
+                              <Input
+                                value={role.name}
+                                onChange={(e) => updateLaborRole(role.id, e.target.value, role.cost)}
+                                className="input-modern"
+                                placeholder="Role name"
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <Input
+                                type="number"
+                                value={role.cost}
+                                onChange={(e) => updateLaborRole(role.id, role.name, parseFloat(e.target.value) || 0)}
+                                className="input-modern text-right"
+                                placeholder="Cost"
+                              />
+                            </div>
+                            <div className="col-span-3 flex justify-center">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingLabor(null)}
+                              >
+                                Save
+                              </Button>
+                            </div>
                           </>
                         ) : (
                           <>
-                            <span className="flex-1 font-medium text-card-foreground">{role.name}</span>
-                            <span className="font-bold text-card-foreground">{formatCurrency(role.cost)}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingLabor(role.id)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteLaborRole(role.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="col-span-6 font-medium text-card-foreground">{role.name}</div>
+                            <div className="col-span-3 font-bold text-card-foreground text-right">{formatCurrency(role.cost)}</div>
+                            <div className="col-span-3 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingLabor(role.id)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteLaborRole(role.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </>
                         )}
                       </div>
                     ))}
-                    <div className="flex gap-3 p-3 bg-white/30 rounded-lg">
-                      <Input
-                        placeholder="Role name"
-                        value={newLaborName}
-                        onChange={(e) => setNewLaborName(e.target.value)}
-                        className="flex-1 input-modern"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Cost"
-                        value={newLaborCost}
-                        onChange={(e) => setNewLaborCost(e.target.value)}
-                        className="w-24 input-modern"
-                      />
-                      <Button onClick={addLaborRole} className="btn-primary">
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                    <div className="border-t border-border/20 bg-muted/30 p-3 grid grid-cols-12 gap-3">
+                      <div className="col-span-6">
+                        <Input
+                          placeholder="New role name"
+                          value={newLaborName}
+                          onChange={(e) => setNewLaborName(e.target.value)}
+                          className="input-modern"
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Input
+                          type="number"
+                          placeholder="Cost"
+                          value={newLaborCost}
+                          onChange={(e) => setNewLaborCost(e.target.value)}
+                          className="input-modern text-right"
+                        />
+                      </div>
+                      <div className="col-span-3 flex justify-center">
+                        <Button onClick={addLaborRole} className="btn-primary">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-3 grid grid-cols-12 gap-3">
+                      <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
+                      <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
+                      <div className="col-span-3"></div>
                     </div>
                   </div>
                 </div>
@@ -428,71 +452,113 @@ const EventProfitCalculator = () => {
                 {/* Miscellaneous Expenses */}
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-3">Miscellaneous Expenses</h3>
-                  <div className="space-y-2">
-                    {miscExpenses.map((expense) => (
-                      <div key={expense.id} className="flex items-center gap-3 p-3 bg-white/50 rounded-lg">
+                  <div className="border border-border/20 rounded-lg overflow-hidden">
+                    <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                      <div className="col-span-6">Expense</div>
+                      <div className="col-span-3 text-right">Cost</div>
+                      <div className="col-span-3 text-center">Actions</div>
+                    </div>
+                    {miscExpenses.map((expense, index) => (
+                      <div key={expense.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingExpense === expense.id ? (
                           <>
-                            <Input
-                              value={expense.name}
-                              onChange={(e) => updateMiscExpense(expense.id, e.target.value, expense.cost)}
-                              className="flex-1 input-modern"
-                              placeholder="Expense name"
-                            />
-                            <Input
-                              type="number"
-                              value={expense.cost}
-                              onChange={(e) => updateMiscExpense(expense.id, expense.name, parseFloat(e.target.value) || 0)}
-                              className="w-24 input-modern"
-                              placeholder="Cost"
-                            />
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingExpense(null)}
-                            >
-                              Save
-                            </Button>
+                            <div className="col-span-6">
+                              <Input
+                                value={expense.name}
+                                onChange={(e) => updateMiscExpense(expense.id, e.target.value, expense.cost)}
+                                className="input-modern"
+                                placeholder="Expense name"
+                              />
+                            </div>
+                            <div className="col-span-3">
+                              <Input
+                                type="number"
+                                value={expense.cost}
+                                onChange={(e) => updateMiscExpense(expense.id, expense.name, parseFloat(e.target.value) || 0)}
+                                className="input-modern text-right"
+                                placeholder="Cost"
+                              />
+                            </div>
+                            <div className="col-span-3 flex justify-center">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingExpense(null)}
+                              >
+                                Save
+                              </Button>
+                            </div>
                           </>
                         ) : (
                           <>
-                            <span className="flex-1 font-medium text-card-foreground">{expense.name}</span>
-                            <span className="font-bold text-card-foreground">{formatCurrency(expense.cost)}</span>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingExpense(expense.id)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteMiscExpense(expense.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            <div className="col-span-6 font-medium text-card-foreground">{expense.name}</div>
+                            <div className="col-span-3 font-bold text-card-foreground text-right">{formatCurrency(expense.cost)}</div>
+                            <div className="col-span-3 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingExpense(expense.id)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteMiscExpense(expense.id)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </>
                         )}
                       </div>
                     ))}
-                    <div className="flex gap-3 p-3 bg-white/30 rounded-lg">
-                      <Input
-                        placeholder="Expense name"
-                        value={newExpenseName}
-                        onChange={(e) => setNewExpenseName(e.target.value)}
-                        className="flex-1 input-modern"
-                      />
-                      <Input
-                        type="number"
-                        placeholder="Cost"
-                        value={newExpenseCost}
-                        onChange={(e) => setNewExpenseCost(e.target.value)}
-                        className="w-24 input-modern"
-                      />
-                      <Button onClick={addMiscExpense} className="btn-primary">
-                        <Plus className="w-4 h-4" />
-                      </Button>
+                    <div className="border-t border-border/20 bg-muted/30 p-3 grid grid-cols-12 gap-3">
+                      <div className="col-span-6">
+                        <Input
+                          placeholder="New expense name"
+                          value={newExpenseName}
+                          onChange={(e) => setNewExpenseName(e.target.value)}
+                          className="input-modern"
+                        />
+                      </div>
+                      <div className="col-span-3">
+                        <Input
+                          type="number"
+                          placeholder="Cost"
+                          value={newExpenseCost}
+                          onChange={(e) => setNewExpenseCost(e.target.value)}
+                          className="input-modern text-right"
+                        />
+                      </div>
+                      <div className="col-span-3 flex justify-center">
+                        <Button onClick={addMiscExpense} className="btn-primary">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-3 grid grid-cols-12 gap-3">
+                      <div className="col-span-6 font-semibold text-card-foreground">Total Miscellaneous</div>
+                      <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalMiscCosts)}</div>
+                      <div className="col-span-3"></div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Total Expenses Summary */}
+                <div className="border-2 border-primary/30 bg-primary/10 rounded-lg p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-sm text-muted-foreground">Labor Costs</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Food + Misc</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(foodCost + totalMiscCosts)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-muted-foreground">Total Expenses</div>
+                      <div className="text-2xl font-bold text-primary">{formatCurrency(totalCosts)}</div>
                     </div>
                   </div>
                 </div>
@@ -554,105 +620,101 @@ const EventProfitCalculator = () => {
 
           {/* Right Column - Summary */}
           <div className="xl:col-span-4 space-y-6">
-            {/* Revenue Summary */}
+            {/* Combined Financial Summary */}
             <Card className="glass-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-card-foreground">
                   <TrendingUp className="w-5 h-5" />
-                  Revenue Summary
+                  Financial Summary
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
+                {/* Revenue Section */}
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Base Revenue</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(baseRevenue)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gratuity ({gratuityPercentage}%)</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
-                  </div>
-                  <div className="border-t pt-3">
+                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Revenue</h4>
+                  <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="font-semibold text-card-foreground">Total Revenue</span>
-                      <span className="font-bold text-xl text-primary">{formatCurrency(totalRevenue)}</span>
+                      <span className="text-muted-foreground">Base Revenue</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(baseRevenue)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Gratuity ({gratuityPercentage}%)</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-card-foreground">Total Revenue</span>
+                        <span className="font-bold text-lg text-primary">{formatCurrency(totalRevenue)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Costs Summary */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-card-foreground">Cost Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                {/* Cost Section */}
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Labor Costs</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Food Costs</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(foodCost)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Miscellaneous</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(totalMiscCosts)}</span>
-                  </div>
-                  <div className="border-t pt-3">
+                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Costs</h4>
+                  <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="font-semibold text-card-foreground">Total Costs</span>
-                      <span className="font-bold text-xl text-destructive">{formatCurrency(totalCosts)}</span>
+                      <span className="text-muted-foreground">Labor Costs</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Food Costs</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(foodCost)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Miscellaneous</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(totalMiscCosts)}</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-card-foreground">Total Costs</span>
+                        <span className="font-bold text-lg text-destructive">{formatCurrency(totalCosts)}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Profit Summary */}
-            <Card className="glass-card">
-              <CardHeader>
-                <CardTitle className="text-card-foreground">Profit Analysis</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                {/* Profit Section */}
                 <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Gross Profit</span>
-                    <span className={`font-bold ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {formatCurrency(actualProfit)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Business Tax ({businessTaxPercentage}%)</span>
-                    <span className="font-bold text-card-foreground">{formatCurrency(businessTax)}</span>
-                  </div>
-                  <div className="border-t pt-3">
+                  <h4 className="font-semibold text-card-foreground text-sm uppercase tracking-wide">Profit Analysis</h4>
+                  <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="font-semibold text-card-foreground">Net Profit</span>
-                      <span className={`font-bold text-xl ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {formatCurrency(netProfit)}
+                      <span className="text-muted-foreground">Gross Profit</span>
+                      <span className={`font-bold ${actualProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {formatCurrency(actualProfit)}
                       </span>
                     </div>
-                  </div>
-                  <div className="mt-4">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-muted-foreground">Profit Margin</span>
-                      <span className={`font-bold ${actualProfitPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {actualProfitPercentage.toFixed(1)}%
-                      </span>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Business Tax ({businessTaxPercentage}%)</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(businessTax)}</span>
                     </div>
-                    <div className="progress-bar">
-                      <div 
-                        className={`progress-fill ${actualProfitPercentage < 0 ? 'profit-negative' : ''}`}
-                        style={{ width: `${Math.min(Math.abs(actualProfitPercentage), 100)}%` }}
-                      />
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between">
+                        <span className="font-semibold text-card-foreground">Net Profit</span>
+                        <span className={`font-bold text-xl ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {formatCurrency(netProfit)}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-white/50 rounded-lg text-center">
-                    <span className="text-sm text-muted-foreground">Break-even Guests</span>
-                    <div className="text-2xl font-bold text-card-foreground">{breakEvenGuests}</div>
+                    <div className="mt-3">
+                      <div className="flex justify-between mb-2">
+                        <span className="text-muted-foreground">Profit Margin</span>
+                        <span className={`font-bold ${actualProfitPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {actualProfitPercentage.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="progress-bar">
+                        <div 
+                          className={`progress-fill ${actualProfitPercentage < 0 ? 'profit-negative' : ''}`}
+                          style={{ width: `${Math.min(Math.abs(actualProfitPercentage), 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-white/50 rounded-lg text-center">
+                      <span className="text-sm text-muted-foreground">Break-even Guests</span>
+                      <div className="text-2xl font-bold text-card-foreground">{breakEvenGuests}</div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
