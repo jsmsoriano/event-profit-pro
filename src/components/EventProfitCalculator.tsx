@@ -94,7 +94,7 @@ const EventProfitCalculator = () => {
   // Maximum labor budget from admin settings
   const maxLaborBudget = useMemo(() => totalRevenue * (adminSettings.laborRevenuePercentage / 100), [totalRevenue, adminSettings.laborRevenuePercentage]);
 
-  // Calculate labor costs with Chef's automatic allocation
+  // Calculate labor costs with updated gratuity split logic
   const calculatedLaborRoles = useMemo(() => {
     const gratuityPerRole = laborRoles.length > 0 ? gratuityAmount / laborRoles.length : 0;
     
@@ -106,8 +106,8 @@ const EventProfitCalculator = () => {
         const revenueAmount = baseRevenue * ((role.revenuePercentage || 0) / 100);
         calculatedCost = revenueAmount + gratuityPerRole;
       } else {
-        // Fixed amount roles
-        calculatedCost = role.fixedAmount || 0;
+        // Fixed amount roles (like Assistant) get fixed amount plus gratuity split
+        calculatedCost = (role.fixedAmount || 0) + gratuityPerRole;
       }
       
       return {
@@ -505,26 +505,15 @@ const EventProfitCalculator = () => {
                             )}
                           </div>
                           <div className="col-span-4">
-                            {role.payType === 'percentage' ? (
-                              <div className="text-right">
-                                <div className="font-bold text-green-600">{formatCurrency(role.calculatedCost || 0)}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {role.revenuePercentage}% + gratuity
-                                </div>
+                            <div className="text-right">
+                              <div className="font-bold text-green-600">{formatCurrency(role.calculatedCost || 0)}</div>
+                              <div className="text-xs text-muted-foreground">
+                                {role.payType === 'percentage' 
+                                  ? `${role.revenuePercentage}% + gratuity split`
+                                  : `${formatCurrency(role.fixedAmount || 0)} fixed + gratuity split`
+                                }
                               </div>
-                            ) : (
-                              <Input
-                                type="number"
-                                value={role.fixedAmount || 0}
-                                onChange={(e) => {
-                                  const cleanedValue = handleNumberInput(e.target.value);
-                                  updateLaborRole(role.id, { fixedAmount: parseFloat(cleanedValue) || 0 });
-                                }}
-                                className="input-modern text-right"
-                                min="0"
-                                step="0.01"
-                              />
-                            )}
+                            </div>
                           </div>
                           <div className="col-span-2 flex justify-center">
                             <Button
