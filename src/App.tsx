@@ -9,6 +9,7 @@ import { AppHeader } from "@/components/AppHeader";
 import { AuthProvider } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import FinancialSummary from "./pages/FinancialSummary";
+import BreakevenAnalysis from "./pages/BreakevenAnalysis";
 import Auth from "./pages/Auth";
 import Team from "./pages/Team";
 import Quotes from "./pages/Quotes";
@@ -34,6 +35,7 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<Index />} />
                     <Route path="/financial-summary" element={<FinancialSummary />} />
+                    <Route path="/breakeven-analysis" element={<BreakevenAnalysis />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/quotes" element={<Quotes />} />
