@@ -570,10 +570,21 @@ const EventProfitCalculator = () => {
                       <span className="text-card-foreground">Gratuity Amount:</span>
                       <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
                     </div>
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground font-semibold">Total Profit:</span>
+                      <span className="font-bold text-lg text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Business Tax (20%):</span>
+                      <span className="font-bold text-card-foreground text-red-600">-{formatCurrency((actualProfit + gratuityAmount) * 0.20)}</span>
+                    </div>
                     <div className="border-t pt-2">
                       <div className="flex justify-between">
-                        <span className="text-card-foreground font-semibold text-lg">Total Profit:</span>
-                        <span className="font-bold text-2xl text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
+                        <span className="text-card-foreground font-semibold text-lg">Net Profit (After Tax):</span>
+                        <span className="font-bold text-2xl text-green-600">{formatCurrency((actualProfit + gratuityAmount) * 0.80)}</span>
+                      </div>
+                      <div className="text-center text-sm text-muted-foreground mt-1">
+                        Available for Staff Payout
                       </div>
                     </div>
                   </div>
