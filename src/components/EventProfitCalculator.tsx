@@ -173,6 +173,10 @@ const EventProfitCalculator = () => {
     setIsProcessing(true);
     
     // Calculate and save data to localStorage for Financial Summary
+    const totalProfitWithGratuity = actualProfit + gratuityAmount;
+    const businessTaxAmount = totalProfitWithGratuity > 0 ? totalProfitWithGratuity * (businessTaxPercentage / 100) : 0;
+    const netProfitAfterTax = totalProfitWithGratuity - businessTaxAmount;
+    
     const financialData = {
       numberOfGuests,
       pricePerPerson,
@@ -186,12 +190,12 @@ const EventProfitCalculator = () => {
       totalCosts,
       actualProfit,
       businessTaxPercentage,
-      businessTax,
-      netProfit,
+      businessTax: businessTaxAmount,
+      netProfit: netProfitAfterTax,
       actualProfitPercentage,
       breakEvenGuests,
       // Additional metrics for Summary tab
-      profitMargin: totalRevenue > 0 ? ((actualProfit + gratuityAmount) / totalRevenue * 100) : 0,
+      profitMargin: totalRevenue > 0 ? (totalProfitWithGratuity / totalRevenue * 100) : 0,
       foodCostPercentage: totalRevenue > 0 ? (foodCost / totalRevenue * 100) : 0,
       totalExpensePercentage: totalRevenue > 0 ? (totalCosts / totalRevenue * 100) : 0,
       costPerPlate: numberOfGuests > 0 ? (totalCosts / numberOfGuests) : 0,
@@ -207,10 +211,9 @@ const EventProfitCalculator = () => {
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsProcessing(false);
   }, [
-    baseRevenue, gratuityPercentage, gratuityAmount, totalRevenue,
+    numberOfGuests, pricePerPerson, baseRevenue, gratuityPercentage, gratuityAmount, totalRevenue,
     totalLaborCosts, foodCost, totalMiscCosts, totalCosts,
-    actualProfit, businessTaxPercentage, businessTax, netProfit,
-    actualProfitPercentage, breakEvenGuests
+    actualProfit, businessTaxPercentage
   ]);
 
   return (
@@ -421,7 +424,7 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-center">
+                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
                       <Button onClick={addLaborRole} className="btn-primary">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Labor
@@ -502,7 +505,7 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-center">
+                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
                       <Button onClick={addMiscExpense} className="btn-primary">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Expense
