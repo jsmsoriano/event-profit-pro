@@ -33,6 +33,7 @@ interface MiscExpense {
   id: string;
   type: string;
   cost: number;
+  costType: 'fixed' | 'percentage'; // fixed dollar amount or percentage of revenue
 }
 
 interface FoodCostItem {
@@ -61,11 +62,11 @@ const EventProfitCalculator = () => {
   // Admin settings
   const [adminSettings, setAdminSettings] = useState<AdminSettings>(defaultAdminSettings);
 
-  // Main calculator states
-  const [numberOfGuests, setNumberOfGuests] = useState(50);
-  const [pricePerPerson, setPricePerPerson] = useState(85);
-  const [gratuityPercentage, setGratuityPercentage] = useState(18);
-  const [gratuityMode, setGratuityMode] = useState<'18' | '20' | 'other'>('18');
+  // Main calculator states with default values
+  const [numberOfGuests, setNumberOfGuests] = useState(10);
+  const [pricePerPerson, setPricePerPerson] = useState(55);
+  const [gratuityPercentage, setGratuityPercentage] = useState(20);
+  const [gratuityMode, setGratuityMode] = useState<'18' | '20' | 'other'>('20');
   const [gratuityEnabled, setGratuityEnabled] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -78,13 +79,50 @@ const EventProfitCalculator = () => {
   const [targetProfitMargin, setTargetProfitMargin] = useState(25);
   const [businessTaxPercentage, setBusinessTaxPercentage] = useState(8);
 
-  // Load admin settings on mount
+  // Load admin settings and saved calculator data on mount
   useEffect(() => {
     const savedSettings = localStorage.getItem('adminSettings');
     if (savedSettings) {
       setAdminSettings(JSON.parse(savedSettings));
     }
+
+    // Load saved calculator data to maintain state between screens
+    const savedCalculatorData = localStorage.getItem('calculatorState');
+    if (savedCalculatorData) {
+      try {
+        const data = JSON.parse(savedCalculatorData);
+        setNumberOfGuests(data.numberOfGuests || 10);
+        setPricePerPerson(data.pricePerPerson || 55);
+        setGratuityPercentage(data.gratuityPercentage || 20);
+        setGratuityMode(data.gratuityMode || '20');
+        setGratuityEnabled(data.gratuityEnabled !== undefined ? data.gratuityEnabled : true);
+        setLaborRoles(data.laborRoles || []);
+        setFoodCostItems(data.foodCostItems || []);
+        setMiscExpenses(data.miscExpenses || []);
+        setTargetProfitMargin(data.targetProfitMargin || 25);
+        setBusinessTaxPercentage(data.businessTaxPercentage || 8);
+      } catch (error) {
+        console.error('Error loading calculator state:', error);
+      }
+    }
   }, []);
+
+  // Save calculator state whenever it changes
+  useEffect(() => {
+    const calculatorState = {
+      numberOfGuests,
+      pricePerPerson,
+      gratuityPercentage,
+      gratuityMode,
+      gratuityEnabled,
+      laborRoles,
+      foodCostItems,
+      miscExpenses,
+      targetProfitMargin,
+      businessTaxPercentage
+    };
+    localStorage.setItem('calculatorState', JSON.stringify(calculatorState));
+  }, [numberOfGuests, pricePerPerson, gratuityPercentage, gratuityMode, gratuityEnabled, laborRoles, foodCostItems, miscExpenses, targetProfitMargin, businessTaxPercentage]);
 
   // Revenue calculations
   const baseRevenue = useMemo(() => numberOfGuests * pricePerPerson, [numberOfGuests, pricePerPerson]);
@@ -120,7 +158,12 @@ const EventProfitCalculator = () => {
   // Expense calculations
   const totalLaborCosts = useMemo(() => calculatedLaborRoles.reduce((sum, role) => sum + (role.calculatedCost || 0), 0), [calculatedLaborRoles]);
   const totalFoodCosts = useMemo(() => foodCostItems.reduce((sum, item) => sum + item.cost, 0), [foodCostItems]);
-  const totalMiscCosts = useMemo(() => miscExpenses.reduce((sum, expense) => sum + expense.cost, 0), [miscExpenses]);
+  const totalMiscCosts = useMemo(() => miscExpenses.reduce((sum, expense) => {
+    if (expense.costType === 'percentage') {
+      return sum + (baseRevenue * (expense.cost / 100));
+    }
+    return sum + expense.cost;
+  }, 0), [miscExpenses, baseRevenue]);
   const totalCosts = useMemo(() => totalLaborCosts + totalFoodCosts + totalMiscCosts, [totalLaborCosts, totalFoodCosts, totalMiscCosts]);
 
   // Gratuity is now already included in labor costs for percentage-based roles
@@ -189,14 +232,15 @@ const EventProfitCalculator = () => {
       const newExpense: MiscExpense = {
         id: Date.now().toString(),
         type: adminSettings.expenseTypes[0],
-        cost: 0
+        cost: 0,
+        costType: 'fixed'
       };
       setMiscExpenses(prev => [...prev, newExpense]);
     }
   }, [adminSettings.expenseTypes]);
 
-  const updateMiscExpense = useCallback((id: string, type: string, cost: number) => {
-    setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, type, cost } : expense));
+  const updateMiscExpense = useCallback((id: string, updates: Partial<MiscExpense>) => {
+    setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, ...updates } : expense));
   }, []);
 
   const deleteMiscExpense = useCallback((id: string) => {
@@ -208,16 +252,18 @@ const EventProfitCalculator = () => {
   };
 
   const resetInputs = useCallback(() => {
-    setNumberOfGuests(0);
-    setPricePerPerson(0);
-    setGratuityPercentage(18);
-    setGratuityMode('18');
+    setNumberOfGuests(10);
+    setPricePerPerson(55);
+    setGratuityPercentage(20);
+    setGratuityMode('20');
     setGratuityEnabled(true);
     setLaborRoles([]);
     setFoodCostItems([]);
     setMiscExpenses([]);
     setTargetProfitMargin(25);
     setBusinessTaxPercentage(8);
+    // Clear saved state
+    localStorage.removeItem('calculatorState');
   }, []);
 
   const processInputs = useCallback(async () => {
@@ -559,45 +605,63 @@ const EventProfitCalculator = () => {
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Miscellaneous Expenses</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
-                      <div className="col-span-6">Expense Type</div>
-                      <div className="col-span-3 text-right">Cost</div>
-                      <div className="col-span-3 text-center">Actions</div>
-                    </div>
+                     <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                       <div className="col-span-6">Expense Type</div>
+                       <div className="col-span-2">Cost Type</div>
+                       <div className="col-span-2 text-right">Amount</div>
+                       <div className="col-span-2 text-center">Actions</div>
+                     </div>
                     {miscExpenses.map((expense, index) => (
                       <div key={expense.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
                         <div className="col-span-6">
-                          <Select value={expense.type} onValueChange={(value) => updateMiscExpense(expense.id, value, expense.cost)}>
-                            <SelectTrigger className="input-modern">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {adminSettings.expenseTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                           <Select value={expense.type} onValueChange={(value) => updateMiscExpense(expense.id, { type: value })}>
+                             <SelectTrigger className="input-modern">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               {adminSettings.expenseTypes.map(type => (
+                                 <SelectItem key={type} value={type}>{type}</SelectItem>
+                               ))}
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div className="col-span-2">
+                           <Select value={expense.costType} onValueChange={(value: 'fixed' | 'percentage') => updateMiscExpense(expense.id, { costType: value })}>
+                             <SelectTrigger className="input-modern">
+                               <SelectValue />
+                             </SelectTrigger>
+                             <SelectContent>
+                               <SelectItem value="fixed">Fixed ($)</SelectItem>
+                               <SelectItem value="percentage">Percentage (%)</SelectItem>
+                             </SelectContent>
+                           </Select>
+                         </div>
+                         <div className="col-span-2">
+                           <Input
+                             type="number"
+                             value={expense.cost}
+                             onChange={(e) => {
+                               const cleanedValue = handleNumberInput(e.target.value);
+                               updateMiscExpense(expense.id, { cost: parseFloat(cleanedValue) || 0 });
+                             }}
+                             className="input-modern text-right"
+                             placeholder={expense.costType === 'percentage' ? '%' : '$'}
+                           />
                         </div>
-                        <div className="col-span-3">
-                          <Input
-                            type="number"
-                            value={expense.cost}
-                            onChange={(e) => {
-                              const cleanedValue = handleNumberInput(e.target.value);
-                              updateMiscExpense(expense.id, expense.type, parseFloat(cleanedValue) || 0);
-                            }}
-                            className="input-modern text-right"
-                          />
-                        </div>
-                        <div className="col-span-3 flex justify-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteMiscExpense(expense.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                         <div className="col-span-2 flex flex-col items-center">
+                           <Button
+                             variant="outline"
+                             size="sm"
+                             onClick={() => deleteMiscExpense(expense.id)}
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </Button>
+                           {expense.costType === 'percentage' && (
+                             <div className="text-xs text-muted-foreground text-center mt-1">
+                               = {formatCurrency(baseRevenue * (expense.cost / 100))}
+                             </div>
+                           )}
+                         </div>
                       </div>
                     ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
@@ -606,11 +670,11 @@ const EventProfitCalculator = () => {
                         Add Expense
                       </Button>
                     </div>
-                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
-                      <div className="col-span-6 font-semibold text-card-foreground">Total Miscellaneous</div>
-                      <div className="col-span-3 font-bold text-lg text-primary text-right">{formatCurrency(totalMiscCosts)}</div>
-                      <div className="col-span-3"></div>
-                    </div>
+                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
+                       <div className="col-span-8 font-semibold text-card-foreground">Total Miscellaneous</div>
+                       <div className="col-span-2 font-bold text-lg text-primary text-right">{formatCurrency(totalMiscCosts)}</div>
+                       <div className="col-span-2"></div>
+                     </div>
                   </div>
                 </div>
 
