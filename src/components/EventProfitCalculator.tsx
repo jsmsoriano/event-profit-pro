@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, Play } from 'lucide-react';
+import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, RotateCcw, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,8 +43,6 @@ const EventProfitCalculator = () => {
     { id: '2', name: 'Chef 2', cost: 180 },
     { id: '3', name: 'Assistant', cost: 120 }
   ]);
-  const [foodCostMode, setFoodCostMode] = useState<'percentage' | 'fixed'>('percentage');
-  const [foodCostPercentage, setFoodCostPercentage] = useState(30);
   const [foodCostFixed, setFoodCostFixed] = useState(1500);
   const [miscExpenses, setMiscExpenses] = useState<MiscExpense[]>([
     { id: '1', name: 'Equipment rental', cost: 300 },
@@ -70,10 +68,7 @@ const EventProfitCalculator = () => {
 
   // Expense calculations
   const totalLaborCosts = useMemo(() => laborRoles.reduce((sum, role) => sum + role.cost, 0), [laborRoles]);
-  const foodCost = useMemo(() => 
-    foodCostMode === 'percentage' ? baseRevenue * (foodCostPercentage / 100) : foodCostFixed,
-    [foodCostMode, baseRevenue, foodCostPercentage, foodCostFixed]
-  );
+  const foodCost = useMemo(() => foodCostFixed, [foodCostFixed]);
   const totalMiscCosts = useMemo(() => miscExpenses.reduce((sum, expense) => sum + expense.cost, 0), [miscExpenses]);
   const totalCosts = useMemo(() => totalLaborCosts + foodCost + totalMiscCosts, [totalLaborCosts, foodCost, totalMiscCosts]);
 
@@ -99,17 +94,17 @@ const EventProfitCalculator = () => {
 
   // Labor role management
   const addLaborRole = useCallback(() => {
-    if (newLaborName && newLaborCost) {
+    const name = prompt('Enter labor role name:');
+    const cost = prompt('Enter labor cost:');
+    if (name && cost) {
       const newRole: LaborRole = {
         id: Date.now().toString(),
-        name: newLaborName,
-        cost: parseFloat(newLaborCost)
+        name: name,
+        cost: parseFloat(cost) || 0
       };
       setLaborRoles(prev => [...prev, newRole]);
-      setNewLaborName('');
-      setNewLaborCost('');
     }
-  }, [newLaborName, newLaborCost]);
+  }, []);
 
   const updateLaborRole = useCallback((id: string, name: string, cost: number) => {
     setLaborRoles(prev => prev.map(role => role.id === id ? { ...role, name, cost } : role));
@@ -125,17 +120,17 @@ const EventProfitCalculator = () => {
 
   // Misc expense management
   const addMiscExpense = useCallback(() => {
-    if (newExpenseName && newExpenseCost) {
+    const name = prompt('Enter expense name:');
+    const cost = prompt('Enter expense cost:');
+    if (name && cost) {
       const newExpense: MiscExpense = {
         id: Date.now().toString(),
-        name: newExpenseName,
-        cost: parseFloat(newExpenseCost)
+        name: name,
+        cost: parseFloat(cost) || 0
       };
       setMiscExpenses(prev => [...prev, newExpense]);
-      setNewExpenseName('');
-      setNewExpenseCost('');
     }
-  }, [newExpenseName, newExpenseCost]);
+  }, []);
 
   const updateMiscExpense = useCallback((id: string, name: string, cost: number) => {
     setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, name, cost } : expense));
@@ -200,14 +195,22 @@ const EventProfitCalculator = () => {
                 <CardTitle className="flex items-center gap-2 text-card-foreground">
                   <Users className="w-5 h-5" />
                   Event Details
-                  <Button
-                    onClick={processInputs}
-                    disabled={isProcessing}
-                    className="ml-auto"
-                  >
-                    <Play className="w-4 h-4 mr-2" />
-                    {isProcessing ? 'Processing...' : 'Process Inputs'}
-                  </Button>
+                  <div className="ml-auto flex gap-2">
+                    <Button
+                      onClick={() => window.location.reload()}
+                      variant="outline"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Reset
+                    </Button>
+                    <Button
+                      onClick={processInputs}
+                      disabled={isProcessing}
+                    >
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      {isProcessing ? 'Processing...' : 'Refresh'}
+                    </Button>
+                  </div>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -339,7 +342,7 @@ const EventProfitCalculator = () => {
               <CardContent className="space-y-4">
                 {/* Labor Costs */}
                 <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor Roles</h3>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
                     <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
                       <div className="col-span-6">Role</div>
@@ -404,29 +407,11 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-2">
-                      <div className="col-span-6">
-                        <Input
-                          placeholder="New role name"
-                          value={newLaborName}
-                          onChange={(e) => setNewLaborName(e.target.value)}
-                          className="input-modern"
-                        />
-                      </div>
-                      <div className="col-span-4">
-                        <Input
-                          type="number"
-                          placeholder="Cost"
-                          value={newLaborCost}
-                          onChange={(e) => setNewLaborCost(handleNumberInput(e.target.value))}
-                          className="input-modern text-right"
-                        />
-                      </div>
-                      <div className="col-span-2 flex justify-center">
-                        <Button onClick={addLaborRole} className="btn-primary">
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
+                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-center">
+                      <Button onClick={addLaborRole} className="btn-primary">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Labor
+                      </Button>
                     </div>
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
@@ -438,51 +423,24 @@ const EventProfitCalculator = () => {
 
                 {/* Food Costs */}
                 <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <h3 className="text-lg font-semibold text-card-foreground min-w-[120px]">Food Costs</h3>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setFoodCostMode(foodCostMode === 'percentage' ? 'fixed' : 'percentage')}
-                    >
-                      {foodCostMode === 'percentage' ? 'Percentage' : 'Fixed Amount'}
-                    </Button>
-                  </div>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Food Costs</h3>
                   <div className="grid grid-cols-2 gap-4">
-                    {foodCostMode === 'percentage' ? (
-                      <div className="flex items-center gap-2">
-                        <Label className="text-card-foreground min-w-[120px]">Food Cost %</Label>
-                        <Input
-                          type="number"
-                          value={foodCostPercentage}
-                          onChange={(e) => {
-                            const cleanedValue = handleNumberInput(e.target.value);
-                            setFoodCostPercentage(parseFloat(cleanedValue) || 0);
-                          }}
-                          className="input-modern text-right"
-                          min="0"
-                          max="100"
-                          step="1"
-                        />
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Label className="text-card-foreground min-w-[120px]">Fixed Food Cost</Label>
-                        <Input
-                          type="number"
-                          value={foodCostFixed}
-                          onChange={(e) => {
-                            const cleanedValue = handleNumberInput(e.target.value);
-                            setFoodCostFixed(parseFloat(cleanedValue) || 0);
-                          }}
-                          className="input-modern text-right"
-                        />
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2">
+                      <Label className="text-card-foreground min-w-[120px]">Food Cost</Label>
+                      <Input
+                        type="number"
+                        value={foodCostFixed}
+                        onChange={(e) => {
+                          const cleanedValue = handleNumberInput(e.target.value);
+                          setFoodCostFixed(parseFloat(cleanedValue) || 0);
+                        }}
+                        className="input-modern text-right"
+                      />
+                    </div>
                     <div className="flex items-end">
                       <div className="p-3 bg-white/50 rounded-lg w-full">
                         <div className="text-sm text-muted-foreground">Food Cost</div>
-                        <div className="text-lg font-bold text-card-foreground text-right">{formatCurrency(foodCost)}</div>
+                        <div className="text-lg font-bold text-card-foreground text-right">{formatCurrency(foodCostFixed)}</div>
                       </div>
                     </div>
                   </div>
@@ -555,29 +513,11 @@ const EventProfitCalculator = () => {
                         )}
                       </div>
                     ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 grid grid-cols-12 gap-3">
-                      <div className="col-span-6">
-                        <Input
-                          placeholder="New expense name"
-                          value={newExpenseName}
-                          onChange={(e) => setNewExpenseName(e.target.value)}
-                          className="input-modern"
-                        />
-                      </div>
-                      <div className="col-span-3">
-                        <Input
-                          type="number"
-                          placeholder="Cost"
-                          value={newExpenseCost}
-                          onChange={(e) => setNewExpenseCost(handleNumberInput(e.target.value))}
-                          className="input-modern text-right"
-                        />
-                      </div>
-                      <div className="col-span-3 flex justify-center">
-                        <Button onClick={addMiscExpense} className="btn-primary">
-                          <Plus className="w-4 h-4" />
-                        </Button>
-                      </div>
+                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-center">
+                      <Button onClick={addMiscExpense} className="btn-primary">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Expense
+                      </Button>
                     </div>
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-3">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Miscellaneous</div>
