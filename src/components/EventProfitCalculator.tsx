@@ -70,6 +70,10 @@ const EventProfitCalculator = () => {
   const [gratuityEnabled, setGratuityEnabled] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Edit states for expenses
+  const [editingFoodItem, setEditingFoodItem] = useState<string | null>(null);
+  const [editingMiscExpense, setEditingMiscExpense] = useState<string | null>(null);
+
   // Expenses states - now using admin-controlled dropdowns
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
   const [foodCostItems, setFoodCostItems] = useState<FoodCostItem[]>([]);
@@ -215,6 +219,8 @@ const EventProfitCalculator = () => {
         cost: 0
       };
       setFoodCostItems(prev => [...prev, newItem]);
+      // Automatically start editing the new item
+      setEditingFoodItem(newItem.id);
     }
   }, [adminSettings.foodCostTypes]);
 
@@ -236,6 +242,8 @@ const EventProfitCalculator = () => {
         costType: 'fixed'
       };
       setMiscExpenses(prev => [...prev, newExpense]);
+      // Automatically start editing the new expense
+      setEditingMiscExpense(newExpense.id);
     }
   }, [adminSettings.expenseTypes]);
 
@@ -459,41 +467,82 @@ const EventProfitCalculator = () => {
                       <div className="col-span-4 text-right">Cost</div>
                       <div className="col-span-2 text-center">Actions</div>
                     </div>
-                    {foodCostItems.map((item, index) => (
-                      <div key={item.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== foodCostItems.length - 1 ? 'border-b border-border/10' : ''}`}>
-                        <div className="col-span-6">
-                          <Select value={item.type} onValueChange={(value) => updateFoodCostItem(item.id, value, item.cost)}>
-                            <SelectTrigger className="input-modern">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {adminSettings.foodCostTypes.map(type => (
-                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="col-span-4">
-                          <Input
-                            type="number"
-                            value={item.cost}
-                            onChange={(e) => {
-                              const cleanedValue = handleNumberInput(e.target.value);
-                              updateFoodCostItem(item.id, item.type, parseFloat(cleanedValue) || 0);
-                            }}
-                            className="input-modern text-right"
-                          />
-                        </div>
-                        <div className="col-span-2 flex justify-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteFoodCostItem(item.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
+                     {foodCostItems.map((item, index) => (
+                       <div key={item.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== foodCostItems.length - 1 ? 'border-b border-border/10' : ''}`}>
+                         {editingFoodItem === item.id ? (
+                           <>
+                             <div className="col-span-6">
+                               <Select value={item.type} onValueChange={(value) => updateFoodCostItem(item.id, value, item.cost)}>
+                                 <SelectTrigger className="input-modern">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {adminSettings.foodCostTypes.map(type => (
+                                     <SelectItem key={type} value={type}>{type}</SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                             <div className="col-span-4">
+                               <Input
+                                 type="number"
+                                 value={item.cost}
+                                 onChange={(e) => {
+                                   const cleanedValue = handleNumberInput(e.target.value);
+                                   updateFoodCostItem(item.id, item.type, parseFloat(cleanedValue) || 0);
+                                 }}
+                                 className="input-modern text-right"
+                                 autoFocus
+                                 onKeyDown={(e) => {
+                                   if (e.key === 'Enter') setEditingFoodItem(null);
+                                   if (e.key === 'Escape') setEditingFoodItem(null);
+                                 }}
+                               />
+                             </div>
+                             <div className="col-span-2 flex justify-center gap-1">
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => setEditingFoodItem(null)}
+                               >
+                                 <DollarSign className="w-4 h-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => deleteFoodCostItem(item.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           </>
+                         ) : (
+                           <>
+                             <div className="col-span-6 font-medium text-card-foreground">
+                               {item.type}
+                             </div>
+                             <div className="col-span-4 text-right font-bold text-green-600">
+                               {formatCurrency(item.cost)}
+                             </div>
+                             <div className="col-span-2 flex justify-center gap-1">
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => setEditingFoodItem(item.id)}
+                               >
+                                 <Edit2 className="w-4 h-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => deleteFoodCostItem(item.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           </>
+                         )}
+                       </div>
                     ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
                       <Button onClick={addFoodCostItem} className="btn-primary">
@@ -611,58 +660,105 @@ const EventProfitCalculator = () => {
                        <div className="col-span-2 text-right">Amount</div>
                        <div className="col-span-2 text-center">Actions</div>
                      </div>
-                    {miscExpenses.map((expense, index) => (
-                      <div key={expense.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
-                        <div className="col-span-6">
-                           <Select value={expense.type} onValueChange={(value) => updateMiscExpense(expense.id, { type: value })}>
-                             <SelectTrigger className="input-modern">
-                               <SelectValue />
-                             </SelectTrigger>
-                             <SelectContent>
-                               {adminSettings.expenseTypes.map(type => (
-                                 <SelectItem key={type} value={type}>{type}</SelectItem>
-                               ))}
-                             </SelectContent>
-                           </Select>
-                         </div>
-                         <div className="col-span-2">
-                           <Select value={expense.costType} onValueChange={(value: 'fixed' | 'percentage') => updateMiscExpense(expense.id, { costType: value })}>
-                             <SelectTrigger className="input-modern">
-                               <SelectValue />
-                             </SelectTrigger>
-                             <SelectContent>
-                               <SelectItem value="fixed">Fixed ($)</SelectItem>
-                               <SelectItem value="percentage">Percentage (%)</SelectItem>
-                             </SelectContent>
-                           </Select>
-                         </div>
-                         <div className="col-span-2">
-                           <Input
-                             type="number"
-                             value={expense.cost}
-                             onChange={(e) => {
-                               const cleanedValue = handleNumberInput(e.target.value);
-                               updateMiscExpense(expense.id, { cost: parseFloat(cleanedValue) || 0 });
-                             }}
-                             className="input-modern text-right"
-                             placeholder={expense.costType === 'percentage' ? '%' : '$'}
-                           />
-                        </div>
-                         <div className="col-span-2 flex flex-col items-center">
-                           <Button
-                             variant="outline"
-                             size="sm"
-                             onClick={() => deleteMiscExpense(expense.id)}
-                           >
-                             <Trash2 className="w-4 h-4" />
-                           </Button>
-                           {expense.costType === 'percentage' && (
-                             <div className="text-xs text-muted-foreground text-center mt-1">
-                               = {formatCurrency(baseRevenue * (expense.cost / 100))}
+                     {miscExpenses.map((expense, index) => (
+                       <div key={expense.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
+                         {editingMiscExpense === expense.id ? (
+                           <>
+                             <div className="col-span-6">
+                               <Select value={expense.type} onValueChange={(value) => updateMiscExpense(expense.id, { type: value })}>
+                                 <SelectTrigger className="input-modern">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   {adminSettings.expenseTypes.map(type => (
+                                     <SelectItem key={type} value={type}>{type}</SelectItem>
+                                   ))}
+                                 </SelectContent>
+                               </Select>
                              </div>
-                           )}
-                         </div>
-                      </div>
+                             <div className="col-span-2">
+                               <Select value={expense.costType} onValueChange={(value: 'fixed' | 'percentage') => updateMiscExpense(expense.id, { costType: value })}>
+                                 <SelectTrigger className="input-modern">
+                                   <SelectValue />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                   <SelectItem value="fixed">Fixed ($)</SelectItem>
+                                   <SelectItem value="percentage">Percentage (%)</SelectItem>
+                                 </SelectContent>
+                               </Select>
+                             </div>
+                             <div className="col-span-2">
+                               <Input
+                                 type="number"
+                                 value={expense.cost}
+                                 onChange={(e) => {
+                                   const cleanedValue = handleNumberInput(e.target.value);
+                                   updateMiscExpense(expense.id, { cost: parseFloat(cleanedValue) || 0 });
+                                 }}
+                                 className="input-modern text-right"
+                                 placeholder={expense.costType === 'percentage' ? '%' : '$'}
+                                 autoFocus
+                                 onKeyDown={(e) => {
+                                   if (e.key === 'Enter') setEditingMiscExpense(null);
+                                   if (e.key === 'Escape') setEditingMiscExpense(null);
+                                 }}
+                               />
+                             </div>
+                             <div className="col-span-2 flex justify-center gap-1">
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => setEditingMiscExpense(null)}
+                               >
+                                 <DollarSign className="w-4 h-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => deleteMiscExpense(expense.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           </>
+                         ) : (
+                           <>
+                             <div className="col-span-6 font-medium text-card-foreground">
+                               {expense.type}
+                             </div>
+                             <div className="col-span-2 text-sm text-muted-foreground">
+                               {expense.costType === 'fixed' ? 'Fixed ($)' : 'Percentage (%)'}
+                             </div>
+                             <div className="col-span-2 text-right">
+                               <div className="font-bold text-green-600">
+                                 {expense.costType === 'percentage' 
+                                   ? formatCurrency(baseRevenue * (expense.cost / 100))
+                                   : formatCurrency(expense.cost)
+                                 }
+                               </div>
+                               <div className="text-xs text-muted-foreground">
+                                 {expense.costType === 'percentage' ? `${expense.cost}%` : 'Fixed'}
+                               </div>
+                             </div>
+                             <div className="col-span-2 flex justify-center gap-1">
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => setEditingMiscExpense(expense.id)}
+                               >
+                                 <Edit2 className="w-4 h-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => deleteMiscExpense(expense.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             </div>
+                           </>
+                         )}
+                       </div>
                     ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
                       <Button onClick={addMiscExpense} className="btn-primary">
