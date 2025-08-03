@@ -468,14 +468,15 @@ const EventProfitCalculator = () => {
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor</h3>
                     <div className="border border-border/20 rounded-lg overflow-hidden">
                       <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
-                        <div className="col-span-4">Role</div>
-                        <div className="col-span-2">Type</div>
-                        <div className="col-span-4 text-right">Cost</div>
+                        <div className="col-span-3">Role</div>
+                        <div className="col-span-3 text-right">Base Cost</div>
+                        <div className="col-span-2 text-right">Gratuity</div>
+                        <div className="col-span-2 text-right">Total</div>
                         <div className="col-span-2 text-center">Actions</div>
                       </div>
                       {calculatedLaborRoles.map((role, index) => (
                         <div key={role.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== calculatedLaborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                          <div className="col-span-4">
+                          <div className="col-span-3">
                             <Select value={role.name} onValueChange={(value) => {
                               const adminRole = adminSettings.laborRoles.find(r => r.name === value);
                               if (adminRole) {
@@ -497,22 +498,29 @@ const EventProfitCalculator = () => {
                               </SelectContent>
                             </Select>
                           </div>
-                          <div className="col-span-2 text-sm text-muted-foreground">
-                            {role.payType === 'percentage' ? (
-                              <span className="text-green-600 font-medium">Auto</span>
-                            ) : (
-                              <span>Fixed</span>
-                            )}
+                          <div className="col-span-3 text-right">
+                            <div className="font-medium text-card-foreground">
+                              {role.payType === 'percentage' 
+                                ? formatCurrency(baseRevenue * ((role.revenuePercentage || 0) / 100))
+                                : formatCurrency(role.fixedAmount || 0)
+                              }
+                            </div>
+                            <div className="text-xs text-muted-foreground">
+                              {role.payType === 'percentage' 
+                                ? `${role.revenuePercentage}% of revenue`
+                                : 'Fixed amount'
+                              }
+                            </div>
                           </div>
-                          <div className="col-span-4">
-                            <div className="text-right">
-                              <div className="font-bold text-green-600">{formatCurrency(role.calculatedCost || 0)}</div>
-                              <div className="text-xs text-muted-foreground">
-                                {role.payType === 'percentage' 
-                                  ? `${role.revenuePercentage}% + gratuity split`
-                                  : `${formatCurrency(role.fixedAmount || 0)} fixed + gratuity split`
-                                }
-                              </div>
+                          <div className="col-span-2 text-right">
+                            <div className="font-medium text-card-foreground">
+                              {formatCurrency(laborRoles.length > 0 ? gratuityAmount / laborRoles.length : 0)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">Split</div>
+                          </div>
+                          <div className="col-span-2 text-right">
+                            <div className="font-bold text-green-600">
+                              {formatCurrency(role.calculatedCost || 0)}
                             </div>
                           </div>
                           <div className="col-span-2 flex justify-center">
@@ -533,8 +541,8 @@ const EventProfitCalculator = () => {
                       </Button>
                     </div>
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
-                      <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs (with gratuity)</div>
-                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(adjustedLaborCosts)}</div>
+                      <div className="col-span-5 font-semibold text-card-foreground">Total Labor Costs (with gratuity)</div>
+                      <div className="col-span-5 font-bold text-lg text-primary text-right">{formatCurrency(adjustedLaborCosts)}</div>
                       <div className="col-span-2"></div>
                     </div>
                     {gratuityForLabor > 0 && (
