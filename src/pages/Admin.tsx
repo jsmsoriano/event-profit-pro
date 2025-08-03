@@ -57,10 +57,45 @@ const Admin = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    // Load settings from localStorage
+    // Load settings from localStorage with migration support
     const savedSettings = localStorage.getItem('adminSettings');
     if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
+      try {
+        const parsed = JSON.parse(savedSettings);
+        
+        // Migration: Convert old structure to new structure
+        if (parsed.roles && !parsed.laborRoles) {
+          console.log('Migrating old admin settings structure...');
+          const migratedSettings: AdminSettings = {
+            laborRevenuePercentage: parsed.laborRevenuePercentage || 30,
+            laborRoles: [
+              {
+                id: 'chef-migrated',
+                name: 'Chef',
+                payType: 'percentage',
+                revenuePercentage: 20
+              }
+            ],
+            expenseTypes: parsed.expenseTypes || defaultSettings.expenseTypes,
+            foodCostTypes: parsed.foodCostTypes || defaultSettings.foodCostTypes
+          };
+          setSettings(migratedSettings);
+          // Save the migrated structure
+          localStorage.setItem('adminSettings', JSON.stringify(migratedSettings));
+        } else {
+          // Ensure all arrays exist with fallbacks
+          const safeSettings: AdminSettings = {
+            laborRevenuePercentage: parsed.laborRevenuePercentage || 30,
+            laborRoles: parsed.laborRoles || defaultSettings.laborRoles,
+            expenseTypes: parsed.expenseTypes || defaultSettings.expenseTypes,
+            foodCostTypes: parsed.foodCostTypes || defaultSettings.foodCostTypes
+          };
+          setSettings(safeSettings);
+        }
+      } catch (error) {
+        console.error('Error parsing admin settings:', error);
+        setSettings(defaultSettings);
+      }
     }
   }, []);
 
@@ -233,7 +268,7 @@ const Admin = () => {
                     <div className="col-span-2">Fixed Amount</div>
                     {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
-                  {settings.laborRoles.map((role, index) => (
+                  {(settings.laborRoles || []).map((role, index) => (
                     <div key={role.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                       {editingRole === role.id ? (
                         <>
@@ -443,7 +478,7 @@ const Admin = () => {
                     <div className="col-span-8">Expense Type</div>
                     {isAdmin && <div className="col-span-4 text-center">Actions</div>}
                   </div>
-                  {settings.expenseTypes.map((expense, index) => (
+                  {(settings.expenseTypes || []).map((expense, index) => (
                     <div key={expense} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.expenseTypes.length - 1 ? 'border-b border-border/10' : ''}`}>
                       {editingExpense === expense ? (
                         <>
@@ -545,7 +580,7 @@ const Admin = () => {
                     <div className="col-span-8">Food Cost Type</div>
                     {isAdmin && <div className="col-span-4 text-center">Actions</div>}
                   </div>
-                  {settings.foodCostTypes.map((foodCost, index) => (
+                  {(settings.foodCostTypes || []).map((foodCost, index) => (
                     <div key={foodCost} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.foodCostTypes.length - 1 ? 'border-b border-border/10' : ''}`}>
                       {editingFoodCost === foodCost ? (
                         <>
