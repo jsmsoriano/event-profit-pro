@@ -174,6 +174,8 @@ const EventProfitCalculator = () => {
     
     // Calculate and save data to localStorage for Financial Summary
     const financialData = {
+      numberOfGuests,
+      pricePerPerson,
       baseRevenue,
       gratuityPercentage,
       gratuityAmount,
@@ -188,6 +190,14 @@ const EventProfitCalculator = () => {
       netProfit,
       actualProfitPercentage,
       breakEvenGuests,
+      // Additional metrics for Summary tab
+      profitMargin: totalRevenue > 0 ? ((actualProfit + gratuityAmount) / totalRevenue * 100) : 0,
+      foodCostPercentage: totalRevenue > 0 ? (foodCost / totalRevenue * 100) : 0,
+      totalExpensePercentage: totalRevenue > 0 ? (totalCosts / totalRevenue * 100) : 0,
+      costPerPlate: numberOfGuests > 0 ? (totalCosts / numberOfGuests) : 0,
+      revenuePerPlate: pricePerPerson,
+      laborCostPercentage: totalRevenue > 0 ? (totalLaborCosts / totalRevenue * 100) : 0,
+      miscExpensePercentage: totalRevenue > 0 ? (totalMiscCosts / totalRevenue * 100) : 0,
       lastUpdated: new Date().toISOString()
     };
     
@@ -584,7 +594,7 @@ const EventProfitCalculator = () => {
                         <span className="font-bold text-2xl text-green-600">{formatCurrency((actualProfit + gratuityAmount) * 0.80)}</span>
                       </div>
                       <div className="text-center text-sm text-muted-foreground mt-1">
-                        Available for Staff Payout
+                        Available for Overhead Expenses
                       </div>
                     </div>
                   </div>
