@@ -8,16 +8,34 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
+interface LaborRole {
+  id: string;
+  name: string;
+  payType: 'percentage' | 'fixed'; // percentage for Chef, fixed for others
+  revenuePercentage?: number; // only for Chef
+  gratuityPercentage?: number; // only for Chef
+  fixedAmount?: number; // for other roles
+}
+
 interface AdminSettings {
   laborRevenuePercentage: number;
-  roles: string[];
+  laborRoles: LaborRole[];
   expenseTypes: string[];
   foodCostTypes: string[];
 }
 
+// Default role for Chef with percentage-based pay
+const defaultChefRole: LaborRole = {
+  id: 'chef-default',
+  name: 'Chef',
+  payType: 'percentage',
+  revenuePercentage: 20,
+  gratuityPercentage: 0, // Will be calculated automatically based on labor count
+};
+
 const defaultSettings: AdminSettings = {
   laborRevenuePercentage: 30,
-  roles: ['Chef', 'Sous Chef', 'Line Cook', 'Server', 'Bartender', 'Manager'],
+  laborRoles: [defaultChefRole],
   expenseTypes: ['Equipment Rental', 'Transportation', 'Utilities', 'Insurance', 'Marketing', 'Supplies'],
   foodCostTypes: ['Proteins', 'Vegetables', 'Grains', 'Dairy', 'Beverages', 'Seasonings']
 };
@@ -27,9 +45,15 @@ const Admin = () => {
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
   const [editingFoodCost, setEditingFoodCost] = useState<string | null>(null);
-  const [newRole, setNewRole] = useState('');
+  const [newRole, setNewRole] = useState<LaborRole>({
+    id: '',
+    name: '',
+    payType: 'fixed',
+    fixedAmount: 0
+  });
   const [newExpense, setNewExpense] = useState('');
   const [newFoodCost, setNewFoodCost] = useState('');
+  const [isAdmin] = useState(true); // TODO: Implement actual admin check
   const { toast } = useToast();
 
   useEffect(() => {
@@ -53,29 +77,39 @@ const Admin = () => {
   };
 
   const addRole = () => {
-    if (newRole.trim() && !settings.roles.includes(newRole.trim())) {
+    if (newRole.name.trim()) {
+      const roleWithId: LaborRole = {
+        ...newRole,
+        id: Date.now().toString(),
+        name: newRole.name.trim()
+      };
       setSettings(prev => ({
         ...prev,
-        roles: [...prev.roles, newRole.trim()]
+        laborRoles: [...prev.laborRoles, roleWithId]
       }));
-      setNewRole('');
+      setNewRole({
+        id: '',
+        name: '',
+        payType: 'fixed',
+        fixedAmount: 0
+      });
     }
   };
 
-  const updateRole = (oldRole: string, newRole: string) => {
-    if (newRole.trim() && !settings.roles.includes(newRole.trim())) {
-      setSettings(prev => ({
-        ...prev,
-        roles: prev.roles.map(role => role === oldRole ? newRole.trim() : role)
-      }));
-    }
+  const updateRole = (id: string, updatedRole: Partial<LaborRole>) => {
+    setSettings(prev => ({
+      ...prev,
+      laborRoles: prev.laborRoles.map(role => 
+        role.id === id ? { ...role, ...updatedRole } : role
+      )
+    }));
     setEditingRole(null);
   };
 
-  const deleteRole = (roleToDelete: string) => {
+  const deleteRole = (roleId: string) => {
     setSettings(prev => ({
       ...prev,
-      roles: prev.roles.filter(role => role !== roleToDelete)
+      laborRoles: prev.laborRoles.filter(role => role.id !== roleId)
     }));
   };
 
@@ -146,18 +180,18 @@ const Admin = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="labor" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="labor">Labor Settings</TabsTrigger>
-            <TabsTrigger value="roles">Role Types</TabsTrigger>
+        <Tabs defaultValue="roles" className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="roles">Labor Roles & Pay</TabsTrigger>
             <TabsTrigger value="expenses">Expense Types</TabsTrigger>
             <TabsTrigger value="food">Food Cost Types</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="labor" className="space-y-4 mt-4">
+          <TabsContent value="roles" className="space-y-4 mt-4">
+            {/* Labor Settings */}
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Labor Revenue Percentage</CardTitle>
+                <CardTitle className="text-card-foreground">Labor Budget Settings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="max-w-md">
@@ -184,90 +218,213 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="roles" className="space-y-4 mt-4">
+            {/* Labor Roles Management */}
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Manage Role Types</CardTitle>
+                <CardTitle className="text-card-foreground">Manage Labor Roles & Pay Allocation</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="border border-border/20 rounded-lg overflow-hidden">
                   <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
-                    <div className="col-span-8">Role Name</div>
-                    <div className="col-span-4 text-center">Actions</div>
+                    <div className="col-span-3">Role Name</div>
+                    <div className="col-span-2">Pay Type</div>
+                    <div className="col-span-3">Revenue %</div>
+                    <div className="col-span-2">Fixed Amount</div>
+                    {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
-                  {settings.roles.map((role, index) => (
-                    <div key={role} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.roles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                      {editingRole === role ? (
+                  {settings.laborRoles.map((role, index) => (
+                    <div key={role.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                      {editingRole === role.id ? (
                         <>
-                          <div className="col-span-8">
+                          <div className="col-span-3">
                             <Input
-                              value={role}
-                              onChange={(e) => updateRole(role, e.target.value)}
+                              value={role.name}
+                              onChange={(e) => updateRole(role.id, { name: e.target.value })}
                               className="input-modern"
                               autoFocus
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter') updateRole(role, e.currentTarget.value);
+                                if (e.key === 'Enter') setEditingRole(null);
                                 if (e.key === 'Escape') setEditingRole(null);
                               }}
                             />
                           </div>
-                          <div className="col-span-4 flex justify-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => updateRole(role, role)}
+                          <div className="col-span-2">
+                            <Select 
+                              value={role.payType} 
+                              onValueChange={(value: 'percentage' | 'fixed') => 
+                                updateRole(role.id, { payType: value })
+                              }
                             >
-                              <Save className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingRole(null)}
-                            >
-                              <X className="w-4 h-4" />
-                            </Button>
+                              <SelectTrigger className="input-modern">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="percentage">Percentage</SelectItem>
+                                <SelectItem value="fixed">Fixed Amount</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
+                          <div className="col-span-3">
+                            {role.payType === 'percentage' ? (
+                              <Input
+                                type="number"
+                                value={role.revenuePercentage || 0}
+                                onChange={(e) => updateRole(role.id, { revenuePercentage: parseFloat(e.target.value) || 0 })}
+                                className="input-modern"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="% of revenue"
+                              />
+                            ) : (
+                              <span className="text-muted-foreground text-sm">N/A</span>
+                            )}
+                          </div>
+                          <div className="col-span-2">
+                            {role.payType === 'fixed' ? (
+                              <Input
+                                type="number"
+                                value={role.fixedAmount || 0}
+                                onChange={(e) => updateRole(role.id, { fixedAmount: parseFloat(e.target.value) || 0 })}
+                                className="input-modern"
+                                min="0"
+                                step="0.01"
+                                placeholder="Dollar amount"
+                              />
+                            ) : (
+                              <span className="text-muted-foreground text-sm">N/A</span>
+                            )}
+                          </div>
+                          {isAdmin && (
+                            <div className="col-span-2 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingRole(null)}
+                              >
+                                <Save className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingRole(null)}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </>
                       ) : (
                         <>
-                          <div className="col-span-8 font-medium text-card-foreground">{role}</div>
-                          <div className="col-span-4 flex justify-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingRole(role)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteRole(role)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                          <div className="col-span-3 font-medium text-card-foreground">
+                            {role.name}
+                            {role.name === 'Chef' && (
+                              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">Auto-calculated</span>
+                            )}
                           </div>
+                          <div className="col-span-2 text-sm text-muted-foreground">
+                            {role.payType === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+                          </div>
+                          <div className="col-span-3 text-sm">
+                            {role.payType === 'percentage' ? (
+                              <span className="font-medium">{role.revenuePercentage}% + gratuity split</span>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
+                          </div>
+                          <div className="col-span-2 text-sm">
+                            {role.payType === 'fixed' ? (
+                              <span className="font-medium">${role.fixedAmount}</span>
+                            ) : (
+                              <span className="text-muted-foreground">N/A</span>
+                            )}
+                          </div>
+                          {isAdmin && (
+                            <div className="col-span-2 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingRole(role.id)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteRole(role.id)}
+                                disabled={role.name === 'Chef'} // Prevent deleting Chef
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </>
                       )}
                     </div>
                   ))}
                   <div className="border-t border-border/20 bg-muted/30 p-3">
-                    <div className="flex gap-2">
-                      <Input
-                        value={newRole}
-                        onChange={(e) => setNewRole(e.target.value)}
-                        placeholder="Enter new role name"
-                        className="input-modern"
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') addRole();
-                        }}
-                      />
-                      <Button onClick={addRole} className="btn-primary">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Role
-                      </Button>
+                    <div className="grid grid-cols-12 gap-3">
+                      <div className="col-span-3">
+                        <Input
+                          value={newRole.name}
+                          onChange={(e) => setNewRole(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Role name"
+                          className="input-modern"
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') addRole();
+                          }}
+                        />
+                      </div>
+                      <div className="col-span-2">
+                        <Select 
+                          value={newRole.payType} 
+                          onValueChange={(value: 'percentage' | 'fixed') => 
+                            setNewRole(prev => ({ ...prev, payType: value }))
+                          }
+                        >
+                          <SelectTrigger className="input-modern">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="percentage">Percentage</SelectItem>
+                            <SelectItem value="fixed">Fixed Amount</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="col-span-3">
+                        {newRole.payType === 'percentage' && (
+                          <Input
+                            type="number"
+                            value={newRole.revenuePercentage || ''}
+                            onChange={(e) => setNewRole(prev => ({ ...prev, revenuePercentage: parseFloat(e.target.value) || 0 }))}
+                            placeholder="% of revenue"
+                            className="input-modern"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        )}
+                      </div>
+                      <div className="col-span-2">
+                        {newRole.payType === 'fixed' && (
+                          <Input
+                            type="number"
+                            value={newRole.fixedAmount || ''}
+                            onChange={(e) => setNewRole(prev => ({ ...prev, fixedAmount: parseFloat(e.target.value) || 0 }))}
+                            placeholder="Dollar amount"
+                            className="input-modern"
+                            min="0"
+                            step="0.01"
+                          />
+                        )}
+                      </div>
+                      <div className="col-span-2">
+                        <Button onClick={addRole} className="btn-primary w-full">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Add Role
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -284,7 +441,7 @@ const Admin = () => {
                 <div className="border border-border/20 rounded-lg overflow-hidden">
                   <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
                     <div className="col-span-8">Expense Type</div>
-                    <div className="col-span-4 text-center">Actions</div>
+                    {isAdmin && <div className="col-span-4 text-center">Actions</div>}
                   </div>
                   {settings.expenseTypes.map((expense, index) => (
                     <div key={expense} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.expenseTypes.length - 1 ? 'border-b border-border/10' : ''}`}>
@@ -332,23 +489,25 @@ const Admin = () => {
                         </>
                       ) : (
                         <>
-                          <div className="col-span-8 font-medium text-card-foreground">{expense}</div>
-                          <div className="col-span-4 flex justify-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingExpense(expense)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteExpense(expense)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <div className={`${isAdmin ? 'col-span-8' : 'col-span-12'} font-medium text-card-foreground`}>{expense}</div>
+                          {isAdmin && (
+                            <div className="col-span-4 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingExpense(expense)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteExpense(expense)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </>
                       )}
                     </div>
@@ -384,7 +543,7 @@ const Admin = () => {
                 <div className="border border-border/20 rounded-lg overflow-hidden">
                   <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
                     <div className="col-span-8">Food Cost Type</div>
-                    <div className="col-span-4 text-center">Actions</div>
+                    {isAdmin && <div className="col-span-4 text-center">Actions</div>}
                   </div>
                   {settings.foodCostTypes.map((foodCost, index) => (
                     <div key={foodCost} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.foodCostTypes.length - 1 ? 'border-b border-border/10' : ''}`}>
@@ -421,23 +580,25 @@ const Admin = () => {
                         </>
                       ) : (
                         <>
-                          <div className="col-span-8 font-medium text-card-foreground">{foodCost}</div>
-                          <div className="col-span-4 flex justify-center gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEditingFoodCost(foodCost)}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteFoodCost(foodCost)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                          <div className={`${isAdmin ? 'col-span-8' : 'col-span-12'} font-medium text-card-foreground`}>{foodCost}</div>
+                          {isAdmin && (
+                            <div className="col-span-4 flex justify-center gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingFoodCost(foodCost)}
+                              >
+                                <Edit2 className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteFoodCost(foodCost)}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          )}
                         </>
                       )}
                     </div>

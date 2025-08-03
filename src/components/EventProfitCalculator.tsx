@@ -21,8 +21,12 @@ const handleNumberInput = (value: string): string => {
 
 interface LaborRole {
   id: string;
-  role: string;
-  cost: number;
+  name: string;
+  payType: 'percentage' | 'fixed';
+  revenuePercentage?: number;
+  gratuityPercentage?: number;
+  fixedAmount?: number;
+  calculatedCost?: number; // This will store the final calculated cost for display
 }
 
 interface MiscExpense {
@@ -39,14 +43,16 @@ interface FoodCostItem {
 
 interface AdminSettings {
   laborRevenuePercentage: number;
-  roles: string[];
+  laborRoles: { id: string; name: string; payType: 'percentage' | 'fixed'; revenuePercentage?: number; fixedAmount?: number; }[];
   expenseTypes: string[];
   foodCostTypes: string[];
 }
 
 const defaultAdminSettings: AdminSettings = {
   laborRevenuePercentage: 30,
-  roles: ['Chef', 'Sous Chef', 'Line Cook', 'Server', 'Bartender', 'Manager'],
+  laborRoles: [
+    { id: 'chef-default', name: 'Chef', payType: 'percentage', revenuePercentage: 20 }
+  ],
   expenseTypes: ['Equipment Rental', 'Transportation', 'Utilities', 'Insurance', 'Marketing', 'Supplies'],
   foodCostTypes: ['Proteins', 'Vegetables', 'Grains', 'Dairy', 'Beverages', 'Seasonings']
 };
@@ -88,19 +94,41 @@ const EventProfitCalculator = () => {
   // Maximum labor budget from admin settings
   const maxLaborBudget = useMemo(() => totalRevenue * (adminSettings.laborRevenuePercentage / 100), [totalRevenue, adminSettings.laborRevenuePercentage]);
 
+  // Calculate labor costs with Chef's automatic allocation
+  const calculatedLaborRoles = useMemo(() => {
+    const gratuityPerRole = laborRoles.length > 0 ? gratuityAmount / laborRoles.length : 0;
+    
+    return laborRoles.map(role => {
+      let calculatedCost = 0;
+      
+      if (role.payType === 'percentage') {
+        // Chef gets percentage of revenue plus split of gratuity
+        const revenueAmount = baseRevenue * ((role.revenuePercentage || 0) / 100);
+        calculatedCost = revenueAmount + gratuityPerRole;
+      } else {
+        // Fixed amount roles
+        calculatedCost = role.fixedAmount || 0;
+      }
+      
+      return {
+        ...role,
+        calculatedCost
+      };
+    });
+  }, [laborRoles, baseRevenue, gratuityAmount]);
+
   // Expense calculations
-  const totalLaborCosts = useMemo(() => laborRoles.reduce((sum, role) => sum + role.cost, 0), [laborRoles]);
+  const totalLaborCosts = useMemo(() => calculatedLaborRoles.reduce((sum, role) => sum + (role.calculatedCost || 0), 0), [calculatedLaborRoles]);
   const totalFoodCosts = useMemo(() => foodCostItems.reduce((sum, item) => sum + item.cost, 0), [foodCostItems]);
   const totalMiscCosts = useMemo(() => miscExpenses.reduce((sum, expense) => sum + expense.cost, 0), [miscExpenses]);
   const totalCosts = useMemo(() => totalLaborCosts + totalFoodCosts + totalMiscCosts, [totalLaborCosts, totalFoodCosts, totalMiscCosts]);
 
-  // Gratuity allocation to labor (split between labor roles)
+  // Gratuity is now already included in labor costs for percentage-based roles
   const gratuityForLabor = useMemo(() => {
-    const availableForLabor = maxLaborBudget - totalLaborCosts;
-    return Math.min(gratuityAmount, Math.max(0, availableForLabor));
-  }, [maxLaborBudget, totalLaborCosts, gratuityAmount]);
+    return gratuityAmount; // All gratuity goes to labor roles
+  }, [gratuityAmount]);
 
-  const adjustedLaborCosts = useMemo(() => totalLaborCosts + gratuityForLabor, [totalLaborCosts, gratuityForLabor]);
+  const adjustedLaborCosts = useMemo(() => totalLaborCosts, [totalLaborCosts]);
 
   // Profit calculations (gratuity minus what goes to labor is profit)
   const actualProfit = useMemo(() => baseRevenue - totalCosts + (gratuityAmount - gratuityForLabor), [baseRevenue, totalCosts, gratuityAmount, gratuityForLabor]);
@@ -114,18 +142,21 @@ const EventProfitCalculator = () => {
 
   // Labor role management
   const addLaborRole = useCallback(() => {
-    if (adminSettings.roles.length > 0) {
+    if (adminSettings.laborRoles.length > 0) {
+      const adminRole = adminSettings.laborRoles[0];
       const newRole: LaborRole = {
         id: Date.now().toString(),
-        role: adminSettings.roles[0],
-        cost: 0
+        name: adminRole.name,
+        payType: adminRole.payType,
+        revenuePercentage: adminRole.revenuePercentage,
+        fixedAmount: adminRole.fixedAmount || 0
       };
       setLaborRoles(prev => [...prev, newRole]);
     }
-  }, [adminSettings.roles]);
+  }, [adminSettings.laborRoles]);
 
-  const updateLaborRole = useCallback((id: string, role: string, cost: number) => {
-    setLaborRoles(prev => prev.map(item => item.id === id ? { ...item, role, cost } : item));
+  const updateLaborRole = useCallback((id: string, updates: Partial<LaborRole>) => {
+    setLaborRoles(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
   }, []);
 
   const deleteLaborRole = useCallback((id: string) => {
@@ -203,26 +234,26 @@ const EventProfitCalculator = () => {
       baseRevenue,
       gratuityPercentage,
       gratuityAmount,
-      totalRevenue,
-      totalLaborCosts: adjustedLaborCosts,
-      foodCost: totalFoodCosts,
-      totalMiscCosts,
-      totalCosts,
-      actualProfit,
-      businessTaxPercentage,
-      businessTax: businessTaxAmount,
-      netProfit: netProfitAfterTax,
-      actualProfitPercentage,
-      breakEvenGuests,
-      gratuityForLabor,
-      maxLaborBudget,
+                      totalRevenue,
+                      totalLaborCosts,
+                      foodCost: totalFoodCosts,
+                      totalMiscCosts,
+                      totalCosts,
+                      actualProfit,
+                      businessTaxPercentage,
+                      businessTax: businessTaxAmount,
+                      netProfit: netProfitAfterTax,
+                      actualProfitPercentage,
+                      breakEvenGuests,
+                      gratuityForLabor,
+                      maxLaborBudget,
       // Additional metrics for Summary tab
       profitMargin: totalRevenue > 0 ? (totalProfitWithGratuity / totalRevenue * 100) : 0,
       foodCostPercentage: totalRevenue > 0 ? (totalFoodCosts / totalRevenue * 100) : 0,
       totalExpensePercentage: totalRevenue > 0 ? (totalCosts / totalRevenue * 100) : 0,
       costPerPlate: numberOfGuests > 0 ? (totalCosts / numberOfGuests) : 0,
       revenuePerPlate: pricePerPerson,
-      laborCostPercentage: totalRevenue > 0 ? (adjustedLaborCosts / totalRevenue * 100) : 0,
+      laborCostPercentage: totalRevenue > 0 ? (totalLaborCosts / totalRevenue * 100) : 0,
       miscExpensePercentage: totalRevenue > 0 ? (totalMiscCosts / totalRevenue * 100) : 0,
       lastUpdated: new Date().toISOString()
     };
@@ -234,7 +265,7 @@ const EventProfitCalculator = () => {
     setIsProcessing(false);
   }, [
     numberOfGuests, pricePerPerson, baseRevenue, gratuityPercentage, gratuityAmount, totalRevenue,
-    adjustedLaborCosts, totalFoodCosts, totalMiscCosts, totalCosts,
+    totalLaborCosts, totalFoodCosts, totalMiscCosts, totalCosts,
     actualProfit, businessTaxPercentage, gratuityForLabor, maxLaborBudget
   ]);
 
@@ -435,48 +466,77 @@ const EventProfitCalculator = () => {
                 {/* Labor Costs */}
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor</h3>
-                  <div className="border border-border/20 rounded-lg overflow-hidden">
-                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
-                      <div className="col-span-6">Role</div>
-                      <div className="col-span-4 text-right">Cost</div>
-                      <div className="col-span-2 text-center">Actions</div>
-                    </div>
-                    {laborRoles.map((role, index) => (
-                      <div key={role.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                        <div className="col-span-6">
-                          <Select value={role.role} onValueChange={(value) => updateLaborRole(role.id, value, role.cost)}>
-                            <SelectTrigger className="input-modern">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {adminSettings.roles.map(roleType => (
-                                <SelectItem key={roleType} value={roleType}>{roleType}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="col-span-4">
-                          <Input
-                            type="number"
-                            value={role.cost}
-                            onChange={(e) => {
-                              const cleanedValue = handleNumberInput(e.target.value);
-                              updateLaborRole(role.id, role.role, parseFloat(cleanedValue) || 0);
-                            }}
-                            className="input-modern text-right"
-                          />
-                        </div>
-                        <div className="col-span-2 flex justify-center">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => deleteLaborRole(role.id)}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                    <div className="border border-border/20 rounded-lg overflow-hidden">
+                      <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
+                        <div className="col-span-4">Role</div>
+                        <div className="col-span-2">Type</div>
+                        <div className="col-span-4 text-right">Cost</div>
+                        <div className="col-span-2 text-center">Actions</div>
                       </div>
-                    ))}
+                      {calculatedLaborRoles.map((role, index) => (
+                        <div key={role.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== calculatedLaborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                          <div className="col-span-4">
+                            <Select value={role.name} onValueChange={(value) => {
+                              const adminRole = adminSettings.laborRoles.find(r => r.name === value);
+                              if (adminRole) {
+                                updateLaborRole(role.id, {
+                                  name: value,
+                                  payType: adminRole.payType,
+                                  revenuePercentage: adminRole.revenuePercentage,
+                                  fixedAmount: adminRole.fixedAmount
+                                });
+                              }
+                            }}>
+                              <SelectTrigger className="input-modern">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {adminSettings.laborRoles.map(adminRole => (
+                                  <SelectItem key={adminRole.id} value={adminRole.name}>{adminRole.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="col-span-2 text-sm text-muted-foreground">
+                            {role.payType === 'percentage' ? (
+                              <span className="text-green-600 font-medium">Auto</span>
+                            ) : (
+                              <span>Fixed</span>
+                            )}
+                          </div>
+                          <div className="col-span-4">
+                            {role.payType === 'percentage' ? (
+                              <div className="text-right">
+                                <div className="font-bold text-green-600">{formatCurrency(role.calculatedCost || 0)}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {role.revenuePercentage}% + gratuity
+                                </div>
+                              </div>
+                            ) : (
+                              <Input
+                                type="number"
+                                value={role.fixedAmount || 0}
+                                onChange={(e) => {
+                                  const cleanedValue = handleNumberInput(e.target.value);
+                                  updateLaborRole(role.id, { fixedAmount: parseFloat(cleanedValue) || 0 });
+                                }}
+                                className="input-modern text-right"
+                                min="0"
+                                step="0.01"
+                              />
+                            )}
+                          </div>
+                          <div className="col-span-2 flex justify-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => deleteLaborRole(role.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
                       <Button onClick={addLaborRole} className="btn-primary">
                         <Plus className="w-4 h-4 mr-2" />
