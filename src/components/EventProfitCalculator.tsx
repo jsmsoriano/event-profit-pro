@@ -75,7 +75,7 @@ const EventProfitCalculator = () => {
   const totalCosts = useMemo(() => totalLaborCosts + foodCost + totalMiscCosts, [totalLaborCosts, foodCost, totalMiscCosts]);
 
   // Profit calculations
-  const actualProfit = useMemo(() => totalRevenue - totalCosts, [totalRevenue, totalCosts]);
+  const actualProfit = useMemo(() => baseRevenue - totalCosts, [baseRevenue, totalCosts]);
   const actualProfitPercentage = useMemo(() => totalRevenue > 0 ? (actualProfit / totalRevenue) * 100 : 0, [actualProfit, totalRevenue]);
   const businessTax = useMemo(() => actualProfit > 0 ? actualProfit * (businessTaxPercentage / 100) : 0, [actualProfit, businessTaxPercentage]);
   const netProfit = useMemo(() => actualProfit - businessTax, [actualProfit, businessTax]);
@@ -518,8 +518,16 @@ const EventProfitCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Number of Guests:</span>
+                      <span className="font-bold text-card-foreground">{numberOfGuests}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Price per Person:</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(pricePerPerson)}</span>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-card-foreground">Base Revenue:</span>
                       <span className="font-bold text-card-foreground">{formatCurrency(baseRevenue)}</span>
@@ -537,81 +545,31 @@ const EventProfitCalculator = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-[80px]">Gratuity</Label>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setGratuityEnabled(!gratuityEnabled)}
-                          className={gratuityEnabled ? 'text-green-600' : 'text-red-600'}
-                        >
-                          {gratuityEnabled ? 'Enabled' : 'Disabled'}
-                        </Button>
-                      </div>
-                      {gratuityEnabled ? (
-                        <div className="space-y-2">
-                          <div className="flex gap-2">
-                            <Button
-                              variant={gratuityMode === '18' ? 'default' : 'outline'}
-                              onClick={() => {
-                                setGratuityMode('18');
-                                setGratuityPercentage(18);
-                              }}
-                              className="flex-1"
-                            >
-                              18%
-                            </Button>
-                            <Button
-                              variant={gratuityMode === '20' ? 'default' : 'outline'}
-                              onClick={() => {
-                                setGratuityMode('20');
-                                setGratuityPercentage(20);
-                              }}
-                              className="flex-1"
-                            >
-                              20%
-                            </Button>
-                            <Button
-                              variant={gratuityMode === 'other' ? 'default' : 'outline'}
-                              onClick={() => setGratuityMode('other')}
-                              className="flex-1"
-                            >
-                              Other
-                            </Button>
-                          </div>
-                          {gratuityMode === 'other' && (
-                            <Input
-                              id="gratuity"
-                              type="number"
-                              value={gratuityPercentage}
-                              onChange={(e) => {
-                                const cleanedValue = handleNumberInput(e.target.value);
-                                setGratuityPercentage(parseFloat(cleanedValue) || 0);
-                              }}
-                              className="input-modern text-right"
-                              min="0"
-                              max="100"
-                              step="0.1"
-                              placeholder="Enter percentage"
-                            />
-                          )}
-                          <div className="text-center">
-                            <div className="text-sm text-muted-foreground">Gratuity Amount</div>
-                            <div className="text-lg font-bold text-primary">{formatCurrency(gratuityAmount)}</div>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center text-sm text-muted-foreground">
-                          Gratuity disabled
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="gratuityPercent" className="text-card-foreground font-medium min-w-[120px]">Gratuity %:</Label>
+                      <Input
+                        id="gratuityPercent"
+                        type="number"
+                        value={gratuityPercentage}
+                        onChange={(e) => {
+                          const cleanedValue = handleNumberInput(e.target.value);
+                          setGratuityPercentage(parseFloat(cleanedValue) || 0);
+                        }}
+                        className="input-modern text-right"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        placeholder="Enter %"
+                      />
                     </div>
-                    
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Gratuity Amount:</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
+                    </div>
                     <div className="border-t pt-2">
                       <div className="flex justify-between">
-                        <span className="text-card-foreground font-semibold">Total Profit:</span>
-                        <span className="font-bold text-xl text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
+                        <span className="text-card-foreground font-semibold text-lg">Total Profit:</span>
+                        <span className="font-bold text-2xl text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
                       </div>
                     </div>
                   </div>
