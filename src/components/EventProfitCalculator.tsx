@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import FinancialSummary from '@/pages/FinancialSummary';
 
 // Utility function to handle number input values and remove leading zeros
 const handleNumberInput = (value: string): string => {
@@ -148,6 +150,25 @@ const EventProfitCalculator = () => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
 
+  const resetInputs = useCallback(() => {
+    setNumberOfGuests(0);
+    setPricePerPerson(0);
+    setGratuityPercentage(18);
+    setGratuityMode('18');
+    setGratuityEnabled(true);
+    setLaborRoles([]);
+    setFoodCostFixed(0);
+    setMiscExpenses([]);
+    setTargetProfitMargin(25);
+    setBusinessTaxPercentage(8);
+    setEditingLabor(null);
+    setEditingExpense(null);
+    setNewLaborName('');
+    setNewLaborCost('');
+    setNewExpenseName('');
+    setNewExpenseCost('');
+  }, []);
+
   const processInputs = useCallback(async () => {
     setIsProcessing(true);
     
@@ -185,10 +206,13 @@ const EventProfitCalculator = () => {
   return (
     <div className="min-h-screen p-2 lg:p-4">
       <div className="max-w-7xl mx-auto">
-
-        <div className="grid grid-cols-1 gap-4">
-          {/* Main Column - Inputs */}
-          <div className="space-y-4">
+        <Tabs defaultValue="event" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="event">Event</TabsTrigger>
+            <TabsTrigger value="summary">Summary</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="event" className="space-y-4 mt-4">
             {/* Event Details */}
             <Card className="glass-card">
               <CardHeader>
@@ -197,7 +221,7 @@ const EventProfitCalculator = () => {
                   Event Details
                   <div className="ml-auto flex gap-2">
                     <Button
-                      onClick={() => window.location.reload()}
+                      onClick={resetInputs}
                       variant="outline"
                     >
                       <RotateCcw className="w-4 h-4 mr-2" />
@@ -214,7 +238,7 @@ const EventProfitCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="flex items-center gap-2">
                     <Label htmlFor="guests" className="text-card-foreground font-medium min-w-[120px]">Number of Guests</Label>
                     <Input
@@ -247,89 +271,16 @@ const EventProfitCalculator = () => {
                   </div>
 
                   <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-[80px]">Gratuity</Label>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setGratuityEnabled(!gratuityEnabled)}
-                        className={gratuityEnabled ? 'text-green-600' : 'text-red-600'}
-                      >
-                        {gratuityEnabled ? 'Enabled' : 'Disabled'}
-                      </Button>
+                    <div className="text-center">
+                      <Label className="text-card-foreground font-medium">Base Revenue</Label>
+                      <div className="mt-1 p-3 bg-white/50 rounded-lg">
+                        <div className="text-xl font-bold text-primary text-right">{formatCurrency(baseRevenue)}</div>
+                      </div>
                     </div>
-                    {gratuityEnabled ? (
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Button
-                            variant={gratuityMode === '18' ? 'default' : 'outline'}
-                            onClick={() => {
-                              setGratuityMode('18');
-                              setGratuityPercentage(18);
-                            }}
-                            className="flex-1"
-                          >
-                            18%
-                          </Button>
-                          <Button
-                            variant={gratuityMode === '20' ? 'default' : 'outline'}
-                            onClick={() => {
-                              setGratuityMode('20');
-                              setGratuityPercentage(20);
-                            }}
-                            className="flex-1"
-                          >
-                            20%
-                          </Button>
-                          <Button
-                            variant={gratuityMode === 'other' ? 'default' : 'outline'}
-                            onClick={() => setGratuityMode('other')}
-                            className="flex-1"
-                          >
-                            Other
-                          </Button>
-                        </div>
-                        {gratuityMode === 'other' && (
-                          <Input
-                            id="gratuity"
-                            type="number"
-                            value={gratuityPercentage}
-                            onChange={(e) => {
-                              const cleanedValue = handleNumberInput(e.target.value);
-                              setGratuityPercentage(parseFloat(cleanedValue) || 0);
-                            }}
-                            className="input-modern text-right"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            placeholder="Enter percentage"
-                          />
-                        )}
-                        <div className="text-center text-lg font-bold text-primary">
-                          {gratuityPercentage}% = {formatCurrency(gratuityAmount)}
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center text-sm text-muted-foreground">
-                        Gratuity disabled
-                      </div>
-                    )}
                   </div>
-
-                   <div>
-                     <div className="text-center">
-                       <Label className="text-card-foreground font-medium">Total Revenue</Label>
-                       <div className="mt-1 p-3 bg-white/50 rounded-lg">
-                         <div className="text-xl font-bold text-primary text-right">{formatCurrency(totalRevenue)}</div>
-                         <div className="text-xs text-muted-foreground text-right">
-                           Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
-                         </div>
-                       </div>
-                     </div>
-                   </div>
-                 </div>
-               </CardContent>
-             </Card>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Expenses */}
             <Card className="glass-card">
@@ -340,6 +291,38 @@ const EventProfitCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Food Costs */}
+                <div>
+                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Food Costs</h3>
+                  <div className="border border-border/20 rounded-lg overflow-hidden">
+                    <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
+                      <div className="col-span-6">Item</div>
+                      <div className="col-span-4 text-right">Cost</div>
+                      <div className="col-span-2 text-center">Actions</div>
+                    </div>
+                    <div className="grid grid-cols-12 gap-2 p-2 items-center">
+                      <div className="col-span-6 font-medium text-card-foreground">Food Cost</div>
+                      <div className="col-span-4">
+                        <Input
+                          type="number"
+                          value={foodCostFixed}
+                          onChange={(e) => {
+                            const cleanedValue = handleNumberInput(e.target.value);
+                            setFoodCostFixed(parseFloat(cleanedValue) || 0);
+                          }}
+                          className="input-modern text-right"
+                        />
+                      </div>
+                      <div className="col-span-2"></div>
+                    </div>
+                    <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
+                      <div className="col-span-6 font-semibold text-card-foreground">Total Food Costs</div>
+                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(foodCost)}</div>
+                      <div className="col-span-2"></div>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Labor Costs */}
                 <div>
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor</h3>
@@ -417,31 +400,6 @@ const EventProfitCalculator = () => {
                       <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
                       <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
                       <div className="col-span-2"></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Food Costs */}
-                <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Food Costs</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="flex items-center gap-2">
-                      <Label className="text-card-foreground min-w-[120px]">Food Cost</Label>
-                      <Input
-                        type="number"
-                        value={foodCostFixed}
-                        onChange={(e) => {
-                          const cleanedValue = handleNumberInput(e.target.value);
-                          setFoodCostFixed(parseFloat(cleanedValue) || 0);
-                        }}
-                        className="input-modern text-right"
-                      />
-                    </div>
-                    <div className="flex items-end">
-                      <div className="p-3 bg-white/50 rounded-lg w-full">
-                        <div className="text-sm text-muted-foreground">Food Cost</div>
-                        <div className="text-lg font-bold text-card-foreground text-right">{formatCurrency(foodCostFixed)}</div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -529,14 +487,18 @@ const EventProfitCalculator = () => {
 
                 {/* Total Expenses Summary */}
                 <div className="border-2 border-primary/30 bg-primary/10 rounded-lg p-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <div className="text-sm text-muted-foreground">Food Cost</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(foodCost)}</div>
+                    </div>
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Labor Costs</div>
                       <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm text-muted-foreground">Food + Misc</div>
-                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(foodCost + totalMiscCosts)}</div>
+                      <div className="text-sm text-muted-foreground">Miscellaneous</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalMiscCosts)}</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Total Expenses</div>
@@ -547,8 +509,121 @@ const EventProfitCalculator = () => {
               </CardContent>
             </Card>
 
-          </div>
-        </div>
+            {/* Profit Analysis */}
+            <Card className="glass-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                  <TrendingUp className="w-5 h-5" />
+                  Profit Analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Base Revenue:</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(baseRevenue)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-card-foreground">Total Expenses:</span>
+                      <span className="font-bold text-card-foreground">{formatCurrency(totalCosts)}</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between">
+                        <span className="text-card-foreground font-semibold">Net Profit:</span>
+                        <span className="font-bold text-lg text-primary">{formatCurrency(actualProfit)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <Label htmlFor="gratuity" className="text-card-foreground font-medium min-w-[80px]">Gratuity</Label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setGratuityEnabled(!gratuityEnabled)}
+                          className={gratuityEnabled ? 'text-green-600' : 'text-red-600'}
+                        >
+                          {gratuityEnabled ? 'Enabled' : 'Disabled'}
+                        </Button>
+                      </div>
+                      {gratuityEnabled ? (
+                        <div className="space-y-2">
+                          <div className="flex gap-2">
+                            <Button
+                              variant={gratuityMode === '18' ? 'default' : 'outline'}
+                              onClick={() => {
+                                setGratuityMode('18');
+                                setGratuityPercentage(18);
+                              }}
+                              className="flex-1"
+                            >
+                              18%
+                            </Button>
+                            <Button
+                              variant={gratuityMode === '20' ? 'default' : 'outline'}
+                              onClick={() => {
+                                setGratuityMode('20');
+                                setGratuityPercentage(20);
+                              }}
+                              className="flex-1"
+                            >
+                              20%
+                            </Button>
+                            <Button
+                              variant={gratuityMode === 'other' ? 'default' : 'outline'}
+                              onClick={() => setGratuityMode('other')}
+                              className="flex-1"
+                            >
+                              Other
+                            </Button>
+                          </div>
+                          {gratuityMode === 'other' && (
+                            <Input
+                              id="gratuity"
+                              type="number"
+                              value={gratuityPercentage}
+                              onChange={(e) => {
+                                const cleanedValue = handleNumberInput(e.target.value);
+                                setGratuityPercentage(parseFloat(cleanedValue) || 0);
+                              }}
+                              className="input-modern text-right"
+                              min="0"
+                              max="100"
+                              step="0.1"
+                              placeholder="Enter percentage"
+                            />
+                          )}
+                          <div className="text-center">
+                            <div className="text-sm text-muted-foreground">Gratuity Amount</div>
+                            <div className="text-lg font-bold text-primary">{formatCurrency(gratuityAmount)}</div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center text-sm text-muted-foreground">
+                          Gratuity disabled
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between">
+                        <span className="text-card-foreground font-semibold">Total Profit:</span>
+                        <span className="font-bold text-xl text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="summary" className="space-y-4 mt-4">
+            <FinancialSummary />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
