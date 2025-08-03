@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, RotateCcw, RefreshCw } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import FinancialSummary from '@/pages/FinancialSummary';
@@ -20,17 +21,40 @@ const handleNumberInput = (value: string): string => {
 
 interface LaborRole {
   id: string;
-  name: string;
+  role: string;
   cost: number;
 }
 
 interface MiscExpense {
   id: string;
-  name: string;
+  type: string;
   cost: number;
 }
 
+interface FoodCostItem {
+  id: string;
+  type: string;
+  cost: number;
+}
+
+interface AdminSettings {
+  laborRevenuePercentage: number;
+  roles: string[];
+  expenseTypes: string[];
+  foodCostTypes: string[];
+}
+
+const defaultAdminSettings: AdminSettings = {
+  laborRevenuePercentage: 30,
+  roles: ['Chef', 'Sous Chef', 'Line Cook', 'Server', 'Bartender', 'Manager'],
+  expenseTypes: ['Equipment Rental', 'Transportation', 'Utilities', 'Insurance', 'Marketing', 'Supplies'],
+  foodCostTypes: ['Proteins', 'Vegetables', 'Grains', 'Dairy', 'Beverages', 'Seasonings']
+};
+
 const EventProfitCalculator = () => {
+  // Admin settings
+  const [adminSettings, setAdminSettings] = useState<AdminSettings>(defaultAdminSettings);
+
   // Main calculator states
   const [numberOfGuests, setNumberOfGuests] = useState(50);
   const [pricePerPerson, setPricePerPerson] = useState(85);
@@ -39,54 +63,48 @@ const EventProfitCalculator = () => {
   const [gratuityEnabled, setGratuityEnabled] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Expenses states
-  const [laborRoles, setLaborRoles] = useState<LaborRole[]>([
-    { id: '1', name: 'Chef 1', cost: 200 },
-    { id: '2', name: 'Chef 2', cost: 180 },
-    { id: '3', name: 'Assistant', cost: 120 }
-  ]);
-  const [foodCostFixed, setFoodCostFixed] = useState(1500);
-  const [miscExpenses, setMiscExpenses] = useState<MiscExpense[]>([
-    { id: '1', name: 'Equipment rental', cost: 300 },
-    { id: '2', name: 'Transportation', cost: 150 }
-  ]);
+  // Expenses states - now using admin-controlled dropdowns
+  const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
+  const [foodCostItems, setFoodCostItems] = useState<FoodCostItem[]>([]);
+  const [miscExpenses, setMiscExpenses] = useState<MiscExpense[]>([]);
 
   // Profit target states
   const [targetProfitMargin, setTargetProfitMargin] = useState(25);
   const [businessTaxPercentage, setBusinessTaxPercentage] = useState(8);
 
-  // Edit states
-  const [editingLabor, setEditingLabor] = useState<string | null>(null);
-  const [editingExpense, setEditingExpense] = useState<string | null>(null);
-  const [newLaborName, setNewLaborName] = useState('');
-  const [newLaborCost, setNewLaborCost] = useState('');
-  const [newExpenseName, setNewExpenseName] = useState('');
-  const [newExpenseCost, setNewExpenseCost] = useState('');
+  // Load admin settings on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('adminSettings');
+    if (savedSettings) {
+      setAdminSettings(JSON.parse(savedSettings));
+    }
+  }, []);
 
   // Revenue calculations
   const baseRevenue = useMemo(() => numberOfGuests * pricePerPerson, [numberOfGuests, pricePerPerson]);
   const gratuityAmount = useMemo(() => gratuityEnabled ? baseRevenue * (gratuityPercentage / 100) : 0, [baseRevenue, gratuityPercentage, gratuityEnabled]);
   const totalRevenue = useMemo(() => baseRevenue + gratuityAmount, [baseRevenue, gratuityAmount]);
 
+  // Maximum labor budget from admin settings
+  const maxLaborBudget = useMemo(() => totalRevenue * (adminSettings.laborRevenuePercentage / 100), [totalRevenue, adminSettings.laborRevenuePercentage]);
+
   // Expense calculations
   const totalLaborCosts = useMemo(() => laborRoles.reduce((sum, role) => sum + role.cost, 0), [laborRoles]);
-  const foodCost = useMemo(() => foodCostFixed, [foodCostFixed]);
+  const totalFoodCosts = useMemo(() => foodCostItems.reduce((sum, item) => sum + item.cost, 0), [foodCostItems]);
   const totalMiscCosts = useMemo(() => miscExpenses.reduce((sum, expense) => sum + expense.cost, 0), [miscExpenses]);
-  const totalCosts = useMemo(() => totalLaborCosts + foodCost + totalMiscCosts, [totalLaborCosts, foodCost, totalMiscCosts]);
+  const totalCosts = useMemo(() => totalLaborCosts + totalFoodCosts + totalMiscCosts, [totalLaborCosts, totalFoodCosts, totalMiscCosts]);
 
-  // Profit calculations
-  const actualProfit = useMemo(() => baseRevenue - totalCosts, [baseRevenue, totalCosts]);
+  // Gratuity allocation to labor (split between labor roles)
+  const gratuityForLabor = useMemo(() => {
+    const availableForLabor = maxLaborBudget - totalLaborCosts;
+    return Math.min(gratuityAmount, Math.max(0, availableForLabor));
+  }, [maxLaborBudget, totalLaborCosts, gratuityAmount]);
+
+  const adjustedLaborCosts = useMemo(() => totalLaborCosts + gratuityForLabor, [totalLaborCosts, gratuityForLabor]);
+
+  // Profit calculations (gratuity minus what goes to labor is profit)
+  const actualProfit = useMemo(() => baseRevenue - totalCosts + (gratuityAmount - gratuityForLabor), [baseRevenue, totalCosts, gratuityAmount, gratuityForLabor]);
   const actualProfitPercentage = useMemo(() => totalRevenue > 0 ? (actualProfit / totalRevenue) * 100 : 0, [actualProfit, totalRevenue]);
-  const businessTax = useMemo(() => actualProfit > 0 ? actualProfit * (businessTaxPercentage / 100) : 0, [actualProfit, businessTaxPercentage]);
-  const netProfit = useMemo(() => actualProfit - businessTax, [actualProfit, businessTax]);
-
-  // Target profit calculations
-  const targetRevenue = useMemo(() => totalCosts / (1 - targetProfitMargin / 100), [totalCosts, targetProfitMargin]);
-  const adjustedPricePerPerson = useMemo(() => 
-    numberOfGuests > 0 ? (targetRevenue - gratuityAmount) / numberOfGuests : 0,
-    [targetRevenue, gratuityAmount, numberOfGuests]
-  );
-  const adjustedProfit = useMemo(() => targetRevenue - totalCosts, [targetRevenue, totalCosts]);
 
   // Break-even calculation
   const breakEvenGuests = useMemo(() => 
@@ -96,50 +114,58 @@ const EventProfitCalculator = () => {
 
   // Labor role management
   const addLaborRole = useCallback(() => {
-    const name = prompt('Enter labor role name:');
-    const cost = prompt('Enter labor cost:');
-    if (name && cost) {
+    if (adminSettings.roles.length > 0) {
       const newRole: LaborRole = {
         id: Date.now().toString(),
-        name: name,
-        cost: parseFloat(cost) || 0
+        role: adminSettings.roles[0],
+        cost: 0
       };
       setLaborRoles(prev => [...prev, newRole]);
     }
-  }, []);
+  }, [adminSettings.roles]);
 
-  const updateLaborRole = useCallback((id: string, name: string, cost: number) => {
-    setLaborRoles(prev => prev.map(role => role.id === id ? { ...role, name, cost } : role));
-  }, []);
-
-  const saveEditingLabor = useCallback(() => {
-    setEditingLabor(null);
+  const updateLaborRole = useCallback((id: string, role: string, cost: number) => {
+    setLaborRoles(prev => prev.map(item => item.id === id ? { ...item, role, cost } : item));
   }, []);
 
   const deleteLaborRole = useCallback((id: string) => {
     setLaborRoles(prev => prev.filter(role => role.id !== id));
   }, []);
 
+  // Food cost management
+  const addFoodCostItem = useCallback(() => {
+    if (adminSettings.foodCostTypes.length > 0) {
+      const newItem: FoodCostItem = {
+        id: Date.now().toString(),
+        type: adminSettings.foodCostTypes[0],
+        cost: 0
+      };
+      setFoodCostItems(prev => [...prev, newItem]);
+    }
+  }, [adminSettings.foodCostTypes]);
+
+  const updateFoodCostItem = useCallback((id: string, type: string, cost: number) => {
+    setFoodCostItems(prev => prev.map(item => item.id === id ? { ...item, type, cost } : item));
+  }, []);
+
+  const deleteFoodCostItem = useCallback((id: string) => {
+    setFoodCostItems(prev => prev.filter(item => item.id !== id));
+  }, []);
+
   // Misc expense management
   const addMiscExpense = useCallback(() => {
-    const name = prompt('Enter expense name:');
-    const cost = prompt('Enter expense cost:');
-    if (name && cost) {
+    if (adminSettings.expenseTypes.length > 0) {
       const newExpense: MiscExpense = {
         id: Date.now().toString(),
-        name: name,
-        cost: parseFloat(cost) || 0
+        type: adminSettings.expenseTypes[0],
+        cost: 0
       };
       setMiscExpenses(prev => [...prev, newExpense]);
     }
-  }, []);
+  }, [adminSettings.expenseTypes]);
 
-  const updateMiscExpense = useCallback((id: string, name: string, cost: number) => {
-    setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, name, cost } : expense));
-  }, []);
-
-  const saveEditingExpense = useCallback(() => {
-    setEditingExpense(null);
+  const updateMiscExpense = useCallback((id: string, type: string, cost: number) => {
+    setMiscExpenses(prev => prev.map(expense => expense.id === id ? { ...expense, type, cost } : expense));
   }, []);
 
   const deleteMiscExpense = useCallback((id: string) => {
@@ -157,23 +183,17 @@ const EventProfitCalculator = () => {
     setGratuityMode('18');
     setGratuityEnabled(true);
     setLaborRoles([]);
-    setFoodCostFixed(0);
+    setFoodCostItems([]);
     setMiscExpenses([]);
     setTargetProfitMargin(25);
     setBusinessTaxPercentage(8);
-    setEditingLabor(null);
-    setEditingExpense(null);
-    setNewLaborName('');
-    setNewLaborCost('');
-    setNewExpenseName('');
-    setNewExpenseCost('');
   }, []);
 
   const processInputs = useCallback(async () => {
     setIsProcessing(true);
     
     // Calculate and save data to localStorage for Financial Summary
-    const totalProfitWithGratuity = actualProfit + gratuityAmount;
+    const totalProfitWithGratuity = actualProfit;
     const businessTaxAmount = totalProfitWithGratuity > 0 ? totalProfitWithGratuity * (businessTaxPercentage / 100) : 0;
     const netProfitAfterTax = totalProfitWithGratuity - businessTaxAmount;
     
@@ -184,8 +204,8 @@ const EventProfitCalculator = () => {
       gratuityPercentage,
       gratuityAmount,
       totalRevenue,
-      totalLaborCosts,
-      foodCost,
+      totalLaborCosts: adjustedLaborCosts,
+      foodCost: totalFoodCosts,
       totalMiscCosts,
       totalCosts,
       actualProfit,
@@ -194,13 +214,15 @@ const EventProfitCalculator = () => {
       netProfit: netProfitAfterTax,
       actualProfitPercentage,
       breakEvenGuests,
+      gratuityForLabor,
+      maxLaborBudget,
       // Additional metrics for Summary tab
       profitMargin: totalRevenue > 0 ? (totalProfitWithGratuity / totalRevenue * 100) : 0,
-      foodCostPercentage: totalRevenue > 0 ? (foodCost / totalRevenue * 100) : 0,
+      foodCostPercentage: totalRevenue > 0 ? (totalFoodCosts / totalRevenue * 100) : 0,
       totalExpensePercentage: totalRevenue > 0 ? (totalCosts / totalRevenue * 100) : 0,
       costPerPlate: numberOfGuests > 0 ? (totalCosts / numberOfGuests) : 0,
       revenuePerPlate: pricePerPerson,
-      laborCostPercentage: totalRevenue > 0 ? (totalLaborCosts / totalRevenue * 100) : 0,
+      laborCostPercentage: totalRevenue > 0 ? (adjustedLaborCosts / totalRevenue * 100) : 0,
       miscExpensePercentage: totalRevenue > 0 ? (totalMiscCosts / totalRevenue * 100) : 0,
       lastUpdated: new Date().toISOString()
     };
@@ -212,8 +234,8 @@ const EventProfitCalculator = () => {
     setIsProcessing(false);
   }, [
     numberOfGuests, pricePerPerson, baseRevenue, gratuityPercentage, gratuityAmount, totalRevenue,
-    totalLaborCosts, foodCost, totalMiscCosts, totalCosts,
-    actualProfit, businessTaxPercentage
+    adjustedLaborCosts, totalFoodCosts, totalMiscCosts, totalCosts,
+    actualProfit, businessTaxPercentage, gratuityForLabor, maxLaborBudget
   ]);
 
   return (
@@ -305,12 +327,38 @@ const EventProfitCalculator = () => {
                     <div className="text-center">
                       <Label className="text-card-foreground font-medium">Total Revenue</Label>
                       <div className="mt-1 p-3 bg-white/50 rounded-lg">
-                        <div className="text-xl font-bold text-primary text-right">{formatCurrency(baseRevenue + gratuityAmount)}</div>
+                        <div className="text-xl font-bold text-primary text-right">{formatCurrency(totalRevenue)}</div>
                         <div className="text-xs text-muted-foreground text-right">
                           Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
                         </div>
                       </div>
                     </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Labor Budget Info */}
+            <Card className="glass-card border-amber-200/50 bg-amber-50/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                  <Target className="w-5 h-5 text-amber-600" />
+                  Labor Budget & Gratuity Allocation
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Max Labor Budget ({adminSettings.laborRevenuePercentage}% of revenue)</div>
+                    <div className="text-lg font-bold text-amber-600">{formatCurrency(maxLaborBudget)}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Gratuity Allocated to Labor</div>
+                    <div className="text-lg font-bold text-green-600">{formatCurrency(gratuityForLabor)}</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm text-muted-foreground">Remaining for Profit</div>
+                    <div className="text-lg font-bold text-primary">{formatCurrency(gratuityAmount - gratuityForLabor)}</div>
                   </div>
                 </div>
               </CardContent>
@@ -330,28 +378,55 @@ const EventProfitCalculator = () => {
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Food Costs</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
                     <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-2 font-semibold text-sm text-muted-foreground">
-                      <div className="col-span-6">Item</div>
+                      <div className="col-span-6">Food Type</div>
                       <div className="col-span-4 text-right">Cost</div>
                       <div className="col-span-2 text-center">Actions</div>
                     </div>
-                    <div className="grid grid-cols-12 gap-2 p-2 items-center">
-                      <div className="col-span-6 font-medium text-card-foreground">Food Cost</div>
-                      <div className="col-span-4">
-                        <Input
-                          type="number"
-                          value={foodCostFixed}
-                          onChange={(e) => {
-                            const cleanedValue = handleNumberInput(e.target.value);
-                            setFoodCostFixed(parseFloat(cleanedValue) || 0);
-                          }}
-                          className="input-modern text-right"
-                        />
+                    {foodCostItems.map((item, index) => (
+                      <div key={item.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== foodCostItems.length - 1 ? 'border-b border-border/10' : ''}`}>
+                        <div className="col-span-6">
+                          <Select value={item.type} onValueChange={(value) => updateFoodCostItem(item.id, value, item.cost)}>
+                            <SelectTrigger className="input-modern">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {adminSettings.foodCostTypes.map(type => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-4">
+                          <Input
+                            type="number"
+                            value={item.cost}
+                            onChange={(e) => {
+                              const cleanedValue = handleNumberInput(e.target.value);
+                              updateFoodCostItem(item.id, item.type, parseFloat(cleanedValue) || 0);
+                            }}
+                            className="input-modern text-right"
+                          />
+                        </div>
+                        <div className="col-span-2 flex justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteFoodCostItem(item.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="col-span-2"></div>
+                    ))}
+                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
+                      <Button onClick={addFoodCostItem} className="btn-primary">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Food Cost
+                      </Button>
                     </div>
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Food Costs</div>
-                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(foodCost)}</div>
+                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(totalFoodCosts)}</div>
                       <div className="col-span-2"></div>
                     </div>
                   </div>
@@ -368,60 +443,38 @@ const EventProfitCalculator = () => {
                     </div>
                     {laborRoles.map((role, index) => (
                       <div key={role.id} className={`grid grid-cols-12 gap-2 p-2 items-center ${index !== laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                        {editingLabor === role.id ? (
-                          <>
-                            <div className="col-span-6">
-                              <Input
-                                value={role.name}
-                                onChange={(e) => updateLaborRole(role.id, e.target.value, role.cost)}
-                                className="input-modern"
-                                placeholder="Role name"
-                              />
-                            </div>
-                            <div className="col-span-4">
-                              <Input
-                                type="number"
-                                value={role.cost}
-                                onChange={(e) => {
-                                  const cleanedValue = handleNumberInput(e.target.value);
-                                  updateLaborRole(role.id, role.name, parseFloat(cleanedValue) || 0);
-                                }}
-                                className="input-modern text-right"
-                                placeholder="Cost"
-                              />
-                            </div>
-                            <div className="col-span-2 flex justify-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={saveEditingLabor}
-                              >
-                                Save
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="col-span-6 font-medium text-card-foreground">{role.name}</div>
-                            <div className="col-span-4 font-bold text-card-foreground text-right">{formatCurrency(role.cost)}</div>
-                            <div className="col-span-2 flex justify-center gap-1">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingLabor(role.id)}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteLaborRole(role.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </>
-                        )}
+                        <div className="col-span-6">
+                          <Select value={role.role} onValueChange={(value) => updateLaborRole(role.id, value, role.cost)}>
+                            <SelectTrigger className="input-modern">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {adminSettings.roles.map(roleType => (
+                                <SelectItem key={roleType} value={roleType}>{roleType}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-4">
+                          <Input
+                            type="number"
+                            value={role.cost}
+                            onChange={(e) => {
+                              const cleanedValue = handleNumberInput(e.target.value);
+                              updateLaborRole(role.id, role.role, parseFloat(cleanedValue) || 0);
+                            }}
+                            className="input-modern text-right"
+                          />
+                        </div>
+                        <div className="col-span-2 flex justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteLaborRole(role.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
@@ -431,10 +484,17 @@ const EventProfitCalculator = () => {
                       </Button>
                     </div>
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-12 gap-2">
-                      <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs</div>
-                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(totalLaborCosts)}</div>
+                      <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs (with gratuity)</div>
+                      <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(adjustedLaborCosts)}</div>
                       <div className="col-span-2"></div>
                     </div>
+                    {gratuityForLabor > 0 && (
+                      <div className="bg-green-50/50 p-2 grid grid-cols-12 gap-2 text-sm">
+                        <div className="col-span-6 text-green-700">Includes gratuity allocation:</div>
+                        <div className="col-span-4 font-semibold text-green-700 text-right">+{formatCurrency(gratuityForLabor)}</div>
+                        <div className="col-span-2"></div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -443,66 +503,44 @@ const EventProfitCalculator = () => {
                   <h3 className="text-lg font-semibold text-card-foreground mb-2">Miscellaneous Expenses</h3>
                   <div className="border border-border/20 rounded-lg overflow-hidden">
                     <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
-                      <div className="col-span-6">Expense</div>
+                      <div className="col-span-6">Expense Type</div>
                       <div className="col-span-3 text-right">Cost</div>
                       <div className="col-span-3 text-center">Actions</div>
                     </div>
                     {miscExpenses.map((expense, index) => (
                       <div key={expense.id} className={`grid grid-cols-12 gap-3 p-2 items-center ${index !== miscExpenses.length - 1 ? 'border-b border-border/10' : ''}`}>
-                        {editingExpense === expense.id ? (
-                          <>
-                            <div className="col-span-6">
-                              <Input
-                                value={expense.name}
-                                onChange={(e) => updateMiscExpense(expense.id, e.target.value, expense.cost)}
-                                className="input-modern"
-                                placeholder="Expense name"
-                              />
-                            </div>
-                            <div className="col-span-3">
-                              <Input
-                                type="number"
-                                value={expense.cost}
-                                onChange={(e) => {
-                                  const cleanedValue = handleNumberInput(e.target.value);
-                                  updateMiscExpense(expense.id, expense.name, parseFloat(cleanedValue) || 0);
-                                }}
-                                className="input-modern text-right"
-                                placeholder="Cost"
-                              />
-                            </div>
-                            <div className="col-span-3 flex justify-center">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={saveEditingExpense}
-                              >
-                                Save
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          <>
-                            <div className="col-span-6 font-medium text-card-foreground">{expense.name}</div>
-                            <div className="col-span-3 font-bold text-card-foreground text-right">{formatCurrency(expense.cost)}</div>
-                            <div className="col-span-3 flex justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingExpense(expense.id)}
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteMiscExpense(expense.id)}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </>
-                        )}
+                        <div className="col-span-6">
+                          <Select value={expense.type} onValueChange={(value) => updateMiscExpense(expense.id, value, expense.cost)}>
+                            <SelectTrigger className="input-modern">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {adminSettings.expenseTypes.map(type => (
+                                <SelectItem key={type} value={type}>{type}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-3">
+                          <Input
+                            type="number"
+                            value={expense.cost}
+                            onChange={(e) => {
+                              const cleanedValue = handleNumberInput(e.target.value);
+                              updateMiscExpense(expense.id, expense.type, parseFloat(cleanedValue) || 0);
+                            }}
+                            className="input-modern text-right"
+                          />
+                        </div>
+                        <div className="col-span-3 flex justify-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => deleteMiscExpense(expense.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                     <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
@@ -524,11 +562,11 @@ const EventProfitCalculator = () => {
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Food Cost</div>
-                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(foodCost)}</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalFoodCosts)}</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Labor Costs</div>
-                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(totalLaborCosts)}</div>
+                      <div className="text-lg font-bold text-card-foreground">{formatCurrency(adjustedLaborCosts)}</div>
                     </div>
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Miscellaneous</div>
@@ -536,7 +574,7 @@ const EventProfitCalculator = () => {
                     </div>
                     <div className="text-center">
                       <div className="text-sm text-muted-foreground">Total Expenses</div>
-                      <div className="text-xl font-bold text-primary">{formatCurrency(totalCosts)}</div>
+                      <div className="text-xl font-bold text-primary">{formatCurrency(totalCosts + gratuityForLabor)}</div>
                     </div>
                   </div>
                 </div>
@@ -584,17 +622,21 @@ const EventProfitCalculator = () => {
                       <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-card-foreground">Gratuity to Labor:</span>
+                      <span className="font-bold text-amber-600">-{formatCurrency(gratuityForLabor)}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-card-foreground font-semibold">Total Profit:</span>
-                      <span className="font-bold text-lg text-primary">{formatCurrency(actualProfit + gratuityAmount)}</span>
+                      <span className="font-bold text-lg text-primary">{formatCurrency(actualProfit)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-card-foreground">Business Tax (20%):</span>
-                      <span className="font-bold text-card-foreground text-red-600">-{formatCurrency((actualProfit + gratuityAmount) * 0.20)}</span>
+                      <span className="font-bold text-card-foreground text-red-600">-{formatCurrency(actualProfit * 0.20)}</span>
                     </div>
                     <div className="border-t pt-2">
                       <div className="flex justify-between">
                         <span className="text-card-foreground font-semibold text-lg">Net Profit (After Tax):</span>
-                        <span className="font-bold text-2xl text-green-600">{formatCurrency((actualProfit + gratuityAmount) * 0.80)}</span>
+                        <span className="font-bold text-2xl text-green-600">{formatCurrency(actualProfit * 0.80)}</span>
                       </div>
                       <div className="text-center text-sm text-muted-foreground mt-1">
                         Available for Overhead Expenses

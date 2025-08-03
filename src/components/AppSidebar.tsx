@@ -1,4 +1,4 @@
-import { BarChart3, Users, FileText, Contact, TrendingUp } from "lucide-react"
+import { BarChart3, Users, FileText, Contact, TrendingUp, Settings } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 
 import {
@@ -19,6 +19,7 @@ const items = [
   { title: "Team", url: "/team", icon: Users },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },
+  { title: "Admin", url: "/admin", icon: Settings },
 ]
 
 export function AppSidebar() {
