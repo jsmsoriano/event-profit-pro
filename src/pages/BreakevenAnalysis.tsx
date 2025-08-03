@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 const BreakevenAnalysis = () => {
   const [guestCount, setGuestCount] = useState(30);
   const [pricePerPerson, setPricePerPerson] = useState(75);
+  const [gratuityPercent, setGratuityPercent] = useState(20);
   const [laborPercent, setLaborPercent] = useState(30);
   const [foodPercent, setFoodPercent] = useState(35);
   const [taxesPercent, setTaxesPercent] = useState(20);
@@ -20,7 +21,9 @@ const BreakevenAnalysis = () => {
   };
 
   const calculateScenario = (guests: number) => {
-    const totalRevenue = guests * pricePerPerson;
+    const baseRevenue = guests * pricePerPerson;
+    const gratuityAmount = (baseRevenue * gratuityPercent) / 100;
+    const totalRevenue = baseRevenue + gratuityAmount;
     const laborBudget = (totalRevenue * laborPercent) / 100;
     const foodBudget = (totalRevenue * foodPercent) / 100;
     const taxesBudget = (totalRevenue * taxesPercent) / 100;
@@ -28,6 +31,8 @@ const BreakevenAnalysis = () => {
     
     return {
       guests,
+      baseRevenue,
+      gratuityAmount,
       totalRevenue,
       laborBudget,
       foodBudget,
@@ -80,6 +85,17 @@ const BreakevenAnalysis = () => {
                   onChange={(e) => setPricePerPerson(Number(e.target.value))}
                   min="0"
                   step="0.01"
+                />
+              </div>
+              <div>
+                <Label htmlFor="gratuity">Gratuity (%)</Label>
+                <Input
+                  id="gratuity"
+                  type="number"
+                  value={gratuityPercent}
+                  onChange={(e) => setGratuityPercent(Number(e.target.value))}
+                  min="0"
+                  max="100"
                 />
               </div>
             </div>
@@ -143,14 +159,22 @@ const BreakevenAnalysis = () => {
         <Card>
           <CardHeader>
             <CardTitle>Current Scenario</CardTitle>
-            <CardDescription>{guestCount} guests at {formatCurrency(pricePerPerson)} per person</CardDescription>
+            <CardDescription>{guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Base Revenue</span>
+                  <span className="font-semibold">{formatCurrency(currentScenario.baseRevenue)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Gratuity ({gratuityPercent}%)</span>
+                  <span className="font-semibold">{formatCurrency(currentScenario.gratuityAmount)}</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Total Revenue</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.totalRevenue)}</span>
+                  <span className="font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Labor Budget</span>
@@ -207,6 +231,8 @@ const BreakevenAnalysis = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Guests</TableHead>
+                <TableHead>Base Revenue</TableHead>
+                <TableHead>Gratuity</TableHead>
                 <TableHead>Total Revenue</TableHead>
                 <TableHead>Labor Budget</TableHead>
                 <TableHead>Chef Pay (60%)</TableHead>
@@ -222,7 +248,9 @@ const BreakevenAnalysis = () => {
                   className={scenario.guests === guestCount ? "bg-muted/50" : ""}
                 >
                   <TableCell className="font-medium">{scenario.guests}</TableCell>
-                  <TableCell>{formatCurrency(scenario.totalRevenue)}</TableCell>
+                  <TableCell>{formatCurrency(scenario.baseRevenue)}</TableCell>
+                  <TableCell className="text-green-600">{formatCurrency(scenario.gratuityAmount)}</TableCell>
+                  <TableCell className="font-semibold">{formatCurrency(scenario.totalRevenue)}</TableCell>
                   <TableCell className="font-semibold text-primary">
                     {formatCurrency(scenario.laborBudget)}
                   </TableCell>
