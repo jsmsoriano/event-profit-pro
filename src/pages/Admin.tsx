@@ -90,13 +90,12 @@ const Admin = () => {
   };
 
   const updateExpense = (oldExpense: string, newExpense: string) => {
-    if (newExpense.trim() && !settings.expenseTypes.includes(newExpense.trim())) {
+    if (newExpense.trim()) {
       setSettings(prev => ({
         ...prev,
         expenseTypes: prev.expenseTypes.map(expense => expense === oldExpense ? newExpense.trim() : expense)
       }));
     }
-    setEditingExpense(null);
   };
 
   const deleteExpense = (expenseToDelete: string) => {
@@ -293,12 +292,20 @@ const Admin = () => {
                         <>
                           <div className="col-span-8">
                             <Input
-                              value={expense}
-                              onChange={(e) => updateExpense(expense, e.target.value)}
+                              value={editingExpense === expense ? expense : expense}
+                              onChange={(e) => {
+                                setSettings(prev => ({
+                                  ...prev,
+                                  expenseTypes: prev.expenseTypes.map(exp => exp === expense ? e.target.value : exp)
+                                }));
+                              }}
                               className="input-modern"
                               autoFocus
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter') updateExpense(expense, e.currentTarget.value);
+                                if (e.key === 'Enter') {
+                                  updateExpense(expense, e.currentTarget.value);
+                                  setEditingExpense(null);
+                                }
                                 if (e.key === 'Escape') setEditingExpense(null);
                               }}
                             />
@@ -307,7 +314,10 @@ const Admin = () => {
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => updateExpense(expense, expense)}
+                              onClick={() => {
+                                updateExpense(expense, expense);
+                                setEditingExpense(null);
+                              }}
                             >
                               <Save className="w-4 h-4" />
                             </Button>
