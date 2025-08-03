@@ -238,7 +238,7 @@ const EventProfitCalculator = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div className="flex items-center gap-2">
                     <Label htmlFor="guests" className="text-card-foreground font-medium min-w-[120px]">Number of Guests</Label>
                     <Input
@@ -270,11 +270,32 @@ const EventProfitCalculator = () => {
                     />
                   </div>
 
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor="gratuityPercent" className="text-card-foreground font-medium min-w-[120px]">Gratuity %</Label>
+                    <Input
+                      id="gratuityPercent"
+                      type="number"
+                      value={gratuityPercentage}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setGratuityPercentage(parseFloat(cleanedValue) || 0);
+                      }}
+                      className="input-modern text-right"
+                      min="0"
+                      max="100"
+                      step="0.1"
+                      placeholder="Enter %"
+                    />
+                  </div>
+
                   <div>
                     <div className="text-center">
-                      <Label className="text-card-foreground font-medium">Base Revenue</Label>
+                      <Label className="text-card-foreground font-medium">Total Revenue</Label>
                       <div className="mt-1 p-3 bg-white/50 rounded-lg">
-                        <div className="text-xl font-bold text-primary text-right">{formatCurrency(baseRevenue)}</div>
+                        <div className="text-xl font-bold text-primary text-right">{formatCurrency(baseRevenue + gratuityAmount)}</div>
+                        <div className="text-xs text-muted-foreground text-right">
+                          Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -545,23 +566,6 @@ const EventProfitCalculator = () => {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <Label htmlFor="gratuityPercent" className="text-card-foreground font-medium min-w-[120px]">Gratuity %:</Label>
-                      <Input
-                        id="gratuityPercent"
-                        type="number"
-                        value={gratuityPercentage}
-                        onChange={(e) => {
-                          const cleanedValue = handleNumberInput(e.target.value);
-                          setGratuityPercentage(parseFloat(cleanedValue) || 0);
-                        }}
-                        className="input-modern text-right"
-                        min="0"
-                        max="100"
-                        step="0.1"
-                        placeholder="Enter %"
-                      />
-                    </div>
                     <div className="flex justify-between">
                       <span className="text-card-foreground">Gratuity Amount:</span>
                       <span className="font-bold text-card-foreground">{formatCurrency(gratuityAmount)}</span>
