@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { DollarSign } from "lucide-react";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
 interface LaborRole {
@@ -244,71 +243,15 @@ const BreakevenAnalysis = () => {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h3 className="font-semibold">Budget Allocation (%)</h3>
-                <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg border border-primary/20">
-                  <DollarSign className="w-4 h-4 text-primary" />
-                  <Label htmlFor="cash-only" className="text-sm font-medium text-primary">Cash Only</Label>
-                  <Switch
-                    id="cash-only"
-                    checked={isCashOnly}
-                    onCheckedChange={toggleCashOnly}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="labor">Labor (%)</Label>
-                  <Input
-                    id="labor"
-                    type="number"
-                    value={laborPercent}
-                    onChange={(e) => setLaborPercent(Number(e.target.value))}
-                    min="0"
-                    max="100"
-                    disabled={isCashOnly}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="food">Food & Supplies (%)</Label>
-                  <Input
-                    id="food"
-                    type="number"
-                    value={foodPercent}
-                    onChange={(e) => setFoodPercent(Number(e.target.value))}
-                    min="0"
-                    max="100"
-                    disabled={isCashOnly}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="taxes">Taxes (%)</Label>
-                  <Input
-                    id="taxes"
-                    type="number"
-                    value={taxesPercent}
-                    onChange={(e) => setTaxesPercent(Number(e.target.value))}
-                    min="0"
-                    max="100"
-                    disabled={isCashOnly}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="profit">Profit (%)</Label>
-                  <Input
-                    id="profit"
-                    type="number"
-                    value={profitPercent}
-                    onChange={(e) => setProfitPercent(Number(e.target.value))}
-                    min="0"
-                    max="100"
-                    disabled={isCashOnly}
-                  />
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                Total: {laborPercent + foodPercent + taxesPercent + profitPercent}%
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold">Payment Settings</h3>
+              <div className="flex items-center space-x-2">
+                <Label htmlFor="cash-only" className="text-sm font-medium">Cash Only</Label>
+                <Switch
+                  id="cash-only"
+                  checked={isCashOnly}
+                  onCheckedChange={toggleCashOnly}
+                />
               </div>
             </div>
           </CardContent>
