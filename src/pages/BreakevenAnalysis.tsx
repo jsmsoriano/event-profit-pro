@@ -251,7 +251,7 @@ const BreakevenAnalysis = () => {
                   id="cash-only"
                   checked={isCashOnly}
                   onCheckedChange={toggleCashOnly}
-                  className="data-[state=checked]:bg-gray-700 data-[state=unchecked]:bg-gray-400"
+                  className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-400"
                 />
               </div>
             </div>
