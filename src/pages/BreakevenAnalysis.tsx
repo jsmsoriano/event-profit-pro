@@ -92,6 +92,7 @@ const BreakevenAnalysis = () => {
     const laborBudget = (revenueAfterTaxes * laborPercent) / 100;
     const foodBudget = (revenueAfterTaxes * foodPercent) / 100;
     const profitBudget = (revenueAfterTaxes * profitPercent) / 100;
+    const costPerPlate = (laborBudget + foodBudget + taxesToSetAside) / guests;
     
     return {
       guests,
@@ -103,6 +104,7 @@ const BreakevenAnalysis = () => {
       laborBudget,
       foodBudget,
       profitBudget,
+      costPerPlate,
     };
   };
 
@@ -273,6 +275,10 @@ const BreakevenAnalysis = () => {
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Profit</span>
                   <span className="font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</span>
+                </div>
+                <div className="flex justify-between border-t pt-2 mt-2">
+                  <span className="text-sm text-muted-foreground font-medium">Cost Per Plate</span>
+                  <span className="font-semibold text-orange-600">{formatCurrency(currentScenario.costPerPlate)}</span>
                 </div>
               </div>
             </div>
