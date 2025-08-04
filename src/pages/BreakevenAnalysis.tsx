@@ -236,6 +236,7 @@ const BreakevenAnalysis = () => {
                 <TableHead>Total Revenue</TableHead>
                 <TableHead>Labor Budget</TableHead>
                 <TableHead>Chef Pay (60%)</TableHead>
+                <TableHead>Assistant Pay (40%)</TableHead>
                 <TableHead>Food & Supplies</TableHead>
                 <TableHead>Taxes</TableHead>
                 <TableHead>Profit</TableHead>
@@ -256,6 +257,9 @@ const BreakevenAnalysis = () => {
                   </TableCell>
                   <TableCell className="font-semibold text-green-600">
                     {formatCurrency(scenario.laborBudget * 0.6)}
+                  </TableCell>
+                  <TableCell className="font-semibold text-blue-600">
+                    {formatCurrency(scenario.laborBudget * 0.4)}
                   </TableCell>
                   <TableCell>{formatCurrency(scenario.foodBudget)}</TableCell>
                   <TableCell>{formatCurrency(scenario.taxesBudget)}</TableCell>

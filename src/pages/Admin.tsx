@@ -11,10 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 interface LaborRole {
   id: string;
   name: string;
-  payType: 'percentage' | 'fixed'; // percentage for Chef, fixed for others
-  revenuePercentage?: number; // only for Chef
-  gratuityPercentage?: number; // only for Chef
-  fixedAmount?: number; // for other roles
+  laborPercentage: number; // percentage of labor budget for this role
 }
 
 interface AdminSettings {
@@ -24,18 +21,22 @@ interface AdminSettings {
   foodCostTypes: string[];
 }
 
-// Default role for Chef with percentage-based pay
+// Default roles for labor allocation
 const defaultChefRole: LaborRole = {
   id: 'chef-default',
   name: 'Chef',
-  payType: 'percentage',
-  revenuePercentage: 20,
-  gratuityPercentage: 0, // Will be calculated automatically based on labor count
+  laborPercentage: 60,
+};
+
+const defaultAssistantRole: LaborRole = {
+  id: 'assistant-default',
+  name: 'Assistant',
+  laborPercentage: 40,
 };
 
 const defaultSettings: AdminSettings = {
   laborRevenuePercentage: 30,
-  laborRoles: [defaultChefRole],
+  laborRoles: [defaultChefRole, defaultAssistantRole],
   expenseTypes: ['Equipment Rental', 'Transportation', 'Utilities', 'Insurance', 'Marketing', 'Supplies'],
   foodCostTypes: ['Proteins', 'Vegetables', 'Grains', 'Dairy', 'Beverages', 'Seasonings']
 };
@@ -48,8 +49,7 @@ const Admin = () => {
   const [newRole, setNewRole] = useState<LaborRole>({
     id: '',
     name: '',
-    payType: 'fixed',
-    fixedAmount: 0
+    laborPercentage: 0
   });
   const [newExpense, setNewExpense] = useState('');
   const [newFoodCost, setNewFoodCost] = useState('');
@@ -72,8 +72,12 @@ const Admin = () => {
               {
                 id: 'chef-migrated',
                 name: 'Chef',
-                payType: 'percentage',
-                revenuePercentage: 20
+                laborPercentage: 60
+              },
+              {
+                id: 'assistant-migrated',
+                name: 'Assistant',
+                laborPercentage: 40
               }
             ],
             expenseTypes: parsed.expenseTypes || defaultSettings.expenseTypes,
@@ -125,8 +129,7 @@ const Admin = () => {
       setNewRole({
         id: '',
         name: '',
-        payType: 'fixed',
-        fixedAmount: 0
+        laborPercentage: 0
       });
     }
   };
@@ -261,18 +264,16 @@ const Admin = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="border border-border/20 rounded-lg overflow-hidden">
-                  <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
-                    <div className="col-span-3">Role Name</div>
-                    <div className="col-span-2">Pay Type</div>
-                    <div className="col-span-3">Revenue %</div>
-                    <div className="col-span-2">Fixed Amount</div>
+                  <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-10 gap-3 font-semibold text-sm text-muted-foreground">
+                    <div className="col-span-4">Role Name</div>
+                    <div className="col-span-4">Labor Budget %</div>
                     {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
                   {(settings.laborRoles || []).map((role, index) => (
-                    <div key={role.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                    <div key={role.id} className={`grid grid-cols-10 gap-3 p-3 items-center ${index !== settings.laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                       {editingRole === role.id ? (
                         <>
-                          <div className="col-span-3">
+                          <div className="col-span-4">
                             <Input
                               value={role.name}
                               onChange={(e) => updateRole(role.id, { name: e.target.value })}
@@ -284,52 +285,20 @@ const Admin = () => {
                               }}
                             />
                           </div>
-                          <div className="col-span-2">
-                            <Select 
-                              value={role.payType} 
-                              onValueChange={(value: 'percentage' | 'fixed') => 
-                                updateRole(role.id, { payType: value })
-                              }
-                            >
-                              <SelectTrigger className="input-modern">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="percentage">Percentage</SelectItem>
-                                <SelectItem value="fixed">Fixed Amount</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="col-span-3">
-                            {role.payType === 'percentage' ? (
+                          <div className="col-span-4">
+                            <div className="flex items-center gap-2">
                               <Input
                                 type="number"
-                                value={role.revenuePercentage || 0}
-                                onChange={(e) => updateRole(role.id, { revenuePercentage: parseFloat(e.target.value) || 0 })}
+                                value={role.laborPercentage || 0}
+                                onChange={(e) => updateRole(role.id, { laborPercentage: parseFloat(e.target.value) || 0 })}
                                 className="input-modern"
                                 min="0"
                                 max="100"
                                 step="0.1"
-                                placeholder="% of revenue"
+                                placeholder="% of labor budget"
                               />
-                            ) : (
-                              <span className="text-muted-foreground text-sm">N/A</span>
-                            )}
-                          </div>
-                          <div className="col-span-2">
-                            {role.payType === 'fixed' ? (
-                              <Input
-                                type="number"
-                                value={role.fixedAmount || 0}
-                                onChange={(e) => updateRole(role.id, { fixedAmount: parseFloat(e.target.value) || 0 })}
-                                className="input-modern"
-                                min="0"
-                                step="0.01"
-                                placeholder="Dollar amount"
-                              />
-                            ) : (
-                              <span className="text-muted-foreground text-sm">N/A</span>
-                            )}
+                              <span className="text-muted-foreground">%</span>
+                            </div>
                           </div>
                           {isAdmin && (
                             <div className="col-span-2 flex justify-center gap-2">
@@ -352,28 +321,11 @@ const Admin = () => {
                         </>
                       ) : (
                         <>
-                          <div className="col-span-3 font-medium text-card-foreground">
+                          <div className="col-span-4 font-medium text-card-foreground">
                             {role.name}
-                            {role.name === 'Chef' && (
-                              <span className="ml-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">Auto-calculated</span>
-                            )}
                           </div>
-                          <div className="col-span-2 text-sm text-muted-foreground">
-                            {role.payType === 'percentage' ? 'Percentage' : 'Fixed Amount'}
-                          </div>
-                          <div className="col-span-3 text-sm">
-                            {role.payType === 'percentage' ? (
-                              <span className="font-medium">{role.revenuePercentage}% + gratuity split</span>
-                            ) : (
-                              <span className="text-muted-foreground">N/A</span>
-                            )}
-                          </div>
-                          <div className="col-span-2 text-sm">
-                            {role.payType === 'fixed' ? (
-                              <span className="font-medium">${role.fixedAmount}</span>
-                            ) : (
-                              <span className="text-muted-foreground">N/A</span>
-                            )}
+                          <div className="col-span-4 text-sm">
+                            <span className="font-medium">{role.laborPercentage}% of labor budget</span>
                           </div>
                           {isAdmin && (
                             <div className="col-span-2 flex justify-center gap-2">
@@ -388,7 +340,6 @@ const Admin = () => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => deleteRole(role.id)}
-                                disabled={role.name === 'Chef'} // Prevent deleting Chef
                               >
                                 <Trash2 className="w-4 h-4" />
                               </Button>
@@ -399,8 +350,8 @@ const Admin = () => {
                     </div>
                   ))}
                   <div className="border-t border-border/20 bg-muted/30 p-3">
-                    <div className="grid grid-cols-12 gap-3">
-                      <div className="col-span-3">
+                    <div className="grid grid-cols-10 gap-3">
+                      <div className="col-span-4">
                         <Input
                           value={newRole.name}
                           onChange={(e) => setNewRole(prev => ({ ...prev, name: e.target.value }))}
@@ -411,48 +362,23 @@ const Admin = () => {
                           }}
                         />
                       </div>
-                      <div className="col-span-2">
-                        <Select 
-                          value={newRole.payType} 
-                          onValueChange={(value: 'percentage' | 'fixed') => 
-                            setNewRole(prev => ({ ...prev, payType: value }))
-                          }
-                        >
-                          <SelectTrigger className="input-modern">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="percentage">Percentage</SelectItem>
-                            <SelectItem value="fixed">Fixed Amount</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="col-span-3">
-                        {newRole.payType === 'percentage' && (
+                      <div className="col-span-4">
+                        <div className="flex items-center gap-2">
                           <Input
                             type="number"
-                            value={newRole.revenuePercentage || ''}
-                            onChange={(e) => setNewRole(prev => ({ ...prev, revenuePercentage: parseFloat(e.target.value) || 0 }))}
-                            placeholder="% of revenue"
+                            value={newRole.laborPercentage}
+                            onChange={(e) => setNewRole(prev => ({ ...prev, laborPercentage: parseFloat(e.target.value) || 0 }))}
+                            placeholder="% of labor budget"
                             className="input-modern"
                             min="0"
                             max="100"
                             step="0.1"
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') addRole();
+                            }}
                           />
-                        )}
-                      </div>
-                      <div className="col-span-2">
-                        {newRole.payType === 'fixed' && (
-                          <Input
-                            type="number"
-                            value={newRole.fixedAmount || ''}
-                            onChange={(e) => setNewRole(prev => ({ ...prev, fixedAmount: parseFloat(e.target.value) || 0 }))}
-                            placeholder="Dollar amount"
-                            className="input-modern"
-                            min="0"
-                            step="0.01"
-                          />
-                        )}
+                          <span className="text-muted-foreground">%</span>
+                        </div>
                       </div>
                       <div className="col-span-2">
                         <Button onClick={addRole} className="btn-primary w-full">
