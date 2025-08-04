@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
@@ -41,7 +40,7 @@ const BreakevenAnalysis = () => {
   const [profitPercent, setProfitPercent] = useState(15);
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
   const [budgetProfiles, setBudgetProfiles] = useState<BudgetProfile[]>([]);
-  const [selectedProfileId, setSelectedProfileId] = useState('credit-card');
+  const [isCashOnly, setIsCashOnly] = useState(false);
 
   useEffect(() => {
     // Load admin settings to get labor roles and budget profiles
@@ -136,14 +135,21 @@ const BreakevenAnalysis = () => {
     }
   }, []);
 
-  const handleProfileChange = (profileId: string) => {
-    setSelectedProfileId(profileId);
-    const selectedProfile = budgetProfiles.find(p => p.id === profileId);
-    if (selectedProfile) {
-      setLaborPercent(selectedProfile.laborPercent);
-      setFoodPercent(selectedProfile.foodPercent);
-      setTaxesPercent(selectedProfile.taxesPercent);
-      setProfitPercent(selectedProfile.profitPercent);
+  const toggleCashOnly = (enabled: boolean) => {
+    setIsCashOnly(enabled);
+    const cashOnlyProfile = budgetProfiles.find(p => p.id === 'cash-only');
+    const creditCardProfile = budgetProfiles.find(p => p.id === 'credit-card');
+    
+    if (enabled && cashOnlyProfile) {
+      setLaborPercent(cashOnlyProfile.laborPercent);
+      setFoodPercent(cashOnlyProfile.foodPercent);
+      setTaxesPercent(cashOnlyProfile.taxesPercent);
+      setProfitPercent(cashOnlyProfile.profitPercent);
+    } else if (!enabled && creditCardProfile) {
+      setLaborPercent(creditCardProfile.laborPercent);
+      setFoodPercent(creditCardProfile.foodPercent);
+      setTaxesPercent(creditCardProfile.taxesPercent);
+      setProfitPercent(creditCardProfile.profitPercent);
     }
   };
 
@@ -240,26 +246,15 @@ const BreakevenAnalysis = () => {
 
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h3 className="font-semibold">Budget Allocation</h3>
+                <h3 className="font-semibold">Budget Allocation (%)</h3>
                 <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg border border-primary/20">
                   <DollarSign className="w-4 h-4 text-primary" />
-                  <Label className="text-sm font-medium text-primary">Payment Type:</Label>
-                  <div className="flex gap-2">
-                    {budgetProfiles.map((profile) => (
-                      <Button
-                        key={profile.id}
-                        variant={selectedProfileId === profile.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => handleProfileChange(profile.id)}
-                        className={selectedProfileId === profile.id ? 
-                          "bg-primary text-primary-foreground shadow-md" : 
-                          "border-primary/40 text-primary hover:bg-primary/10"
-                        }
-                      >
-                        {profile.name}
-                      </Button>
-                    ))}
-                  </div>
+                  <Label htmlFor="cash-only" className="text-sm font-medium text-primary">Cash Only</Label>
+                  <Switch
+                    id="cash-only"
+                    checked={isCashOnly}
+                    onCheckedChange={toggleCashOnly}
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -272,6 +267,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setLaborPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -283,6 +279,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setFoodPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -294,6 +291,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setTaxesPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -305,6 +303,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setProfitPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
               </div>
