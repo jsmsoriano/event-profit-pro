@@ -16,7 +16,7 @@ import {
 const items = [
   { title: "Profit Analysis", url: "/", icon: BarChart3 },
   { title: "Financial Summary", url: "/financial-summary", icon: TrendingUp },
-  { title: "Breakeven Analysis", url: "/breakeven-analysis", icon: Calculator },
+  { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
   { title: "Team", url: "/team", icon: Users },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },

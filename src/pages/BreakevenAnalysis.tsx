@@ -115,7 +115,7 @@ const BreakevenAnalysis = () => {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Breakeven Analysis</h1>
+        <h1 className="text-3xl font-bold">Event Calculator</h1>
         <p className="text-muted-foreground">
           Plan your event budget and labor costs across different guest scenarios
         </p>
