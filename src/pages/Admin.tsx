@@ -74,6 +74,11 @@ const defaultSettings: AdminSettings = {
 const Admin = () => {
   const [settings, setSettings] = useState<AdminSettings>(defaultSettings);
   const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [editingRoleValue, setEditingRoleValue] = useState<LaborRole>({
+    id: '',
+    name: '',
+    laborPercentage: 0
+  });
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
   const [editingExpenseValue, setEditingExpenseValue] = useState('');
   const [editingFoodCost, setEditingFoodCost] = useState<string | null>(null);
@@ -623,49 +628,63 @@ const Admin = () => {
                     <div key={role.id} className={`grid grid-cols-10 gap-3 p-3 items-center ${index !== settings.laborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
                       {editingRole === role.id ? (
                         <>
-                          <div className="col-span-4">
-                            <Input
-                              value={role.name}
-                              onChange={(e) => updateRole(role.id, { name: e.target.value })}
-                              className="input-modern"
-                              autoFocus
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') setEditingRole(null);
-                                if (e.key === 'Escape') setEditingRole(null);
-                              }}
-                            />
-                          </div>
-                          <div className="col-span-4">
-                            <div className="flex items-center gap-2">
-                              <Input
-                                type="number"
-                                value={role.laborPercentage || 0}
-                                onChange={(e) => updateRole(role.id, { laborPercentage: parseFloat(e.target.value) || 0 })}
-                                className="input-modern"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                                placeholder="% of labor budget"
-                              />
-                              <span className="text-muted-foreground">%</span>
-                            </div>
-                          </div>
+                           <div className="col-span-4">
+                             <Input
+                               value={editingRoleValue.name}
+                               onChange={(e) => setEditingRoleValue(prev => ({ ...prev, name: e.target.value }))}
+                               className="input-modern"
+                               autoFocus
+                               onKeyDown={(e) => {
+                                 if (e.key === 'Enter') {
+                                   updateRole(role.id, editingRoleValue);
+                                   setEditingRole(null);
+                                   setEditingRoleValue({ id: '', name: '', laborPercentage: 0 });
+                                 }
+                                 if (e.key === 'Escape') {
+                                   setEditingRole(null);
+                                   setEditingRoleValue({ id: '', name: '', laborPercentage: 0 });
+                                 }
+                               }}
+                             />
+                           </div>
+                           <div className="col-span-4">
+                             <div className="flex items-center gap-2">
+                               <Input
+                                 type="number"
+                                 value={editingRoleValue.laborPercentage || 0}
+                                 onChange={(e) => setEditingRoleValue(prev => ({ ...prev, laborPercentage: parseFloat(e.target.value) || 0 }))}
+                                 className="input-modern"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                                 placeholder="% of labor budget"
+                               />
+                               <span className="text-muted-foreground">%</span>
+                             </div>
+                           </div>
                           {isAdmin && (
                             <div className="col-span-2 flex justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingRole(null)}
-                              >
-                                <Save className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingRole(null)}
-                              >
-                                <X className="w-4 h-4" />
-                              </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => {
+                                   updateRole(role.id, editingRoleValue);
+                                   setEditingRole(null);
+                                   setEditingRoleValue({ id: '', name: '', laborPercentage: 0 });
+                                 }}
+                               >
+                                 <Save className="w-4 h-4" />
+                               </Button>
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => {
+                                   setEditingRole(null);
+                                   setEditingRoleValue({ id: '', name: '', laborPercentage: 0 });
+                                 }}
+                               >
+                                 <X className="w-4 h-4" />
+                               </Button>
                             </div>
                           )}
                         </>
@@ -679,11 +698,18 @@ const Admin = () => {
                           </div>
                           {isAdmin && (
                             <div className="col-span-2 flex justify-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setEditingRole(role.id)}
-                              >
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => {
+                                   setEditingRole(role.id);
+                                   setEditingRoleValue({
+                                     id: role.id,
+                                     name: role.name,
+                                     laborPercentage: role.laborPercentage
+                                   });
+                                 }}
+                               >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
                               <Button
@@ -773,7 +799,7 @@ const Admin = () => {
                                   setEditingExpenseValue('');
                                 }
                               }}
-                              onBlur={() => updateExpense(expense, editingExpenseValue)}
+                              
                             />
                           </div>
                           <div className="col-span-4 flex justify-center gap-2">
@@ -874,7 +900,7 @@ const Admin = () => {
                                   setEditingFoodCostValue('');
                                 }
                               }}
-                              onBlur={() => updateFoodCost(foodCost, editingFoodCostValue)}
+                              
                             />
                           </div>
                           <div className="col-span-4 flex justify-center gap-2">
