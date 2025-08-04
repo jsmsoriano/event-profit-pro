@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { DollarSign } from "lucide-react";
 
 interface LaborRole {
   id: string;
@@ -26,6 +28,7 @@ const BreakevenAnalysis = () => {
   const [taxesPercent, setTaxesPercent] = useState(20);
   const [profitPercent, setProfitPercent] = useState(15);
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
+  const [isCashOnly, setIsCashOnly] = useState(false);
 
   useEffect(() => {
     // Load admin settings to get labor roles
@@ -54,6 +57,17 @@ const BreakevenAnalysis = () => {
       ]);
     }
   }, []);
+
+  const toggleCashOnly = (enabled: boolean) => {
+    setIsCashOnly(enabled);
+    if (enabled) {
+      // Set cash only percentages
+      setLaborPercent(55);
+      setFoodPercent(35);
+      setTaxesPercent(0);
+      setProfitPercent(10);
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -145,7 +159,18 @@ const BreakevenAnalysis = () => {
             </div>
 
             <div className="space-y-3">
-              <h3 className="font-semibold">Budget Allocation (%)</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold">Budget Allocation (%)</h3>
+                <div className="flex items-center space-x-2">
+                  <DollarSign className="w-4 h-4 text-muted-foreground" />
+                  <Label htmlFor="cash-only" className="text-sm font-medium">Cash Only</Label>
+                  <Switch
+                    id="cash-only"
+                    checked={isCashOnly}
+                    onCheckedChange={toggleCashOnly}
+                  />
+                </div>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="labor">Labor</Label>
@@ -156,6 +181,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setLaborPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -167,6 +193,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setFoodPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -178,6 +205,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setTaxesPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
@@ -189,6 +217,7 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setProfitPercent(Number(e.target.value))}
                     min="0"
                     max="100"
+                    disabled={isCashOnly}
                   />
                 </div>
               </div>
