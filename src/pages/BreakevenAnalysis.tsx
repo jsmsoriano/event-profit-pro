@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { DollarSign } from "lucide-react";
+import LaborRoleManager from "@/components/LaborRoleManager";
 
 interface LaborRole {
   id: string;
@@ -298,6 +299,12 @@ const BreakevenAnalysis = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Labor Roles Management */}
+      <LaborRoleManager 
+        laborRoles={laborRoles} 
+        onRolesChange={setLaborRoles} 
+      />
 
     </div>
   );
