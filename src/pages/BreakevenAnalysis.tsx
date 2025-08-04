@@ -24,19 +24,21 @@ const BreakevenAnalysis = () => {
     const baseRevenue = guests * pricePerPerson;
     const gratuityAmount = (baseRevenue * gratuityPercent) / 100;
     const totalRevenue = baseRevenue + gratuityAmount;
-    const laborBudget = (totalRevenue * laborPercent) / 100;
-    const foodBudget = (totalRevenue * foodPercent) / 100;
-    const taxesBudget = (totalRevenue * taxesPercent) / 100;
-    const profitBudget = (totalRevenue * profitPercent) / 100;
+    const taxesToSetAside = (totalRevenue * taxesPercent) / 100;
+    const revenueAfterTaxes = totalRevenue - taxesToSetAside;
+    const laborBudget = (revenueAfterTaxes * laborPercent) / 100;
+    const foodBudget = (revenueAfterTaxes * foodPercent) / 100;
+    const profitBudget = (revenueAfterTaxes * profitPercent) / 100;
     
     return {
       guests,
       baseRevenue,
       gratuityAmount,
       totalRevenue,
+      taxesToSetAside,
+      revenueAfterTaxes,
       laborBudget,
       foodBudget,
-      taxesBudget,
       profitBudget,
     };
   };
@@ -187,8 +189,8 @@ const BreakevenAnalysis = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Taxes</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.taxesBudget)}</span>
+                  <span className="text-sm text-muted-foreground">Taxes to Set Aside</span>
+                  <span className="font-semibold">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Profit</span>
@@ -205,8 +207,8 @@ const BreakevenAnalysis = () => {
                   <span className="font-semibold">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Recommended Budget (including taxes):</span>
-                  <span className="font-semibold text-green-600">{formatCurrency(currentScenario.laborBudget + currentScenario.foodBudget + currentScenario.taxesBudget)}</span>
+                  <span>Recommended Taxes to be set aside:</span>
+                  <span className="font-semibold text-orange-600">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Recommended Chef Pay (60% of labor):</span>
