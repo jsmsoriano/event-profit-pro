@@ -373,10 +373,6 @@ const Admin = () => {
                                    setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
                                  }
                                }}
-                               onBlur={() => {
-                                 console.log('Budget profile name onBlur');
-                                 updateBudgetProfile(profile.id, editingProfileValue);
-                               }}
                              />
                            </div>
                            <div className="col-span-2">
@@ -397,7 +393,9 @@ const Admin = () => {
                              <Input
                                type="number"
                                value={editingProfileValue.foodPercent}
-                               onChange={(e) => setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
+                               onChange={(e) => {
+                                 setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
+                               }}
                                className="input-modern"
                                min="0"
                                max="100"
@@ -408,7 +406,9 @@ const Admin = () => {
                              <Input
                                type="number"
                                value={editingProfileValue.taxesPercent}
-                               onChange={(e) => setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }))}
+                               onChange={(e) => {
+                                 setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
+                               }}
                                className="input-modern"
                                min="0"
                                max="100"
@@ -419,7 +419,9 @@ const Admin = () => {
                              <Input
                                type="number"
                                value={editingProfileValue.profitPercent}
-                               onChange={(e) => setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
+                               onChange={(e) => {
+                                 setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
+                               }}
                                className="input-modern"
                                min="0"
                                max="100"
