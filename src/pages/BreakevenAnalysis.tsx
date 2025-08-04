@@ -1,8 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+
+interface LaborRole {
+  id: string;
+  name: string;
+  laborPercentage: number;
+}
+
+interface AdminSettings {
+  laborRevenuePercentage: number;
+  laborRoles: LaborRole[];
+  expenseTypes: string[];
+  foodCostTypes: string[];
+}
 
 const BreakevenAnalysis = () => {
   const [guestCount, setGuestCount] = useState(30);
@@ -12,6 +25,35 @@ const BreakevenAnalysis = () => {
   const [foodPercent, setFoodPercent] = useState(35);
   const [taxesPercent, setTaxesPercent] = useState(20);
   const [profitPercent, setProfitPercent] = useState(15);
+  const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
+
+  useEffect(() => {
+    // Load admin settings to get labor roles
+    const savedSettings = localStorage.getItem('adminSettings');
+    if (savedSettings) {
+      try {
+        const parsed = JSON.parse(savedSettings);
+        const roles = parsed.laborRoles || [
+          { id: 'chef-default', name: 'Chef', laborPercentage: 60 },
+          { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
+        ];
+        setLaborRoles(roles);
+      } catch (error) {
+        console.error('Error parsing admin settings:', error);
+        // Use default roles if parsing fails
+        setLaborRoles([
+          { id: 'chef-default', name: 'Chef', laborPercentage: 60 },
+          { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
+        ]);
+      }
+    } else {
+      // Use default roles if no settings found
+      setLaborRoles([
+        { id: 'chef-default', name: 'Chef', laborPercentage: 60 },
+        { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
+      ]);
+    }
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -200,7 +242,7 @@ const BreakevenAnalysis = () => {
             </div>
             
             <div className="mt-6 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2">Chef Budget Guidelines</h4>
+              <h4 className="font-semibold mb-2">Labor Budget Breakdown</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
                   <span>Maximum Labor Budget:</span>
@@ -210,14 +252,12 @@ const BreakevenAnalysis = () => {
                   <span>Recommended Taxes to be set aside:</span>
                   <span className="font-semibold text-orange-600">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Recommended Chef Pay (60% of labor):</span>
-                  <span className="font-semibold text-primary">{formatCurrency(currentScenario.laborBudget * 0.6)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Remaining for Support Staff:</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.laborBudget * 0.4)}</span>
-                </div>
+                {laborRoles.map((role) => (
+                  <div key={role.id} className="flex justify-between">
+                    <span>{role.name} Pay ({role.laborPercentage}% of labor):</span>
+                    <span className="font-semibold text-primary">{formatCurrency(currentScenario.laborBudget * (role.laborPercentage / 100))}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </CardContent>
