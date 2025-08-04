@@ -66,6 +66,12 @@ const BreakevenAnalysis = () => {
       setFoodPercent(35);
       setTaxesPercent(0);
       setProfitPercent(10);
+    } else {
+      // Set regular default percentages
+      setLaborPercent(30);
+      setFoodPercent(35);
+      setTaxesPercent(20);
+      setProfitPercent(15);
     }
   };
 
