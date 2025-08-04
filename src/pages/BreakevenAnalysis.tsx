@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { DollarSign } from "lucide-react";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
@@ -13,11 +14,21 @@ interface LaborRole {
   laborPercentage: number;
 }
 
+interface BudgetProfile {
+  id: string;
+  name: string;
+  laborPercent: number;
+  foodPercent: number;
+  taxesPercent: number;
+  profitPercent: number;
+}
+
 interface AdminSettings {
   laborRevenuePercentage: number;
   laborRoles: LaborRole[];
   expenseTypes: string[];
   foodCostTypes: string[];
+  budgetProfiles: BudgetProfile[];
 }
 
 const BreakevenAnalysis = () => {
@@ -29,10 +40,11 @@ const BreakevenAnalysis = () => {
   const [taxesPercent, setTaxesPercent] = useState(20);
   const [profitPercent, setProfitPercent] = useState(15);
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
-  const [isCashOnly, setIsCashOnly] = useState(false);
+  const [budgetProfiles, setBudgetProfiles] = useState<BudgetProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState('credit-card');
 
   useEffect(() => {
-    // Load admin settings to get labor roles
+    // Load admin settings to get labor roles and budget profiles
     const savedSettings = localStorage.getItem('adminSettings');
     if (savedSettings) {
       try {
@@ -42,37 +54,96 @@ const BreakevenAnalysis = () => {
           { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
         ];
         setLaborRoles(roles);
+
+        const profiles = parsed.budgetProfiles || [
+          {
+            id: 'cash-only',
+            name: 'Cash Only',
+            laborPercent: 55,
+            foodPercent: 35,
+            taxesPercent: 0,
+            profitPercent: 10
+          },
+          {
+            id: 'credit-card',
+            name: 'Credit Card Payments',
+            laborPercent: 30,
+            foodPercent: 35,
+            taxesPercent: 20,
+            profitPercent: 15
+          }
+        ];
+        setBudgetProfiles(profiles);
+
+        // Set initial percentages from credit card profile
+        const creditCardProfile = profiles.find(p => p.id === 'credit-card');
+        if (creditCardProfile) {
+          setLaborPercent(creditCardProfile.laborPercent);
+          setFoodPercent(creditCardProfile.foodPercent);
+          setTaxesPercent(creditCardProfile.taxesPercent);
+          setProfitPercent(creditCardProfile.profitPercent);
+        }
       } catch (error) {
         console.error('Error parsing admin settings:', error);
-        // Use default roles if parsing fails
+        // Use default values if parsing fails
         setLaborRoles([
           { id: 'chef-default', name: 'Chef', laborPercentage: 60 },
           { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
         ]);
+        setBudgetProfiles([
+          {
+            id: 'cash-only',
+            name: 'Cash Only',
+            laborPercent: 55,
+            foodPercent: 35,
+            taxesPercent: 0,
+            profitPercent: 10
+          },
+          {
+            id: 'credit-card',
+            name: 'Credit Card Payments',
+            laborPercent: 30,
+            foodPercent: 35,
+            taxesPercent: 20,
+            profitPercent: 15
+          }
+        ]);
       }
     } else {
-      // Use default roles if no settings found
+      // Use default values if no settings found
       setLaborRoles([
         { id: 'chef-default', name: 'Chef', laborPercentage: 60 },
         { id: 'assistant-default', name: 'Assistant', laborPercentage: 40 }
       ]);
+      setBudgetProfiles([
+        {
+          id: 'cash-only',
+          name: 'Cash Only',
+          laborPercent: 55,
+          foodPercent: 35,
+          taxesPercent: 0,
+          profitPercent: 10
+        },
+        {
+          id: 'credit-card',
+          name: 'Credit Card Payments',
+          laborPercent: 30,
+          foodPercent: 35,
+          taxesPercent: 20,
+          profitPercent: 15
+        }
+      ]);
     }
   }, []);
 
-  const toggleCashOnly = (enabled: boolean) => {
-    setIsCashOnly(enabled);
-    if (enabled) {
-      // Set cash only percentages
-      setLaborPercent(55);
-      setFoodPercent(35);
-      setTaxesPercent(0);
-      setProfitPercent(10);
-    } else {
-      // Set regular default percentages
-      setLaborPercent(30);
-      setFoodPercent(35);
-      setTaxesPercent(20);
-      setProfitPercent(15);
+  const handleProfileChange = (profileId: string) => {
+    setSelectedProfileId(profileId);
+    const selectedProfile = budgetProfiles.find(p => p.id === profileId);
+    if (selectedProfile) {
+      setLaborPercent(selectedProfile.laborPercent);
+      setFoodPercent(selectedProfile.foodPercent);
+      setTaxesPercent(selectedProfile.taxesPercent);
+      setProfitPercent(selectedProfile.profitPercent);
     }
   };
 
@@ -124,7 +195,7 @@ const BreakevenAnalysis = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         {/* Input Section */}
         <Card>
           <CardHeader>
@@ -132,7 +203,7 @@ const BreakevenAnalysis = () => {
             <CardDescription>Enter your event details and budget allocations</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="guests">Number of Guests</Label>
                 <Input
@@ -154,7 +225,7 @@ const BreakevenAnalysis = () => {
                   step="0.01"
                 />
               </div>
-              <div>
+              <div className="sm:col-span-2">
                 <Label htmlFor="gratuity">Gratuity (%)</Label>
                 <Input
                   id="gratuity"
@@ -168,21 +239,32 @@ const BreakevenAnalysis = () => {
             </div>
 
             <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold">Budget Allocation (%)</h3>
-                <div className="flex items-center space-x-2">
-                  <DollarSign className="w-4 h-4 text-muted-foreground" />
-                  <Label htmlFor="cash-only" className="text-sm font-medium">Cash Only</Label>
-                  <Switch
-                    id="cash-only"
-                    checked={isCashOnly}
-                    onCheckedChange={toggleCashOnly}
-                  />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h3 className="font-semibold">Budget Allocation</h3>
+                <div className="flex items-center space-x-3 p-2 bg-primary/10 rounded-lg border border-primary/20">
+                  <DollarSign className="w-4 h-4 text-primary" />
+                  <Label className="text-sm font-medium text-primary">Payment Type:</Label>
+                  <div className="flex gap-2">
+                    {budgetProfiles.map((profile) => (
+                      <Button
+                        key={profile.id}
+                        variant={selectedProfileId === profile.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleProfileChange(profile.id)}
+                        className={selectedProfileId === profile.id ? 
+                          "bg-primary text-primary-foreground shadow-md" : 
+                          "border-primary/40 text-primary hover:bg-primary/10"
+                        }
+                      >
+                        {profile.name}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="labor">Labor</Label>
+                  <Label htmlFor="labor">Labor (%)</Label>
                   <Input
                     id="labor"
                     type="number"
@@ -190,11 +272,10 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setLaborPercent(Number(e.target.value))}
                     min="0"
                     max="100"
-                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="food">Food & Supplies</Label>
+                  <Label htmlFor="food">Food & Supplies (%)</Label>
                   <Input
                     id="food"
                     type="number"
@@ -202,11 +283,10 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setFoodPercent(Number(e.target.value))}
                     min="0"
                     max="100"
-                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="taxes">Taxes</Label>
+                  <Label htmlFor="taxes">Taxes (%)</Label>
                   <Input
                     id="taxes"
                     type="number"
@@ -214,11 +294,10 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setTaxesPercent(Number(e.target.value))}
                     min="0"
                     max="100"
-                    disabled={isCashOnly}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="profit">Profit</Label>
+                  <Label htmlFor="profit">Profit (%)</Label>
                   <Input
                     id="profit"
                     type="number"
@@ -226,7 +305,6 @@ const BreakevenAnalysis = () => {
                     onChange={(e) => setProfitPercent(Number(e.target.value))}
                     min="0"
                     max="100"
-                    disabled={isCashOnly}
                   />
                 </div>
               </div>
@@ -244,7 +322,7 @@ const BreakevenAnalysis = () => {
             <CardDescription>{guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Base Revenue</span>
