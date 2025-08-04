@@ -205,6 +205,10 @@ const BreakevenAnalysis = () => {
                   <span className="font-semibold">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
                 <div className="flex justify-between">
+                  <span>Recommended Budget (including taxes):</span>
+                  <span className="font-semibold text-green-600">{formatCurrency(currentScenario.laborBudget + currentScenario.foodBudget + currentScenario.taxesBudget)}</span>
+                </div>
+                <div className="flex justify-between">
                   <span>Recommended Chef Pay (60% of labor):</span>
                   <span className="font-semibold text-primary">{formatCurrency(currentScenario.laborBudget * 0.6)}</span>
                 </div>
@@ -218,58 +222,6 @@ const BreakevenAnalysis = () => {
         </Card>
       </div>
 
-      {/* Scenario Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Guest Scenario Analysis</CardTitle>
-          <CardDescription>
-            Compare budgets across different guest counts (10-60 guests)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Guests</TableHead>
-                <TableHead>Base Revenue</TableHead>
-                <TableHead>Gratuity</TableHead>
-                <TableHead>Total Revenue</TableHead>
-                <TableHead>Labor Budget</TableHead>
-                <TableHead>Chef Pay (60%)</TableHead>
-                <TableHead>Assistant Pay (40%)</TableHead>
-                <TableHead>Food & Supplies</TableHead>
-                <TableHead>Taxes</TableHead>
-                <TableHead>Profit</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {scenarios.map((scenario) => (
-                <TableRow 
-                  key={scenario.guests}
-                  className={scenario.guests === guestCount ? "bg-muted/50" : ""}
-                >
-                  <TableCell className="font-medium">{scenario.guests}</TableCell>
-                  <TableCell>{formatCurrency(scenario.baseRevenue)}</TableCell>
-                  <TableCell className="text-green-600">{formatCurrency(scenario.gratuityAmount)}</TableCell>
-                  <TableCell className="font-semibold">{formatCurrency(scenario.totalRevenue)}</TableCell>
-                  <TableCell className="font-semibold text-primary">
-                    {formatCurrency(scenario.laborBudget)}
-                  </TableCell>
-                  <TableCell className="font-semibold text-green-600">
-                    {formatCurrency(scenario.laborBudget * 0.6)}
-                  </TableCell>
-                  <TableCell className="font-semibold text-blue-600">
-                    {formatCurrency(scenario.laborBudget * 0.4)}
-                  </TableCell>
-                  <TableCell>{formatCurrency(scenario.foodBudget)}</TableCell>
-                  <TableCell>{formatCurrency(scenario.taxesBudget)}</TableCell>
-                  <TableCell>{formatCurrency(scenario.profitBudget)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
     </div>
   );
 };
