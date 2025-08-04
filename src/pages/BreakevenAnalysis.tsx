@@ -245,12 +245,13 @@ const BreakevenAnalysis = () => {
 
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold">Payment Settings</h3>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-lg">
                 <Label htmlFor="cash-only" className="text-sm font-medium">Cash Only</Label>
                 <Switch
                   id="cash-only"
                   checked={isCashOnly}
                   onCheckedChange={toggleCashOnly}
+                  className="data-[state=checked]:bg-gray-700 data-[state=unchecked]:bg-gray-400"
                 />
               </div>
             </div>
