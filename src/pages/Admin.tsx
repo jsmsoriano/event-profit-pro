@@ -185,6 +185,7 @@ const Admin = () => {
   };
 
   const updateBudgetProfile = (id: string, updatedProfile: Partial<BudgetProfile>) => {
+    console.log('updateBudgetProfile called:', id, updatedProfile);
     setSettings(prev => ({
       ...prev,
       budgetProfiles: prev.budgetProfiles.map(profile => 
@@ -359,7 +360,10 @@ const Admin = () => {
                            <div className="col-span-3">
                              <Input
                                value={editingProfileValue.name}
-                               onChange={(e) => setEditingProfileValue(prev => ({ ...prev, name: e.target.value }))}
+                               onChange={(e) => {
+                                 console.log('Budget profile name onChange:', e.target.value);
+                                 setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
+                               }}
                                className="input-modern"
                                autoFocus
                                onKeyDown={(e) => {
@@ -369,14 +373,20 @@ const Admin = () => {
                                    setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
                                  }
                                }}
-                               onBlur={() => updateBudgetProfile(profile.id, editingProfileValue)}
+                               onBlur={() => {
+                                 console.log('Budget profile name onBlur');
+                                 updateBudgetProfile(profile.id, editingProfileValue);
+                               }}
                              />
                            </div>
                            <div className="col-span-2">
                              <Input
                                type="number"
                                value={editingProfileValue.laborPercent}
-                               onChange={(e) => setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
+                               onChange={(e) => {
+                                 console.log('Budget profile labor onChange:', e.target.value);
+                                 setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
+                               }}
                                className="input-modern"
                                min="0"
                                max="100"
@@ -461,6 +471,7 @@ const Admin = () => {
                                  variant="outline"
                                  size="sm"
                                  onClick={() => {
+                                   console.log('Edit button clicked for profile:', profile.id, profile);
                                    setEditingProfile(profile.id);
                                    setEditingProfileValue({
                                      id: profile.id,
