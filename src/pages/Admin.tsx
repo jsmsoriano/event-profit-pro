@@ -75,7 +75,9 @@ const Admin = () => {
   const [settings, setSettings] = useState<AdminSettings>(defaultSettings);
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [editingExpense, setEditingExpense] = useState<string | null>(null);
+  const [editingExpenseValue, setEditingExpenseValue] = useState('');
   const [editingFoodCost, setEditingFoodCost] = useState<string | null>(null);
+  const [editingFoodCostValue, setEditingFoodCostValue] = useState('');
   const [editingProfile, setEditingProfile] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<LaborRole>({
     id: '',
@@ -258,6 +260,8 @@ const Admin = () => {
         expenseTypes: prev.expenseTypes.map(expense => expense === oldExpense ? newExpense.trim() : expense)
       }));
     }
+    setEditingExpense(null);
+    setEditingExpenseValue('');
   };
 
   const deleteExpense = (expenseToDelete: string) => {
@@ -285,6 +289,7 @@ const Admin = () => {
       }));
     }
     setEditingFoodCost(null);
+    setEditingFoodCostValue('');
   };
 
   const deleteFoodCost = (foodCostToDelete: string) => {
@@ -709,39 +714,37 @@ const Admin = () => {
                         <>
                           <div className="col-span-8">
                             <Input
-                              value={editingExpense === expense ? expense : expense}
-                              onChange={(e) => {
-                                setSettings(prev => ({
-                                  ...prev,
-                                  expenseTypes: prev.expenseTypes.map(exp => exp === expense ? e.target.value : exp)
-                                }));
-                              }}
+                              value={editingExpenseValue}
+                              onChange={(e) => setEditingExpenseValue(e.target.value)}
                               className="input-modern"
                               autoFocus
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                  updateExpense(expense, e.currentTarget.value);
-                                  setEditingExpense(null);
+                                  updateExpense(expense, editingExpenseValue);
                                 }
-                                if (e.key === 'Escape') setEditingExpense(null);
+                                if (e.key === 'Escape') {
+                                  setEditingExpense(null);
+                                  setEditingExpenseValue('');
+                                }
                               }}
+                              onBlur={() => updateExpense(expense, editingExpenseValue)}
                             />
                           </div>
                           <div className="col-span-4 flex justify-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => {
-                                updateExpense(expense, expense);
-                                setEditingExpense(null);
-                              }}
+                              onClick={() => updateExpense(expense, editingExpenseValue)}
                             >
                               <Save className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setEditingExpense(null)}
+                              onClick={() => {
+                                setEditingExpense(null);
+                                setEditingExpenseValue('');
+                              }}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -755,7 +758,10 @@ const Admin = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setEditingExpense(expense)}
+                                onClick={() => {
+                                  setEditingExpense(expense);
+                                  setEditingExpenseValue(expense);
+                                }}
                               >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
@@ -811,28 +817,35 @@ const Admin = () => {
                         <>
                           <div className="col-span-8">
                             <Input
-                              value={foodCost}
-                              onChange={(e) => updateFoodCost(foodCost, e.target.value)}
+                              value={editingFoodCostValue}
+                              onChange={(e) => setEditingFoodCostValue(e.target.value)}
                               className="input-modern"
                               autoFocus
                               onKeyDown={(e) => {
-                                if (e.key === 'Enter') updateFoodCost(foodCost, e.currentTarget.value);
-                                if (e.key === 'Escape') setEditingFoodCost(null);
+                                if (e.key === 'Enter') updateFoodCost(foodCost, editingFoodCostValue);
+                                if (e.key === 'Escape') {
+                                  setEditingFoodCost(null);
+                                  setEditingFoodCostValue('');
+                                }
                               }}
+                              onBlur={() => updateFoodCost(foodCost, editingFoodCostValue)}
                             />
                           </div>
                           <div className="col-span-4 flex justify-center gap-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => updateFoodCost(foodCost, foodCost)}
+                              onClick={() => updateFoodCost(foodCost, editingFoodCostValue)}
                             >
                               <Save className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => setEditingFoodCost(null)}
+                              onClick={() => {
+                                setEditingFoodCost(null);
+                                setEditingFoodCostValue('');
+                              }}
                             >
                               <X className="w-4 h-4" />
                             </Button>
@@ -846,7 +859,10 @@ const Admin = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setEditingFoodCost(foodCost)}
+                                onClick={() => {
+                                  setEditingFoodCost(foodCost);
+                                  setEditingFoodCostValue(foodCost);
+                                }}
                               >
                                 <Edit2 className="w-4 h-4" />
                               </Button>
