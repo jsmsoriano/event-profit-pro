@@ -17,6 +17,7 @@ const items = [
   { title: "Profit Analysis", url: "/", icon: BarChart3 },
   { title: "Financial Summary", url: "/financial-summary", icon: TrendingUp },
   { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
+  { title: "Reports", url: "/reporting", icon: FileText },
   { title: "Team", url: "/team", icon: Users },
   { title: "Quotes", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },

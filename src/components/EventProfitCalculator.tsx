@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, RotateCcw, RefreshCw } from 'lucide-react';
+import { Calculator, DollarSign, Users, Percent, Target, TrendingUp, Plus, Edit2, Trash2, RotateCcw, RefreshCw, Save, Download, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import FinancialSummary from '@/pages/FinancialSummary';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import { format } from 'date-fns';
 
 // Utility function to handle number input values and remove leading zeros
 const handleNumberInput = (value: string): string => {
@@ -73,6 +80,13 @@ const EventProfitCalculator = () => {
   // Edit states for expenses
   const [editingFoodItem, setEditingFoodItem] = useState<string | null>(null);
   const [editingMiscExpense, setEditingMiscExpense] = useState<string | null>(null);
+
+  // Report functionality states
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [reportName, setReportName] = useState('');
+  const [savedReports, setSavedReports] = useState<any[]>([]);
+  const { toast } = useToast();
+  const { user } = useAuth();
 
   // Expenses states - now using admin-controlled dropdowns
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
@@ -323,6 +337,215 @@ const EventProfitCalculator = () => {
     actualProfit, businessTaxPercentage, gratuityForLabor, maxLaborBudget
   ]);
 
+  // Load saved reports
+  useEffect(() => {
+    if (user) {
+      loadSavedReports();
+    }
+  }, [user]);
+
+  const loadSavedReports = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('saved_reports')
+        .select('*')
+        .eq('report_type', 'event_calculator')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSavedReports(data || []);
+    } catch (error) {
+      console.error('Error loading reports:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load saved reports",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const saveReport = async () => {
+    if (!user || !reportName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a report name",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const reportData = {
+        eventDetails: {
+          guests: numberOfGuests,
+          pricePerPerson: pricePerPerson,
+          gratuityPercentage: gratuityPercentage
+        },
+        cashOnlyScenario: {
+          revenue: baseRevenue,
+          laborBudget: maxLaborBudget * 0.55,
+          taxesSetAside: 0,
+          profitMargin: actualProfit * 0.1,
+          totalCosts: totalCosts,
+          netProfit: actualProfit * 0.1
+        },
+        creditCardScenario: {
+          revenue: baseRevenue,
+          laborBudget: maxLaborBudget * 0.30,
+          taxesSetAside: baseRevenue * 0.20,
+          profitMargin: actualProfit * 0.15,
+          totalCosts: totalCosts * 0.8,
+          netProfit: actualProfit * 0.15
+        },
+        calculations: {
+          baseRevenue,
+          totalRevenue,
+          gratuityAmount,
+          totalLaborCosts,
+          totalFoodCosts,
+          totalMiscCosts,
+          totalCosts,
+          actualProfit,
+          actualProfitPercentage
+        }
+      };
+
+      const { error } = await supabase
+        .from('saved_reports')
+        .insert({
+          user_id: user.id,
+          report_name: reportName,
+          report_data: reportData,
+          report_type: 'event_calculator'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Report saved successfully",
+      });
+
+      setReportName('');
+      setSaveDialogOpen(false);
+      loadSavedReports();
+    } catch (error) {
+      console.error('Error saving report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save report",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const exportToExcel = () => {
+    const workbook = XLSX.utils.book_new();
+    
+    const eventData = [
+      ['Event Calculator Report', '', ''],
+      ['Generated on', format(new Date(), 'PPP'), ''],
+      ['', '', ''],
+      ['Event Details', '', ''],
+      ['Number of Guests', numberOfGuests, ''],
+      ['Price per Person', pricePerPerson, ''],
+      ['Gratuity %', gratuityPercentage, ''],
+      ['', '', ''],
+      ['Revenue', '', ''],
+      ['Base Revenue', baseRevenue, ''],
+      ['Gratuity Amount', gratuityAmount, ''],
+      ['Total Revenue', totalRevenue, ''],
+      ['', '', ''],
+      ['Expenses', '', ''],
+      ['Food Costs', totalFoodCosts, ''],
+      ['Labor Costs', totalLaborCosts, ''],
+      ['Miscellaneous', totalMiscCosts, ''],
+      ['Total Expenses', totalCosts, ''],
+      ['', '', ''],
+      ['Profit Analysis', '', ''],
+      ['Net Profit', actualProfit, ''],
+      ['Profit Percentage', actualProfitPercentage, '%'],
+    ];
+
+    const worksheet = XLSX.utils.aoa_to_sheet(eventData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Event Calculator');
+    
+    const fileName = `Event_Calculator_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    toast({
+      title: "Success",
+      description: "Excel report exported successfully",
+    });
+  };
+
+  const exportToPDF = async () => {
+    try {
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      
+      pdf.setFontSize(20);
+      pdf.text('Event Calculator Report', 20, 20);
+      
+      pdf.setFontSize(10);
+      pdf.text(`Generated on: ${format(new Date(), 'PPP')}`, 20, 30);
+      
+      pdf.setFontSize(14);
+      pdf.text('Event Details', 20, 45);
+      pdf.setFontSize(10);
+      pdf.text(`Guests: ${numberOfGuests}`, 20, 55);
+      pdf.text(`Price per Person: $${pricePerPerson}`, 20, 65);
+      pdf.text(`Gratuity: ${gratuityPercentage}%`, 20, 75);
+      
+      pdf.setFontSize(14);
+      pdf.text('Financial Summary', 20, 95);
+      pdf.setFontSize(10);
+      pdf.text(`Base Revenue: $${baseRevenue.toFixed(2)}`, 20, 105);
+      pdf.text(`Total Revenue: $${totalRevenue.toFixed(2)}`, 20, 115);
+      pdf.text(`Total Expenses: $${totalCosts.toFixed(2)}`, 20, 125);
+      pdf.text(`Net Profit: $${actualProfit.toFixed(2)}`, 20, 135);
+      
+      const fileName = `Event_Calculator_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      pdf.save(fileName);
+      
+      toast({
+        title: "Success",
+        description: "PDF report exported successfully",
+      });
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate PDF",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteReport = async (reportId: string) => {
+    try {
+      const { error } = await supabase
+        .from('saved_reports')
+        .delete()
+        .eq('id', reportId);
+
+      if (error) throw error;
+      
+      setSavedReports(prev => prev.filter(r => r.id !== reportId));
+      
+      toast({
+        title: "Success",
+        description: "Report deleted successfully",
+      });
+    } catch (error) {
+      console.error('Error deleting report:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete report",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen p-2 lg:p-4">
       <div className="max-w-7xl mx-auto">
@@ -340,6 +563,41 @@ const EventProfitCalculator = () => {
                   <Users className="w-5 h-5" />
                   Event Details
                   <div className="ml-auto flex gap-2">
+                    <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline">
+                          <Save className="w-4 h-4 mr-2" />
+                          Save Report
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>Save Report</DialogTitle>
+                          <DialogDescription>
+                            Enter a name for this event calculator report
+                          </DialogDescription>
+                        </DialogHeader>
+                        <Input
+                          placeholder="Report name..."
+                          value={reportName}
+                          onChange={(e) => setReportName(e.target.value)}
+                        />
+                        <DialogFooter>
+                          <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button onClick={saveReport}>Save</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <Button onClick={exportToExcel} variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      Excel
+                    </Button>
+                    <Button onClick={exportToPDF} variant="outline">
+                      <Download className="w-4 h-4 mr-2" />
+                      PDF
+                    </Button>
                     <Button
                       onClick={resetInputs}
                       variant="outline"
