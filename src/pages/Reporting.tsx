@@ -29,23 +29,33 @@ interface ReportData {
     gratuityPercentage: number;
   };
   cashOnlyScenario: {
+    baseRevenue: number;
+    gratuityAmount: number;
     revenue: number;
+    foodCosts: number;
     laborBudget: number;
     chefPay: number;
     assistantPay: number;
+    miscExpenses: number;
     taxesSetAside: number;
-    profitMargin: number;
+    creditCardFees: number;
     totalCosts: number;
+    profitMargin: number;
     netProfit: number;
   };
   creditCardScenario: {
+    baseRevenue: number;
+    gratuityAmount: number;
     revenue: number;
+    foodCosts: number;
     laborBudget: number;
     chefPay: number;
     assistantPay: number;
+    miscExpenses: number;
     taxesSetAside: number;
-    profitMargin: number;
+    creditCardFees: number;
     totalCosts: number;
+    profitMargin: number;
     netProfit: number;
   };
 }
@@ -67,28 +77,44 @@ export default function Reporting() {
     const baseRevenue = guests * pricePerPerson;
     const gratuityAmount = baseRevenue * (gratuityPercentage / 100);
     const totalRevenue = baseRevenue + gratuityAmount;
+    
+    // Food costs (35% of revenue for both scenarios)
+    const foodCosts = baseRevenue * 0.35;
+    
+    // Miscellaneous expenses (10% of revenue for both scenarios)
+    const miscExpenses = baseRevenue * 0.10;
 
     return {
       eventDetails: { guests, pricePerPerson, gratuityPercentage },
       cashOnlyScenario: {
+        baseRevenue,
+        gratuityAmount,
         revenue: totalRevenue,
+        foodCosts,
         laborBudget: totalRevenue * 0.55,
         chefPay: totalRevenue * 0.33,
         assistantPay: totalRevenue * 0.22,
+        miscExpenses,
         taxesSetAside: 0,
-        profitMargin: totalRevenue * 0.10,
-        totalCosts: totalRevenue * 0.90,
-        netProfit: totalRevenue * 0.10
+        creditCardFees: 0,
+        totalCosts: foodCosts + (totalRevenue * 0.55) + miscExpenses,
+        profitMargin: totalRevenue - (foodCosts + (totalRevenue * 0.55) + miscExpenses),
+        netProfit: totalRevenue - (foodCosts + (totalRevenue * 0.55) + miscExpenses)
       },
       creditCardScenario: {
+        baseRevenue,
+        gratuityAmount,
         revenue: totalRevenue,
+        foodCosts,
         laborBudget: totalRevenue * 0.30,
         chefPay: totalRevenue * 0.18,
         assistantPay: totalRevenue * 0.12,
+        miscExpenses,
         taxesSetAside: totalRevenue * 0.20,
-        profitMargin: totalRevenue * 0.15,
-        totalCosts: totalRevenue * 0.70,
-        netProfit: totalRevenue * 0.15
+        creditCardFees: totalRevenue * 0.03,
+        totalCosts: foodCosts + (totalRevenue * 0.30) + miscExpenses + (totalRevenue * 0.20) + (totalRevenue * 0.03),
+        profitMargin: totalRevenue - (foodCosts + (totalRevenue * 0.30) + miscExpenses + (totalRevenue * 0.20) + (totalRevenue * 0.03)),
+        netProfit: totalRevenue - (foodCosts + (totalRevenue * 0.30) + miscExpenses + (totalRevenue * 0.20) + (totalRevenue * 0.03))
       }
     };
   };
@@ -431,10 +457,35 @@ export default function Reporting() {
                         </tr>
                       </thead>
                       <tbody>
+                        <tr className="border-b hover:bg-muted/20 bg-gray-50">
+                          <td colSpan={4} className="p-3 font-bold text-center">REVENUE BREAKDOWN</td>
+                        </tr>
                         <tr className="border-b hover:bg-muted/20">
-                          <td className="p-3 font-medium">Revenue</td>
-                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.revenue)}</td>
-                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.revenue)}</td>
+                          <td className="p-3 font-medium">Base Revenue</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.baseRevenue)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.baseRevenue)}</td>
+                          <td className="text-center p-3 text-muted-foreground">-</td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium">Gratuity Amount</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.gratuityAmount)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.gratuityAmount)}</td>
+                          <td className="text-center p-3 text-muted-foreground">-</td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium">Total Revenue</td>
+                          <td className="text-center p-3 font-semibold">{formatCurrency(reportData.cashOnlyScenario.revenue)}</td>
+                          <td className="text-center p-3 font-semibold">{formatCurrency(reportData.creditCardScenario.revenue)}</td>
+                          <td className="text-center p-3 text-muted-foreground">-</td>
+                        </tr>
+                        
+                        <tr className="border-b hover:bg-muted/20 bg-gray-50">
+                          <td colSpan={4} className="p-3 font-bold text-center">EXPENSES BREAKDOWN</td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium">Food Costs</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.foodCosts)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.foodCosts)}</td>
                           <td className="text-center p-3 text-muted-foreground">-</td>
                         </tr>
                         <tr className="border-b hover:bg-muted/20">
@@ -447,6 +498,57 @@ export default function Reporting() {
                               return (
                                 <span className={diff.amount < 0 ? 'text-green-600' : 'text-red-600'}>
                                   {formatCurrency(Math.abs(diff.amount))} {diff.amount < 0 ? '↓' : '↑'}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium pl-6">• Chef Pay</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.chefPay)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.chefPay)}</td>
+                          <td className="text-center p-3">
+                            {(() => {
+                              const diff = calculateDifference(reportData.creditCardScenario.chefPay, reportData.cashOnlyScenario.chefPay);
+                              return (
+                                <span className={diff.amount < 0 ? 'text-green-600' : 'text-red-600'}>
+                                  {formatCurrency(Math.abs(diff.amount))} {diff.amount < 0 ? '↓' : '↑'}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium pl-6">• Assistant Pay</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.assistantPay)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.assistantPay)}</td>
+                          <td className="text-center p-3">
+                            {(() => {
+                              const diff = calculateDifference(reportData.creditCardScenario.assistantPay, reportData.cashOnlyScenario.assistantPay);
+                              return (
+                                <span className={diff.amount < 0 ? 'text-green-600' : 'text-red-600'}>
+                                  {formatCurrency(Math.abs(diff.amount))} {diff.amount < 0 ? '↓' : '↑'}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium">Miscellaneous Expenses</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.miscExpenses)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.miscExpenses)}</td>
+                          <td className="text-center p-3 text-muted-foreground">-</td>
+                        </tr>
+                        <tr className="border-b hover:bg-muted/20">
+                          <td className="p-3 font-medium">Credit Card Fees</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.creditCardFees)}</td>
+                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.creditCardFees)}</td>
+                          <td className="text-center p-3">
+                            {(() => {
+                              const diff = calculateDifference(reportData.creditCardScenario.creditCardFees, reportData.cashOnlyScenario.creditCardFees);
+                              return (
+                                <span className={diff.amount > 0 ? 'text-red-600' : 'text-green-600'}>
+                                  {formatCurrency(Math.abs(diff.amount))} {diff.amount > 0 ? '↑' : '↓'}
                                 </span>
                               );
                             })()}
@@ -468,9 +570,9 @@ export default function Reporting() {
                           </td>
                         </tr>
                         <tr className="border-b hover:bg-muted/20">
-                          <td className="p-3 font-medium">Total Costs</td>
-                          <td className="text-center p-3">{formatCurrency(reportData.cashOnlyScenario.totalCosts)}</td>
-                          <td className="text-center p-3">{formatCurrency(reportData.creditCardScenario.totalCosts)}</td>
+                          <td className="p-3 font-semibold">Total Costs</td>
+                          <td className="text-center p-3 font-semibold">{formatCurrency(reportData.cashOnlyScenario.totalCosts)}</td>
+                          <td className="text-center p-3 font-semibold">{formatCurrency(reportData.creditCardScenario.totalCosts)}</td>
                           <td className="text-center p-3">
                             {(() => {
                               const diff = calculateDifference(reportData.creditCardScenario.totalCosts, reportData.cashOnlyScenario.totalCosts);
@@ -482,10 +584,11 @@ export default function Reporting() {
                             })()}
                           </td>
                         </tr>
+                        
                         <tr className="border-b hover:bg-muted/20 bg-primary/5">
-                          <td className="p-3 font-bold">Net Profit</td>
-                          <td className="text-center p-3 font-bold">{formatCurrency(reportData.cashOnlyScenario.netProfit)}</td>
-                          <td className="text-center p-3 font-bold">{formatCurrency(reportData.creditCardScenario.netProfit)}</td>
+                          <td className="p-3 font-bold">NET PROFIT</td>
+                          <td className="text-center p-3 font-bold text-lg">{formatCurrency(reportData.cashOnlyScenario.netProfit)}</td>
+                          <td className="text-center p-3 font-bold text-lg">{formatCurrency(reportData.creditCardScenario.netProfit)}</td>
                           <td className="text-center p-3 font-bold">
                             {(() => {
                               const diff = calculateDifference(reportData.creditCardScenario.netProfit, reportData.cashOnlyScenario.netProfit);
