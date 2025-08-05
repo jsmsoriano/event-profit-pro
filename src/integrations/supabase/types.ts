@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_settings: {
+        Row: {
+          created_at: string
+          expense_types: string[] | null
+          food_cost_types: string[] | null
+          id: string
+          labor_revenue_percentage: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expense_types?: string[] | null
+          food_cost_types?: string[] | null
+          id?: string
+          labor_revenue_percentage?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expense_types?: string[] | null
+          food_cost_types?: string[] | null
+          id?: string
+          labor_revenue_percentage?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       billing_performance: {
         Row: {
           approved_claims: number
@@ -69,6 +99,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      budget_profiles: {
+        Row: {
+          created_at: string
+          food_percent: number
+          id: string
+          is_default: boolean | null
+          labor_percent: number
+          name: string
+          profit_percent: number
+          taxes_percent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          food_percent?: number
+          id?: string
+          is_default?: boolean | null
+          labor_percent?: number
+          name: string
+          profit_percent?: number
+          taxes_percent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          food_percent?: number
+          id?: string
+          is_default?: boolean | null
+          labor_percent?: number
+          name?: string
+          profit_percent?: number
+          taxes_percent?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       claims: {
         Row: {
@@ -606,6 +675,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      labor_roles: {
+        Row: {
+          created_at: string
+          id: string
+          labor_percentage: number
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          labor_percentage?: number
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          labor_percentage?: number
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       month_end_audit_log: {
         Row: {
