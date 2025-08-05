@@ -1017,6 +1017,36 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_reports: {
+        Row: {
+          created_at: string
+          id: string
+          report_data: Json
+          report_name: string
+          report_type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          report_data: Json
+          report_name: string
+          report_type?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          report_data?: Json
+          report_name?: string
+          report_type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       spreadsheet_imports: {
         Row: {
           created_at: string
