@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileText, Download, Printer, Save, Trash2, Calendar } from "lucide-react";
+import { FileText, Download, Printer, Save, Trash2, Calendar, Calculator } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,8 @@ interface ReportData {
   cashOnlyScenario: {
     revenue: number;
     laborBudget: number;
+    chefPay: number;
+    assistantPay: number;
     taxesSetAside: number;
     profitMargin: number;
     totalCosts: number;
@@ -39,6 +41,8 @@ interface ReportData {
   creditCardScenario: {
     revenue: number;
     laborBudget: number;
+    chefPay: number;
+    assistantPay: number;
     taxesSetAside: number;
     profitMargin: number;
     totalCosts: number;
@@ -53,30 +57,43 @@ export default function Reporting() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Sample report data - in real implementation, this would come from the Event Calculator
-  const [reportData, setReportData] = useState<ReportData>({
-    eventDetails: {
-      guests: 50,
-      pricePerPerson: 120,
-      gratuityPercentage: 18
-    },
-    cashOnlyScenario: {
-      revenue: 6000,
-      laborBudget: 3300,
-      taxesSetAside: 0,
-      profitMargin: 600,
-      totalCosts: 5400,
-      netProfit: 600
-    },
-    creditCardScenario: {
-      revenue: 6000,
-      laborBudget: 1800,
-      taxesSetAside: 1200,
-      profitMargin: 900,
-      totalCosts: 4200,
-      netProfit: 900
-    }
-  });
+  // Editable event details
+  const [guests, setGuests] = useState(50);
+  const [pricePerPerson, setPricePerPerson] = useState(120);
+  const [gratuityPercentage, setGratuityPercentage] = useState(18);
+
+  // Calculate scenarios based on inputs
+  const calculateScenarios = () => {
+    const baseRevenue = guests * pricePerPerson;
+    const gratuityAmount = baseRevenue * (gratuityPercentage / 100);
+    const totalRevenue = baseRevenue + gratuityAmount;
+
+    return {
+      eventDetails: { guests, pricePerPerson, gratuityPercentage },
+      cashOnlyScenario: {
+        revenue: totalRevenue,
+        laborBudget: totalRevenue * 0.55,
+        chefPay: totalRevenue * 0.33,
+        assistantPay: totalRevenue * 0.22,
+        taxesSetAside: 0,
+        profitMargin: totalRevenue * 0.10,
+        totalCosts: totalRevenue * 0.90,
+        netProfit: totalRevenue * 0.10
+      },
+      creditCardScenario: {
+        revenue: totalRevenue,
+        laborBudget: totalRevenue * 0.30,
+        chefPay: totalRevenue * 0.18,
+        assistantPay: totalRevenue * 0.12,
+        taxesSetAside: totalRevenue * 0.20,
+        profitMargin: totalRevenue * 0.15,
+        totalCosts: totalRevenue * 0.70,
+        netProfit: totalRevenue * 0.15
+      }
+    };
+  };
+
+  const [reportData, setReportData] = useState<ReportData>(calculateScenarios());
 
   useEffect(() => {
     if (user) {
@@ -256,6 +273,14 @@ export default function Reporting() {
     };
   };
 
+  const generateReport = () => {
+    setReportData(calculateScenarios());
+    toast({
+      title: "Success",
+      description: "Report generated with updated values",
+    });
+  };
+
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
@@ -265,6 +290,10 @@ export default function Reporting() {
           <p className="text-muted-foreground">Generate and manage your event scenario reports</p>
         </div>
         <div className="flex gap-2">
+          <Button onClick={generateReport} className="gap-2">
+            <Calculator className="h-4 w-4" />
+            Generate
+          </Button>
           <Button onClick={exportToExcel} variant="outline" className="gap-2">
             <Download className="h-4 w-4" />
             Excel
@@ -349,21 +378,39 @@ export default function Reporting() {
             </CardHeader>
             <CardContent>
               <div id="report-content" className="space-y-6">
-                {/* Event Details */}
+                {/* Editable Event Details */}
                 <div>
                   <h3 className="text-lg font-semibold mb-3">Event Details</h3>
                   <div className="grid grid-cols-3 gap-4 p-4 bg-muted/30 rounded-lg">
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-muted-foreground">Guests</p>
-                      <p className="text-2xl font-bold">{reportData.eventDetails.guests}</p>
+                    <div>
+                      <Label htmlFor="guests">Guests</Label>
+                      <Input
+                        id="guests"
+                        type="number"
+                        value={guests}
+                        onChange={(e) => setGuests(Number(e.target.value))}
+                        className="text-center font-bold text-lg"
+                      />
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-muted-foreground">Price per Person</p>
-                      <p className="text-2xl font-bold">{formatCurrency(reportData.eventDetails.pricePerPerson)}</p>
+                    <div>
+                      <Label htmlFor="pricePerPerson">Price per Person</Label>
+                      <Input
+                        id="pricePerPerson"
+                        type="number"
+                        value={pricePerPerson}
+                        onChange={(e) => setPricePerPerson(Number(e.target.value))}
+                        className="text-center font-bold text-lg"
+                      />
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-muted-foreground">Gratuity</p>
-                      <p className="text-2xl font-bold">{reportData.eventDetails.gratuityPercentage}%</p>
+                    <div>
+                      <Label htmlFor="gratuity">Gratuity %</Label>
+                      <Input
+                        id="gratuity"
+                        type="number"
+                        value={gratuityPercentage}
+                        onChange={(e) => setGratuityPercentage(Number(e.target.value))}
+                        className="text-center font-bold text-lg"
+                      />
                     </div>
                   </div>
                 </div>
