@@ -192,22 +192,22 @@ const BreakevenAnalysis = () => {
   const currentScenario = calculateScenario(guestCount);
 
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Event Calculator</h1>
-        <p className="text-muted-foreground">
+    <div className="min-h-screen p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
+      <div className="text-center sm:text-left">
+        <h1 className="text-2xl sm:text-3xl font-bold">Event Calculator</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           Plan your event budget and labor costs across different guest scenarios
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Input Section */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
-            <CardTitle>Event Parameters</CardTitle>
-            <CardDescription>Enter your event details and budget allocations</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Event Parameters</CardTitle>
+            <CardDescription className="text-sm">Enter your event details and budget allocations</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 p-3 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="guests">Number of Guests</Label>
@@ -243,10 +243,10 @@ const BreakevenAnalysis = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold">Payment Settings</h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+              <h3 className="font-semibold text-sm sm:text-base">Payment Settings</h3>
               <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-lg">
-                <Label htmlFor="cash-only" className="text-sm font-medium">Cash Only</Label>
+                <Label htmlFor="cash-only" className="text-sm font-medium whitespace-nowrap">Cash Only</Label>
                 <Switch
                   id="cash-only"
                   checked={isCashOnly}
@@ -259,66 +259,68 @@ const BreakevenAnalysis = () => {
         </Card>
 
         {/* Current Scenario */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
-            <CardTitle>Current Scenario</CardTitle>
-            <CardDescription>{guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity</CardDescription>
+            <CardTitle className="text-lg sm:text-xl">Current Scenario</CardTitle>
+            <CardDescription className="text-sm break-words">
+              {guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <CardContent className="space-y-4 p-3 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Base Revenue</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.baseRevenue)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Base Revenue</span>
+                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.baseRevenue)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Gratuity ({gratuityPercent}%)</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.gratuityAmount)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Gratuity ({gratuityPercent}%)</span>
+                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.gratuityAmount)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Revenue</span>
-                  <span className="font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Total Revenue</span>
+                  <span className="font-semibold text-green-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.totalRevenue)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Labor Budget</span>
-                  <span className="font-semibold text-primary">{formatCurrency(currentScenario.laborBudget)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Labor Budget</span>
+                  <span className="font-semibold text-primary text-xs sm:text-sm text-right">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Food & Supplies</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.foodBudget)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Food & Supplies</span>
+                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.foodBudget)}</span>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Taxes to Set Aside</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.taxesToSetAside)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Taxes to Set Aside</span>
+                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Profit</span>
-                  <span className="font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Profit</span>
+                  <span className="font-semibold text-green-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.profitBudget)}</span>
                 </div>
-                <div className="flex justify-between border-t pt-2 mt-2">
-                  <span className="text-sm text-muted-foreground font-medium">Cost Per Plate</span>
-                  <span className="font-semibold text-orange-600">{formatCurrency(currentScenario.costPerPlate)}</span>
+                <div className="flex justify-between items-center border-t pt-2 mt-2">
+                  <span className="text-xs sm:text-sm text-muted-foreground font-medium truncate">Cost Per Plate</span>
+                  <span className="font-semibold text-orange-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.costPerPlate)}</span>
                 </div>
               </div>
             </div>
             
-            <div className="mt-6 p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2">Labor Budget Breakdown</h4>
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span>Maximum Labor Budget:</span>
-                  <span className="font-semibold">{formatCurrency(currentScenario.laborBudget)}</span>
+            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-2 text-sm sm:text-base">Labor Budget Breakdown</h4>
+              <div className="space-y-1 text-xs sm:text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="truncate">Maximum Labor Budget:</span>
+                  <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span>Recommended Taxes to be set aside:</span>
-                  <span className="font-semibold text-orange-600">{formatCurrency(currentScenario.taxesToSetAside)}</span>
+                <div className="flex justify-between items-center">
+                  <span className="truncate">Recommended Taxes to be set aside:</span>
+                  <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
                 {laborRoles.map((role) => (
-                  <div key={role.id} className="flex justify-between">
-                    <span>{role.name} Pay ({role.laborPercentage}% of labor):</span>
-                    <span className="font-semibold text-primary">{formatCurrency(currentScenario.laborBudget * (role.laborPercentage / 100))}</span>
+                  <div key={role.id} className="flex justify-between items-center">
+                    <span className="truncate">{role.name} Pay ({role.laborPercentage}% of labor):</span>
+                    <span className="font-semibold text-primary text-right">{formatCurrency(currentScenario.laborBudget * (role.laborPercentage / 100))}</span>
                   </div>
                 ))}
               </div>
@@ -330,7 +332,9 @@ const BreakevenAnalysis = () => {
       {/* Labor Roles Management */}
       <LaborRoleManager 
         laborRoles={laborRoles} 
-        onRolesChange={setLaborRoles} 
+        onRolesChange={setLaborRoles}
+        totalBudget={currentScenario.laborBudget}
+        gratuityAmount={currentScenario.gratuityAmount}
       />
 
     </div>

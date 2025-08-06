@@ -547,27 +547,39 @@ const EventProfitCalculator = () => {
   };
 
   return (
-    <div className="min-h-screen p-2 lg:p-4">
-      <div className="max-w-7xl mx-auto">
-        <Tabs defaultValue="event" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="event">Event</TabsTrigger>
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-          </TabsList>
+    <div className="min-h-screen p-3 sm:p-4 max-w-7xl mx-auto">
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2 flex items-center justify-center gap-2 sm:gap-3">
+          <Calculator className="w-6 h-6 sm:w-10 sm:h-10 text-primary" />
+          Event Profit Calculator
+        </h1>
+        <p className="text-muted-foreground text-sm sm:text-lg px-4">
+          Calculate labor costs, food costs, misc costs to get an accurate event profit
+        </p>
+      </div>
+      
+      <Tabs defaultValue="event" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="event" className="text-xs sm:text-sm">Event</TabsTrigger>
+          <TabsTrigger value="summary" className="text-xs sm:text-sm">Summary</TabsTrigger>
+        </TabsList>
           
           <TabsContent value="event" className="space-y-4 mt-4">
             {/* Event Details */}
-            <Card className="glass-card">
+            <Card className="glass-card w-full">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-card-foreground">
-                  <Users className="w-5 h-5" />
-                  Event Details
-                  <div className="ml-auto flex gap-2">
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center gap-2 text-card-foreground">
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="text-lg sm:text-xl">Event Details</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2 sm:ml-auto mt-2 sm:mt-0">
                     <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
                       <DialogTrigger asChild>
-                        <Button variant="outline">
-                          <Save className="w-4 h-4 mr-2" />
-                          Save Report
+                        <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+                          <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                          <span className="hidden sm:inline">Save Report</span>
+                          <span className="sm:hidden">Save</span>
                         </Button>
                       </DialogTrigger>
                       <DialogContent>
@@ -1103,7 +1115,6 @@ const EventProfitCalculator = () => {
             <FinancialSummary />
           </TabsContent>
         </Tabs>
-      </div>
     </div>
   );
 };

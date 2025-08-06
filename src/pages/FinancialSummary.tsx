@@ -84,10 +84,10 @@ const FinancialSummary = () => {
   // Show message if no data is available
   if (!hasData) {
     return (
-      <div className="p-6">
+      <div className="min-h-screen p-3 sm:p-6 max-w-7xl mx-auto">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-card-foreground">Financial Summary</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-card-foreground">Financial Summary</h1>
             <p className="text-muted-foreground">View your event's financial breakdown and profit analysis</p>
           </div>
 
