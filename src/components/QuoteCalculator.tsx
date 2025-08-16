@@ -75,6 +75,33 @@ const QuoteCalculator = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Meal Summary */}
+          <div className="bg-accent/50 p-4 rounded-lg">
+            <h3 className="font-semibold text-lg mb-3">What's Included in Each Meal</h3>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                <span>Fresh Salad</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                <span>2 Proteins (Your Choice)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                <span>Seasonal Vegetables</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                <span>Fried Rice</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-primary rounded-full"></span>
+                <span>Noodles</span>
+              </div>
+            </div>
+          </div>
+
           {/* Guest Count */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
