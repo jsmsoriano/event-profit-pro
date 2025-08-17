@@ -322,25 +322,38 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen p-4">
+    <div className="min-h-screen p-2 sm:p-4 overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex items-center gap-3">
-            <Settings className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold text-card-foreground">Admin Settings</h1>
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground truncate">Admin Settings</h1>
           </div>
-          <Button onClick={saveSettings} className="btn-primary">
+          <Button onClick={saveSettings} className="btn-primary w-full sm:w-auto">
             <Save className="w-4 h-4 mr-2" />
-            Save Settings
+            <span className="hidden sm:inline">Save Settings</span>
+            <span className="sm:hidden">Save</span>
           </Button>
         </div>
 
         <Tabs defaultValue="budget" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="budget">Budget Allocation</TabsTrigger>
-            <TabsTrigger value="roles">Labor Roles & Pay</TabsTrigger>
-            <TabsTrigger value="expenses">Expense Types</TabsTrigger>
-            <TabsTrigger value="food">Food Cost Types</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+            <TabsTrigger value="budget" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Budget Allocation</span>
+              <span className="sm:hidden">Budget</span>
+            </TabsTrigger>
+            <TabsTrigger value="roles" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Labor Roles & Pay</span>
+              <span className="sm:hidden">Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="expenses" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Expense Types</span>
+              <span className="sm:hidden">Expenses</span>
+            </TabsTrigger>
+            <TabsTrigger value="food" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Food Cost Types</span>
+              <span className="sm:hidden">Food</span>
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="budget" className="space-y-4 mt-4">
@@ -349,8 +362,8 @@ const Admin = () => {
                 <CardTitle className="text-card-foreground">Budget Allocation Profiles</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="border border-border/20 rounded-lg overflow-hidden">
-                  <div className="bg-muted/50 border-b border-border/20 p-3 grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                <div className="border border-border/20 rounded-lg overflow-hidden overflow-x-auto">
+                  <div className="bg-muted/50 border-b border-border/20 p-3 hidden md:grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
                     <div className="col-span-3">Profile Name</div>
                     <div className="col-span-2">Labor %</div>
                     <div className="col-span-2">Food %</div>
@@ -359,155 +372,318 @@ const Admin = () => {
                     {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
                   {(settings.budgetProfiles || []).map((profile, index) => (
-                    <div key={profile.id} className={`grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                      {editingProfile === profile.id ? (
-                        <>
-                           <div className="col-span-3">
-                             <Input
-                               value={editingProfileValue.name}
-                               onChange={(e) => {
-                                 console.log('Budget profile name onChange:', e.target.value);
-                                 setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
-                               }}
-                               className="input-modern"
-                               autoFocus
-                               onKeyDown={(e) => {
-                                 if (e.key === 'Enter') updateBudgetProfile(profile.id, editingProfileValue);
-                                 if (e.key === 'Escape') {
-                                   setEditingProfile(null);
-                                   setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
-                                 }
-                               }}
-                             />
-                           </div>
-                           <div className="col-span-2">
-                             <Input
-                               type="number"
-                               value={editingProfileValue.laborPercent}
-                               onChange={(e) => {
-                                 console.log('Budget profile labor onChange:', e.target.value);
-                                 setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
-                               }}
-                               className="input-modern"
-                               min="0"
-                               max="100"
-                               step="0.1"
-                             />
-                           </div>
-                           <div className="col-span-2">
-                             <Input
-                               type="number"
-                               value={editingProfileValue.foodPercent}
-                               onChange={(e) => {
-                                 setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
-                               }}
-                               className="input-modern"
-                               min="0"
-                               max="100"
-                               step="0.1"
-                             />
-                           </div>
-                           <div className="col-span-2">
-                             <Input
-                               type="number"
-                               value={editingProfileValue.taxesPercent}
-                               onChange={(e) => {
-                                 setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
-                               }}
-                               className="input-modern"
-                               min="0"
-                               max="100"
-                               step="0.1"
-                             />
-                           </div>
-                           <div className="col-span-1">
-                             <Input
-                               type="number"
-                               value={editingProfileValue.profitPercent}
-                               onChange={(e) => {
-                                 setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
-                               }}
-                               className="input-modern"
-                               min="0"
-                               max="100"
-                               step="0.1"
-                             />
-                           </div>
-                          {isAdmin && (
-                             <div className="col-span-2 flex justify-center gap-2">
-                               <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
-                               >
-                                 <Save className="w-4 h-4" />
-                               </Button>
-                               <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => {
-                                   setEditingProfile(null);
-                                   setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                    <div key={profile.id}>
+                      {/* Desktop Grid Layout */}
+                      <div className={`hidden md:grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                        {editingProfile === profile.id ? (
+                          <>
+                             <div className="col-span-3">
+                               <Input
+                                 value={editingProfileValue.name}
+                                 onChange={(e) => {
+                                   console.log('Budget profile name onChange:', e.target.value);
+                                   setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
                                  }}
-                               >
-                                 <X className="w-4 h-4" />
-                               </Button>
+                                 className="input-modern"
+                                 autoFocus
+                                 onKeyDown={(e) => {
+                                   if (e.key === 'Enter') updateBudgetProfile(profile.id, editingProfileValue);
+                                   if (e.key === 'Escape') {
+                                     setEditingProfile(null);
+                                     setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                   }
+                                 }}
+                               />
                              </div>
-                          )}
-                        </>
-                      ) : (
-                        <>
-                          <div className="col-span-3 font-medium text-card-foreground">
-                            {profile.name}
-                          </div>
-                          <div className="col-span-2 text-sm">
-                            <span className="font-medium">{profile.laborPercent}%</span>
-                          </div>
-                          <div className="col-span-2 text-sm">
-                            <span className="font-medium">{profile.foodPercent}%</span>
-                          </div>
-                          <div className="col-span-2 text-sm">
-                            <span className="font-medium">{profile.taxesPercent}%</span>
-                          </div>
-                          <div className="col-span-1 text-sm">
-                            <span className="font-medium">{profile.profitPercent}%</span>
-                          </div>
-                          {isAdmin && (
-                            <div className="col-span-2 flex justify-center gap-2">
-                               <Button
-                                 variant="outline"
-                                 size="sm"
-                                 onClick={() => {
-                                   console.log('Edit button clicked for profile:', profile.id, profile);
-                                   setEditingProfile(profile.id);
-                                   setEditingProfileValue({
-                                     id: profile.id,
-                                     name: profile.name,
-                                     laborPercent: profile.laborPercent,
-                                     foodPercent: profile.foodPercent,
-                                     taxesPercent: profile.taxesPercent,
-                                     profitPercent: profile.profitPercent
-                                   });
+                             <div className="col-span-2">
+                               <Input
+                                 type="number"
+                                 value={editingProfileValue.laborPercent}
+                                 onChange={(e) => {
+                                   console.log('Budget profile labor onChange:', e.target.value);
+                                   setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
                                  }}
-                               >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => deleteBudgetProfile(profile.id)}
-                                disabled={settings.budgetProfiles.length <= 2}
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                                 className="input-modern"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                               />
+                             </div>
+                             <div className="col-span-2">
+                               <Input
+                                 type="number"
+                                 value={editingProfileValue.foodPercent}
+                                 onChange={(e) => {
+                                   setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
+                                 }}
+                                 className="input-modern"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                               />
+                             </div>
+                             <div className="col-span-2">
+                               <Input
+                                 type="number"
+                                 value={editingProfileValue.taxesPercent}
+                                 onChange={(e) => {
+                                   setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
+                                 }}
+                                 className="input-modern"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                               />
+                             </div>
+                             <div className="col-span-1">
+                               <Input
+                                 type="number"
+                                 value={editingProfileValue.profitPercent}
+                                 onChange={(e) => {
+                                   setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
+                                 }}
+                                 className="input-modern"
+                                 min="0"
+                                 max="100"
+                                 step="0.1"
+                               />
+                             </div>
+                            {isAdmin && (
+                               <div className="col-span-2 flex justify-center gap-1">
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
+                                 >
+                                   <Save className="w-4 h-4" />
+                                 </Button>
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => {
+                                     setEditingProfile(null);
+                                     setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                   }}
+                                 >
+                                   <X className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="col-span-3 font-medium text-card-foreground truncate">
+                              {profile.name}
                             </div>
-                          )}
-                        </>
-                      )}
+                            <div className="col-span-2 text-sm">
+                              <span className="font-medium">{profile.laborPercent}%</span>
+                            </div>
+                            <div className="col-span-2 text-sm">
+                              <span className="font-medium">{profile.foodPercent}%</span>
+                            </div>
+                            <div className="col-span-2 text-sm">
+                              <span className="font-medium">{profile.taxesPercent}%</span>
+                            </div>
+                            <div className="col-span-1 text-sm">
+                              <span className="font-medium">{profile.profitPercent}%</span>
+                            </div>
+                            {isAdmin && (
+                              <div className="col-span-2 flex justify-center gap-1">
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => {
+                                     console.log('Edit button clicked for profile:', profile.id, profile);
+                                     setEditingProfile(profile.id);
+                                     setEditingProfileValue({
+                                       id: profile.id,
+                                       name: profile.name,
+                                       laborPercent: profile.laborPercent,
+                                       foodPercent: profile.foodPercent,
+                                       taxesPercent: profile.taxesPercent,
+                                       profitPercent: profile.profitPercent
+                                     });
+                                   }}
+                                 >
+                                  <Edit2 className="w-4 h-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deleteBudgetProfile(profile.id)}
+                                  disabled={settings.budgetProfiles.length <= 2}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      
+                      {/* Mobile Card Layout */}
+                      <div className={`md:hidden p-3 border border-border/20 rounded-lg mb-3 bg-card`}>
+                        {editingProfile === profile.id ? (
+                          <div className="space-y-3">
+                            <div>
+                              <Label className="text-xs text-muted-foreground">Profile Name</Label>
+                              <Input
+                                value={editingProfileValue.name}
+                                onChange={(e) => {
+                                  setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
+                                }}
+                                className="input-modern mt-1"
+                                autoFocus
+                              />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Labor %</Label>
+                                <Input
+                                  type="number"
+                                  value={editingProfileValue.laborPercent}
+                                  onChange={(e) => {
+                                    setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
+                                  }}
+                                  className="input-modern mt-1"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Food %</Label>
+                                <Input
+                                  type="number"
+                                  value={editingProfileValue.foodPercent}
+                                  onChange={(e) => {
+                                    setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
+                                  }}
+                                  className="input-modern mt-1"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Taxes %</Label>
+                                <Input
+                                  type="number"
+                                  value={editingProfileValue.taxesPercent}
+                                  onChange={(e) => {
+                                    setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
+                                  }}
+                                  className="input-modern mt-1"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                />
+                              </div>
+                              <div>
+                                <Label className="text-xs text-muted-foreground">Profit %</Label>
+                                <Input
+                                  type="number"
+                                  value={editingProfileValue.profitPercent}
+                                  onChange={(e) => {
+                                    setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
+                                  }}
+                                  className="input-modern mt-1"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                />
+                              </div>
+                            </div>
+                            {isAdmin && (
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
+                                  className="flex-1"
+                                >
+                                  <Save className="w-4 h-4 mr-2" />
+                                  Save
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingProfile(null);
+                                    setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                  }}
+                                  className="flex-1"
+                                >
+                                  <X className="w-4 h-4 mr-2" />
+                                  Cancel
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            <div className="font-medium text-card-foreground text-base">{profile.name}</div>
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Labor:</span>
+                                <span className="font-medium">{profile.laborPercent}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Food:</span>
+                                <span className="font-medium">{profile.foodPercent}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Taxes:</span>
+                                <span className="font-medium">{profile.taxesPercent}%</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">Profit:</span>
+                                <span className="font-medium">{profile.profitPercent}%</span>
+                              </div>
+                            </div>
+                            {isAdmin && (
+                              <div className="flex gap-2 pt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingProfile(profile.id);
+                                    setEditingProfileValue({
+                                      id: profile.id,
+                                      name: profile.name,
+                                      laborPercent: profile.laborPercent,
+                                      foodPercent: profile.foodPercent,
+                                      taxesPercent: profile.taxesPercent,
+                                      profitPercent: profile.profitPercent
+                                    });
+                                  }}
+                                  className="flex-1"
+                                >
+                                  <Edit2 className="w-4 h-4 mr-2" />
+                                  Edit
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => deleteBudgetProfile(profile.id)}
+                                  disabled={settings.budgetProfiles.length <= 2}
+                                  className="flex-1"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   ))}
+                  
+                  {/* Add new profile section */}
                   <div className="border-t border-border/20 bg-muted/30 p-3">
-                    <div className="grid grid-cols-12 gap-3">
+                    {/* Desktop Add Form */}
+                    <div className="hidden md:grid grid-cols-12 gap-3">
                       <div className="col-span-3">
                         <Input
                           value={newProfile.name}
@@ -570,9 +746,81 @@ const Admin = () => {
                       <div className="col-span-2">
                         <Button onClick={addBudgetProfile} className="btn-primary w-full">
                           <Plus className="w-4 h-4 mr-2" />
-                          Add Profile
+                          <span className="hidden lg:inline">Add Profile</span>
+                          <span className="lg:hidden">Add</span>
                         </Button>
                       </div>
+                    </div>
+                    
+                    {/* Mobile Add Form */}
+                    <div className="md:hidden space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Profile Name</Label>
+                        <Input
+                          value={newProfile.name}
+                          onChange={(e) => setNewProfile(prev => ({ ...prev, name: e.target.value }))}
+                          placeholder="Enter profile name"
+                          className="input-modern mt-1"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Labor %</Label>
+                          <Input
+                            type="number"
+                            value={newProfile.laborPercent}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0"
+                            className="input-modern mt-1"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Food %</Label>
+                          <Input
+                            type="number"
+                            value={newProfile.foodPercent}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0"
+                            className="input-modern mt-1"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Taxes %</Label>
+                          <Input
+                            type="number"
+                            value={newProfile.taxesPercent}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0"
+                            className="input-modern mt-1"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Profit %</Label>
+                          <Input
+                            type="number"
+                            value={newProfile.profitPercent}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
+                            placeholder="0"
+                            className="input-modern mt-1"
+                            min="0"
+                            max="100"
+                            step="0.1"
+                          />
+                        </div>
+                      </div>
+                      <Button onClick={addBudgetProfile} className="btn-primary w-full">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Budget Profile
+                      </Button>
                     </div>
                   </div>
                 </div>
