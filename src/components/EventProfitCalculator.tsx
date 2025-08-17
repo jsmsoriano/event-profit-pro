@@ -70,9 +70,13 @@ const EventProfitCalculator = () => {
   const [adminSettings, setAdminSettings] = useState<AdminSettings>(defaultAdminSettings);
 
   // Main calculator states with default values
-  const [numberOfGuests, setNumberOfGuests] = useState(10);
-  const [pricePerPerson, setPricePerPerson] = useState(55);
+  const [numberOfGuests, setNumberOfGuests] = useState(15);
+  const [pricePerPerson, setPricePerPerson] = useState(60);
   const [gratuityPercentage, setGratuityPercentage] = useState(20);
+  
+  // Discount states
+  const [discountType, setDiscountType] = useState<'percentage' | 'amount'>('percentage');
+  const [discountValue, setDiscountValue] = useState(0);
   const [gratuityMode, setGratuityMode] = useState<'18' | '20' | 'other'>('20');
   const [gratuityEnabled, setGratuityEnabled] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -140,12 +144,22 @@ const EventProfitCalculator = () => {
       businessTaxPercentage
     };
     localStorage.setItem('calculatorState', JSON.stringify(calculatorState));
-  }, [numberOfGuests, pricePerPerson, gratuityPercentage, gratuityMode, gratuityEnabled, laborRoles, foodCostItems, miscExpenses, targetProfitMargin, businessTaxPercentage]);
+  }, [numberOfGuests, pricePerPerson, gratuityPercentage, gratuityMode, gratuityEnabled, laborRoles, foodCostItems, miscExpenses, targetProfitMargin, businessTaxPercentage, discountType, discountValue]);
 
   // Revenue calculations
   const baseRevenue = useMemo(() => numberOfGuests * pricePerPerson, [numberOfGuests, pricePerPerson]);
-  const gratuityAmount = useMemo(() => gratuityEnabled ? baseRevenue * (gratuityPercentage / 100) : 0, [baseRevenue, gratuityPercentage, gratuityEnabled]);
-  const totalRevenue = useMemo(() => baseRevenue + gratuityAmount, [baseRevenue, gratuityAmount]);
+  
+  // Discount calculations
+  const discountAmount = useMemo(() => {
+    if (discountValue === 0) return 0;
+    return discountType === 'percentage' 
+      ? baseRevenue * (discountValue / 100)
+      : discountValue;
+  }, [baseRevenue, discountType, discountValue]);
+  
+  const discountedRevenue = useMemo(() => baseRevenue - discountAmount, [baseRevenue, discountAmount]);
+  const gratuityAmount = useMemo(() => gratuityEnabled ? discountedRevenue * (gratuityPercentage / 100) : 0, [discountedRevenue, gratuityPercentage, gratuityEnabled]);
+  const totalRevenue = useMemo(() => discountedRevenue + gratuityAmount, [discountedRevenue, gratuityAmount]);
 
   // Maximum labor budget from admin settings
   const maxLaborBudget = useMemo(() => totalRevenue * (adminSettings.laborRevenuePercentage / 100), [totalRevenue, adminSettings.laborRevenuePercentage]);
@@ -159,7 +173,7 @@ const EventProfitCalculator = () => {
       
       if (role.payType === 'percentage') {
         // Chef gets percentage of revenue plus split of gratuity
-        const revenueAmount = baseRevenue * ((role.revenuePercentage || 0) / 100);
+        const revenueAmount = discountedRevenue * ((role.revenuePercentage || 0) / 100);
         calculatedCost = revenueAmount + gratuityPerRole;
       } else {
         // Fixed amount roles (like Assistant) get fixed amount plus gratuity split
@@ -677,6 +691,49 @@ const EventProfitCalculator = () => {
                       placeholder="Enter %"
                     />
                   </div>
+                </div>
+
+                {/* Discount Section */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 p-4 bg-accent/20 rounded-lg">
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-card-foreground font-medium">Discount Type</Label>
+                    <Select value={discountType} onValueChange={(value: 'percentage' | 'amount') => setDiscountType(value)}>
+                      <SelectTrigger className="input-modern">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="percentage">Percentage (%)</SelectItem>
+                        <SelectItem value="amount">Fixed Amount ($)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label htmlFor="discountValue" className="text-card-foreground font-medium">
+                      Discount {discountType === 'percentage' ? '(%)' : '($)'}
+                    </Label>
+                    <Input
+                      id="discountValue"
+                      type="number"
+                      value={discountValue}
+                      onChange={(e) => {
+                        const cleanedValue = handleNumberInput(e.target.value);
+                        setDiscountValue(parseFloat(cleanedValue) || 0);
+                      }}
+                      className="input-modern text-right"
+                      min="0"
+                      max={discountType === 'percentage' ? '100' : undefined}
+                      step={discountType === 'percentage' ? '0.1' : '0.01'}
+                      placeholder={discountType === 'percentage' ? 'Enter %' : 'Enter $'}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <Label className="text-card-foreground font-medium">Discount Amount</Label>
+                    <div className="p-2 bg-white/50 rounded text-right font-semibold text-destructive">
+                      -{formatCurrency(discountAmount)}
+                    </div>
+                  </div>
 
                   <div>
                     <div className="text-center">
@@ -684,7 +741,9 @@ const EventProfitCalculator = () => {
                       <div className="mt-1 p-3 bg-white/50 rounded-lg">
                         <div className="text-xl font-bold text-primary text-right">{formatCurrency(totalRevenue)}</div>
                         <div className="text-xs text-muted-foreground text-right">
-                          Base: {formatCurrency(baseRevenue)} + Gratuity: {formatCurrency(gratuityAmount)}
+                          Base: {formatCurrency(baseRevenue)}
+                          {discountAmount > 0 && <span> - Discount: {formatCurrency(discountAmount)}</span>}
+                          <br />+ Gratuity: {formatCurrency(gratuityAmount)}
                         </div>
                       </div>
                     </div>
