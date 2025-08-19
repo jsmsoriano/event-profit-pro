@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1265,7 +1265,7 @@ export type Database = {
     }
     Functions: {
       check_month_end_auto_items: {
-        Args: { period_year: number; period_month: number }
+        Args: { period_month: number; period_year: number }
         Returns: undefined
       }
       create_standard_checklist: {
@@ -1273,7 +1273,7 @@ export type Database = {
         Returns: undefined
       }
       get_user_subscription_limit: {
-        Args: { user_id: string; feature_name: string }
+        Args: { feature_name: string; user_id: string }
         Returns: number
       }
     }
