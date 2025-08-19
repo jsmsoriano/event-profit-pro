@@ -194,8 +194,8 @@ const BreakevenAnalysis = () => {
   return (
     <div className="min-h-screen p-3 sm:p-6 space-y-4 sm:space-y-6 max-w-7xl mx-auto">
       <div className="text-center sm:text-left">
-        <h1 className="text-2xl sm:text-3xl font-bold">Event Calculator</h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
+        <h1 className="text-3xl sm:text-4xl font-bold">Event Calculator</h1>
+        <p className="text-muted-foreground text-base sm:text-lg">
           Plan your event budget and labor costs across different guest scenarios
         </p>
       </div>
@@ -204,23 +204,24 @@ const BreakevenAnalysis = () => {
         {/* Input Section */}
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Event Parameters</CardTitle>
-            <CardDescription className="text-sm">Enter your event details and budget allocations</CardDescription>
+            <CardTitle className="text-xl sm:text-2xl">Event Parameters</CardTitle>
+            <CardDescription className="text-base sm:text-lg">Enter your event details and budget allocations</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-3 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="guests">Number of Guests</Label>
+                <Label htmlFor="guests" className="text-base sm:text-lg font-medium">Number of Guests</Label>
                 <Input
                   id="guests"
                   type="number"
                   value={guestCount}
                   onChange={(e) => setGuestCount(Number(e.target.value))}
                   min="1"
+                  className="text-base sm:text-lg h-12"
                 />
               </div>
               <div>
-                <Label htmlFor="price">Price per Person</Label>
+                <Label htmlFor="price" className="text-base sm:text-lg font-medium">Price per Person</Label>
                 <Input
                   id="price"
                   type="number"
@@ -228,10 +229,11 @@ const BreakevenAnalysis = () => {
                   onChange={(e) => setPricePerPerson(Number(e.target.value))}
                   min="0"
                   step="0.01"
+                  className="text-base sm:text-lg h-12"
                 />
               </div>
               <div className="sm:col-span-2">
-                <Label htmlFor="gratuity">Gratuity (%)</Label>
+                <Label htmlFor="gratuity" className="text-base sm:text-lg font-medium">Gratuity (%)</Label>
                 <Input
                   id="gratuity"
                   type="number"
@@ -239,14 +241,15 @@ const BreakevenAnalysis = () => {
                   onChange={(e) => setGratuityPercent(Number(e.target.value))}
                   min="0"
                   max="100"
+                  className="text-base sm:text-lg h-12"
                 />
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="font-semibold text-sm sm:text-base">Payment Settings</h3>
-              <div className="flex items-center space-x-2 p-2 border border-gray-300 rounded-lg">
-                <Label htmlFor="cash-only" className="text-sm font-medium whitespace-nowrap">Cash Only</Label>
+              <h3 className="font-semibold text-base sm:text-lg">Payment Settings</h3>
+              <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg">
+                <Label htmlFor="cash-only" className="text-base sm:text-lg font-medium whitespace-nowrap">Cash Only</Label>
                 <Switch
                   id="cash-only"
                   checked={isCashOnly}
@@ -261,54 +264,54 @@ const BreakevenAnalysis = () => {
         {/* Current Scenario */}
         <Card className="w-full">
           <CardHeader>
-            <CardTitle className="text-lg sm:text-xl">Current Scenario</CardTitle>
-            <CardDescription className="text-sm break-words">
+            <CardTitle className="text-xl sm:text-2xl">Current Scenario</CardTitle>
+            <CardDescription className="text-base sm:text-lg break-words">
               {guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 p-3 sm:p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Base Revenue</span>
-                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.baseRevenue)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Base Revenue</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.baseRevenue)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Gratuity ({gratuityPercent}%)</span>
-                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.gratuityAmount)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Gratuity ({gratuityPercent}%)</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.gratuityAmount)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Total Revenue</span>
-                  <span className="font-semibold text-green-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.totalRevenue)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Total Revenue</span>
+                  <span className="font-semibold text-green-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.totalRevenue)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Labor Budget</span>
-                  <span className="font-semibold text-primary text-xs sm:text-sm text-right">{formatCurrency(currentScenario.laborBudget)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Labor Budget</span>
+                  <span className="font-semibold text-primary text-sm sm:text-base text-right">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Food & Supplies</span>
-                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.foodBudget)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Food & Supplies</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.foodBudget)}</span>
                 </div>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Taxes to Set Aside</span>
-                  <span className="font-semibold text-xs sm:text-sm text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Taxes to Set Aside</span>
+                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground truncate">Profit</span>
-                  <span className="font-semibold text-green-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.profitBudget)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground truncate">Profit</span>
+                  <span className="font-semibold text-green-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.profitBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center border-t pt-2 mt-2">
-                  <span className="text-xs sm:text-sm text-muted-foreground font-medium truncate">Cost Per Plate</span>
-                  <span className="font-semibold text-orange-600 text-xs sm:text-sm text-right">{formatCurrency(currentScenario.costPerPlate)}</span>
+                  <span className="text-sm sm:text-base text-muted-foreground font-medium truncate">Cost Per Plate</span>
+                  <span className="font-semibold text-orange-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.costPerPlate)}</span>
                 </div>
               </div>
             </div>
             
-            <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-2 text-sm sm:text-base">Labor Budget Breakdown</h4>
-              <div className="space-y-1 text-xs sm:text-sm">
+            <div className="mt-4 sm:mt-6 p-4 sm:p-5 bg-muted rounded-lg">
+              <h4 className="font-semibold mb-3 text-base sm:text-lg">Labor Budget Breakdown</h4>
+              <div className="space-y-2 text-sm sm:text-base">
                 <div className="flex justify-between items-center">
                   <span className="truncate">Maximum Labor Budget:</span>
                   <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
