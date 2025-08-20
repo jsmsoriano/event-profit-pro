@@ -17,7 +17,7 @@ interface BudgetProfile {
   name: string;
   laborPercent: number;
   foodPercent: number;
-  taxesPercent: number;
+  businessReservesPercent: number;
   profitPercent: number;
 }
 
@@ -35,7 +35,7 @@ const BreakevenAnalysis = () => {
   const [gratuityPercent, setGratuityPercent] = useState(20);
   const [laborPercent, setLaborPercent] = useState(30);
   const [foodPercent, setFoodPercent] = useState(35);
-  const [taxesPercent, setTaxesPercent] = useState(20);
+  const [businessReservesPercent, setBusinessReservesPercent] = useState(20);
   const [profitPercent, setProfitPercent] = useState(15);
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
   const [budgetProfiles, setBudgetProfiles] = useState<BudgetProfile[]>([]);
@@ -59,7 +59,7 @@ const BreakevenAnalysis = () => {
             name: 'Cash Only',
             laborPercent: 55,
             foodPercent: 35,
-            taxesPercent: 0,
+            businessReservesPercent: 0,
             profitPercent: 10
           },
           {
@@ -67,7 +67,7 @@ const BreakevenAnalysis = () => {
             name: 'Credit Card Payments',
             laborPercent: 30,
             foodPercent: 35,
-            taxesPercent: 20,
+            businessReservesPercent: 20,
             profitPercent: 15
           }
         ];
@@ -78,7 +78,7 @@ const BreakevenAnalysis = () => {
         if (creditCardProfile) {
           setLaborPercent(creditCardProfile.laborPercent);
           setFoodPercent(creditCardProfile.foodPercent);
-          setTaxesPercent(creditCardProfile.taxesPercent);
+          setBusinessReservesPercent(creditCardProfile.businessReservesPercent);
           setProfitPercent(creditCardProfile.profitPercent);
         }
       } catch (error) {
@@ -94,7 +94,7 @@ const BreakevenAnalysis = () => {
             name: 'Cash Only',
             laborPercent: 55,
             foodPercent: 35,
-            taxesPercent: 0,
+            businessReservesPercent: 0,
             profitPercent: 10
           },
           {
@@ -102,7 +102,7 @@ const BreakevenAnalysis = () => {
             name: 'Credit Card Payments',
             laborPercent: 30,
             foodPercent: 35,
-            taxesPercent: 20,
+            businessReservesPercent: 20,
             profitPercent: 15
           }
         ]);
@@ -119,7 +119,7 @@ const BreakevenAnalysis = () => {
           name: 'Cash Only',
           laborPercent: 55,
           foodPercent: 35,
-          taxesPercent: 0,
+          businessReservesPercent: 0,
           profitPercent: 10
         },
         {
@@ -127,7 +127,7 @@ const BreakevenAnalysis = () => {
           name: 'Credit Card Payments',
           laborPercent: 30,
           foodPercent: 35,
-          taxesPercent: 20,
+          businessReservesPercent: 20,
           profitPercent: 15
         }
       ]);
@@ -142,12 +142,12 @@ const BreakevenAnalysis = () => {
     if (enabled && cashOnlyProfile) {
       setLaborPercent(cashOnlyProfile.laborPercent);
       setFoodPercent(cashOnlyProfile.foodPercent);
-      setTaxesPercent(cashOnlyProfile.taxesPercent);
+      setBusinessReservesPercent(cashOnlyProfile.businessReservesPercent);
       setProfitPercent(cashOnlyProfile.profitPercent);
     } else if (!enabled && creditCardProfile) {
       setLaborPercent(creditCardProfile.laborPercent);
       setFoodPercent(creditCardProfile.foodPercent);
-      setTaxesPercent(creditCardProfile.taxesPercent);
+      setBusinessReservesPercent(creditCardProfile.businessReservesPercent);
       setProfitPercent(creditCardProfile.profitPercent);
     }
   };
@@ -163,24 +163,22 @@ const BreakevenAnalysis = () => {
     const baseRevenue = guests * pricePerPerson;
     const gratuityAmount = (baseRevenue * gratuityPercent) / 100;
     const totalRevenue = baseRevenue + gratuityAmount;
-    const taxesToSetAside = (totalRevenue * taxesPercent) / 100;
-    const revenueAfterTaxes = totalRevenue - taxesToSetAside;
-    const laborBudget = (revenueAfterTaxes * laborPercent) / 100;
-    const foodBudget = (revenueAfterTaxes * foodPercent) / 100;
-    const profitBudget = (revenueAfterTaxes * profitPercent) / 100;
-    const costPerPlate = (laborBudget + foodBudget + taxesToSetAside) / guests;
+    const businessReservesToSetAside = (totalRevenue * businessReservesPercent) / 100;
+    const revenueAfterReserves = totalRevenue - businessReservesToSetAside;
+    const laborBudget = (revenueAfterReserves * laborPercent) / 100;
+    const foodBudget = (revenueAfterReserves * foodPercent) / 100;
+    const profitBudget = (revenueAfterReserves * profitPercent) / 100;
     
     return {
       guests,
       baseRevenue,
       gratuityAmount,
       totalRevenue,
-      taxesToSetAside,
-      revenueAfterTaxes,
+      businessReservesToSetAside,
+      revenueAfterReserves,
       laborBudget,
       foodBudget,
       profitBudget,
-      costPerPlate,
     };
   };
 
@@ -269,44 +267,40 @@ const BreakevenAnalysis = () => {
               {guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 p-3 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Base Revenue</span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.baseRevenue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Gratuity ({gratuityPercent}%)</span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.gratuityAmount)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Total Revenue</span>
-                  <span className="font-semibold text-green-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.totalRevenue)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Labor Budget</span>
-                  <span className="font-semibold text-primary text-sm sm:text-base text-right">{formatCurrency(currentScenario.laborBudget)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Food & Supplies</span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.foodBudget)}</span>
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Taxes to Set Aside</span>
-                  <span className="font-semibold text-sm sm:text-base text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm sm:text-base text-muted-foreground truncate">Profit</span>
-                  <span className="font-semibold text-green-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.profitBudget)}</span>
-                </div>
-                <div className="flex justify-between items-center border-t pt-2 mt-2">
-                  <span className="text-sm sm:text-base text-muted-foreground font-medium truncate">Cost Per Plate</span>
-                  <span className="font-semibold text-orange-600 text-sm sm:text-base text-right">{formatCurrency(currentScenario.costPerPlate)}</span>
-                </div>
-              </div>
+          <CardContent className="p-3 sm:p-6">
+            <div className="border rounded-lg overflow-hidden">
+              <Table>
+                <TableBody>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Base Revenue</TableCell>
+                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.baseRevenue)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Gratuity ({gratuityPercent}%)</TableCell>
+                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.gratuityAmount)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Total Revenue</TableCell>
+                    <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Set aside to Business Reserves</TableCell>
+                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.businessReservesToSetAside)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Labor Budget</TableCell>
+                    <TableCell className="text-right font-semibold text-primary">{formatCurrency(currentScenario.laborBudget)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Food & Supplies</TableCell>
+                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.foodBudget)}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell className="font-medium text-muted-foreground">Profit</TableCell>
+                    <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
             
             <div className="mt-4 sm:mt-6 p-4 sm:p-5 bg-muted rounded-lg">
@@ -317,8 +311,8 @@ const BreakevenAnalysis = () => {
                   <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="truncate">Recommended Taxes to be set aside:</span>
-                  <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.taxesToSetAside)}</span>
+                  <span className="truncate">Set aside to Business Reserves:</span>
+                  <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.businessReservesToSetAside)}</span>
                 </div>
                 {laborRoles.map((role) => (
                   <div key={role.id} className="flex justify-between items-center">
