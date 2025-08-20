@@ -21,7 +21,7 @@ const proteins: Protein[] = [
 ]
 
 const QuoteCalculator = () => {
-  const [adultGuests, setAdultGuests] = useState(0)
+  const [adultGuests, setAdultGuests] = useState(15)
   const [childGuests, setChildGuests] = useState(0)
   const [selectedProteins, setSelectedProteins] = useState<string[]>([])
   const [gratuity, setGratuity] = useState(20)

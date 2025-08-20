@@ -30,8 +30,8 @@ interface AdminSettings {
 }
 
 const BreakevenAnalysis = () => {
-  const [guestCount, setGuestCount] = useState(30);
-  const [pricePerPerson, setPricePerPerson] = useState(75);
+  const [guestCount, setGuestCount] = useState(15);
+  const [pricePerPerson, setPricePerPerson] = useState(60);
   const [gratuityPercent, setGratuityPercent] = useState(20);
   const [laborPercent, setLaborPercent] = useState(30);
   const [foodPercent, setFoodPercent] = useState(35);
@@ -284,7 +284,7 @@ const BreakevenAnalysis = () => {
                     <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</TableCell>
                   </TableRow>
                   <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Set aside to Business Reserves</TableCell>
+                    <TableCell className="font-medium text-muted-foreground">Business Reserves</TableCell>
                     <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.businessReservesToSetAside)}</TableCell>
                   </TableRow>
                   <TableRow>
@@ -295,7 +295,7 @@ const BreakevenAnalysis = () => {
                     <TableCell className="font-medium text-muted-foreground">Food & Supplies</TableCell>
                     <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.foodBudget)}</TableCell>
                   </TableRow>
-                  <TableRow>
+                  <TableRow className="bg-green-50 dark:bg-green-950/20">
                     <TableCell className="font-medium text-muted-foreground">Profit</TableCell>
                     <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</TableCell>
                   </TableRow>
@@ -311,7 +311,7 @@ const BreakevenAnalysis = () => {
                   <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="truncate">Set aside to Business Reserves:</span>
+                  <span className="truncate">Business Reserves:</span>
                   <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.businessReservesToSetAside)}</span>
                 </div>
                 {laborRoles.map((role) => (
