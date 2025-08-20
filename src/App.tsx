@@ -7,7 +7,6 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import { AuthProvider } from "@/hooks/useAuth";
-import Index from "./pages/Index";
 import FinancialSummary from "./pages/FinancialSummary";
 import BreakevenAnalysis from "./pages/BreakevenAnalysis";
 import Reporting from "./pages/Reporting";
@@ -34,9 +33,8 @@ const App = () => (
                 <AppHeader />
                 <main className="flex-1 overflow-auto">
                   <Routes>
-                    <Route path="/" element={<Index />} />
+                    <Route path="/" element={<BreakevenAnalysis />} />
                     <Route path="/financial-summary" element={<FinancialSummary />} />
-                    <Route path="/breakeven-analysis" element={<BreakevenAnalysis />} />
                     <Route path="/reporting" element={<Reporting />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/team" element={<Team />} />
