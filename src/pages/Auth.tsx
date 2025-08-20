@@ -52,10 +52,10 @@ export default function Auth() {
       <Card className="w-full max-w-md glass-card">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-card-foreground">
-            Welcome to Excel Billing
+            Welcome to Catering Pro
           </CardTitle>
           <CardDescription className="text-muted-foreground">
-            Sign in to your account or create a new one
+            Sign in to manage your catering events and profits
           </CardDescription>
         </CardHeader>
         <CardContent>
