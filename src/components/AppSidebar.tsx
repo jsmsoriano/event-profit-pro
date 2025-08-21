@@ -18,7 +18,7 @@ const items = [
   { title: "Financial Summary", url: "/financial-summary", icon: TrendingUp },
   { title: "Reports", url: "/reporting", icon: FileText },
   { title: "Team", url: "/team", icon: Users },
-  { title: "Quotes", url: "/quotes", icon: FileText },
+  { title: "Event Info", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },
   { title: "Admin", url: "/admin", icon: Settings },
 ]
