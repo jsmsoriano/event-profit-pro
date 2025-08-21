@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -7,7 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { CalendarDays, Plus, Trash2, Users } from "lucide-react"
+import { CalendarDays, Plus, Trash2, Users, Save, FileText, RefreshCw } from "lucide-react"
+import { useEvents, type EventData } from "@/hooks/useEvents"
+import { toast } from "sonner"
 
 interface Protein {
   name: string
@@ -36,13 +38,38 @@ const EventInfo = () => {
   const [clientName, setClientName] = useState("")
   const [address, setAddress] = useState("")
   const [eventTime, setEventTime] = useState("")
+  const [numberOfGuests, setNumberOfGuests] = useState(15)
+  const [status, setStatus] = useState<'booked' | 'cancelled' | 'completed'>('booked')
+  const [currentEventId, setCurrentEventId] = useState<string | null>(null)
   
   // Guest Management
   const [guests, setGuests] = useState<Guest[]>([])
   const [gratuity, setGratuity] = useState(20)
+
+  const { saveEvent, loadEvent, loadUserEvents, events, loading } = useEvents()
   
   const adultPlatePrice = 60
   const childPlatePrice = 30
+
+  // Auto-generate guests when number changes
+  useEffect(() => {
+    if (numberOfGuests > guests.length) {
+      const newGuests = Array.from({ length: numberOfGuests - guests.length }, (_, i) => ({
+        id: (Date.now() + i).toString(),
+        name: "",
+        type: 'adult' as const,
+        proteins: [],
+        specialRequests: ""
+      }))
+      setGuests([...guests, ...newGuests])
+    } else if (numberOfGuests < guests.length) {
+      setGuests(guests.slice(0, numberOfGuests))
+    }
+  }, [numberOfGuests])
+
+  useEffect(() => {
+    loadUserEvents()
+  }, [])
 
   const addGuest = () => {
     const newGuest: Guest = {
@@ -53,10 +80,12 @@ const EventInfo = () => {
       specialRequests: ""
     }
     setGuests([...guests, newGuest])
+    setNumberOfGuests(numberOfGuests + 1)
   }
 
   const removeGuest = (id: string) => {
     setGuests(guests.filter(guest => guest.id !== id))
+    setNumberOfGuests(numberOfGuests - 1)
   }
 
   const updateGuest = (id: string, field: keyof Guest, value: any) => {
@@ -106,6 +135,64 @@ const EventInfo = () => {
     }
   }
 
+  const handleSaveEvent = async () => {
+    const eventData: EventData = {
+      id: currentEventId || undefined,
+      clientName,
+      eventDate,
+      address,
+      eventTime,
+      numberOfGuests,
+      gratuity,
+      status,
+      guests: guests.map(guest => ({
+        name: guest.name,
+        type: guest.type,
+        proteins: guest.proteins,
+        specialRequests: guest.specialRequests
+      }))
+    }
+
+    const savedId = await saveEvent(eventData)
+    if (savedId) {
+      setCurrentEventId(savedId)
+    }
+  }
+
+  const handleLoadEvent = async (eventId: string) => {
+    const eventData = await loadEvent(eventId)
+    if (eventData) {
+      setCurrentEventId(eventData.id || null)
+      setClientName(eventData.clientName)
+      setEventDate(eventData.eventDate)
+      setAddress(eventData.address)
+      setEventTime(eventData.eventTime)
+      setNumberOfGuests(eventData.numberOfGuests)
+      setStatus(eventData.status)
+      setGratuity(eventData.gratuity)
+      setGuests(eventData.guests.map((guest, index) => ({
+        id: guest.id || (Date.now() + index).toString(),
+        name: guest.name,
+        type: guest.type,
+        proteins: guest.proteins,
+        specialRequests: guest.specialRequests
+      })))
+      toast.success('Event loaded successfully')
+    }
+  }
+
+  const handleCreateNewEvent = () => {
+    setCurrentEventId(null)
+    setClientName("")
+    setEventDate("")
+    setAddress("")
+    setEventTime("")
+    setNumberOfGuests(15)
+    setStatus('booked')
+    setGratuity(20)
+    setGuests([])
+  }
+
   const totals = calculateTotal()
 
   return (
@@ -116,11 +203,54 @@ const EventInfo = () => {
           <h1 className="text-3xl font-bold">Event Info</h1>
           <p className="text-muted-foreground">Manage event details and guest preferences</p>
         </div>
-        <Button onClick={() => window.location.reload()} className="gap-2">
-          <Plus className="h-4 w-4" />
-          Create New Event
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={handleCreateNewEvent} variant="outline" className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create New Event
+          </Button>
+          <Button onClick={handleSaveEvent} disabled={loading} className="gap-2">
+            <Save className="h-4 w-4" />
+            {loading ? 'Saving...' : currentEventId ? 'Update Event' : 'Save Event'}
+          </Button>
+        </div>
       </div>
+
+      {/* Load Existing Events */}
+      {events.length > 0 && (
+        <Card className="glass-card">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" />
+              <CardTitle>Load Existing Event</CardTitle>
+            </div>
+            <CardDescription>
+              Select an event to edit
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {events.map(event => (
+                <Button
+                  key={event.id}
+                  onClick={() => handleLoadEvent(event.id!)}
+                  variant="outline"
+                  className="h-auto p-3 justify-start"
+                >
+                  <div className="text-left">
+                    <div className="font-medium">{event.clientName}</div>
+                    <div className="text-sm text-muted-foreground">
+                      {event.eventDate} • {event.numberOfGuests} guests
+                    </div>
+                    <Badge variant={event.status === 'booked' ? 'default' : event.status === 'completed' ? 'secondary' : 'destructive'} className="mt-1">
+                      {event.status}
+                    </Badge>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Event Information */}
       <Card className="glass-card">
@@ -134,7 +264,7 @@ const EventInfo = () => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="clientName">Client Name</Label>
               <Input
@@ -153,24 +283,50 @@ const EventInfo = () => {
                 onChange={(e) => setEventDate(e.target.value)}
               />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="numberOfGuests">Number of Guests</Label>
+              <Input
+                id="numberOfGuests"
+                type="number"
+                min="0"
+                value={numberOfGuests}
+                onChange={(e) => setNumberOfGuests(Number(e.target.value) || 0)}
+                placeholder="Enter number of guests"
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="address">Event Address</Label>
+              <Input
+                id="address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter event address"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="eventTime">Event Time</Label>
+              <Input
+                id="eventTime"
+                type="time"
+                value={eventTime}
+                onChange={(e) => setEventTime(e.target.value)}
+              />
+            </div>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="address">Event Address</Label>
-            <Input
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter event address"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="eventTime">Event Time</Label>
-            <Input
-              id="eventTime"
-              type="time"
-              value={eventTime}
-              onChange={(e) => setEventTime(e.target.value)}
-            />
+            <Label htmlFor="status">Event Status</Label>
+            <Select value={status} onValueChange={(value: 'booked' | 'cancelled' | 'completed') => setStatus(value)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="booked">Booked</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardContent>
       </Card>
@@ -221,10 +377,10 @@ const EventInfo = () => {
           </div>
 
           {/* Guest List */}
-          {guests.length === 0 ? (
+          {numberOfGuests === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No guests added yet. Click "Add Guest" to get started.</p>
+              <p>Enter number of guests above to start adding guest information.</p>
             </div>
           ) : (
             <div className="space-y-4">

@@ -561,6 +561,89 @@ export type Database = {
         }
         Relationships: []
       }
+      event_guests: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          name: string | null
+          proteins: string[] | null
+          special_requests: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          name?: string | null
+          proteins?: string[] | null
+          special_requests?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          name?: string | null
+          proteins?: string[] | null
+          special_requests?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          address: string | null
+          client_name: string
+          created_at: string
+          event_date: string | null
+          event_time: string | null
+          gratuity: number | null
+          id: string
+          number_of_guests: number | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          client_name: string
+          created_at?: string
+          event_date?: string | null
+          event_time?: string | null
+          gratuity?: number | null
+          id?: string
+          number_of_guests?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          client_name?: string
+          created_at?: string
+          event_date?: string | null
+          event_time?: string | null
+          gratuity?: number | null
+          id?: string
+          number_of_guests?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       file_vault: {
         Row: {
           client_id: string
