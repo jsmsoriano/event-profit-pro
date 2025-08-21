@@ -3,11 +3,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { CalendarDays, Plus, Trash2, Users, Save, FileText, RefreshCw } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { CalendarDays, Plus, Trash2, Users, Save, FileText } from "lucide-react"
 import { useEvents, type EventData } from "@/hooks/useEvents"
 import { toast } from "sonner"
 
@@ -44,12 +44,9 @@ const EventInfo = () => {
   
   // Guest Management
   const [guests, setGuests] = useState<Guest[]>([])
-  const [gratuity, setGratuity] = useState(20)
 
   const { saveEvent, loadEvent, loadUserEvents, events, loading } = useEvents()
   
-  const adultPlatePrice = 60
-  const childPlatePrice = 30
 
   // Auto-generate guests when number changes
   useEffect(() => {
@@ -107,34 +104,6 @@ const EventInfo = () => {
     updateGuest(guestId, 'proteins', newProteins)
   }
 
-  const calculateTotal = () => {
-    const adultCount = guests.filter(g => g.type === 'adult').length
-    const childCount = guests.filter(g => g.type === 'child').length
-    
-    const guestUpcharges = guests.reduce((total, guest) => {
-      return total + guest.proteins.reduce((proteinTotal, proteinName) => {
-        const protein = proteins.find(p => p.name === proteinName)
-        return proteinTotal + (protein?.upcharge || 0)
-      }, 0)
-    }, 0)
-
-    const adultTotal = adultCount * adultPlatePrice
-    const childTotal = childCount * childPlatePrice
-    const subtotal = adultTotal + childTotal + guestUpcharges
-    const gratuityAmount = (subtotal * gratuity) / 100
-    
-    return {
-      adultCount,
-      childCount,
-      adultTotal,
-      childTotal,
-      guestUpcharges,
-      subtotal,
-      gratuityAmount,
-      total: subtotal + gratuityAmount
-    }
-  }
-
   const handleSaveEvent = async () => {
     const eventData: EventData = {
       id: currentEventId || undefined,
@@ -143,7 +112,6 @@ const EventInfo = () => {
       address,
       eventTime,
       numberOfGuests,
-      gratuity,
       status,
       guests: guests.map(guest => ({
         name: guest.name,
@@ -169,7 +137,6 @@ const EventInfo = () => {
       setEventTime(eventData.eventTime)
       setNumberOfGuests(eventData.numberOfGuests)
       setStatus(eventData.status)
-      setGratuity(eventData.gratuity)
       setGuests(eventData.guests.map((guest, index) => ({
         id: guest.id || (Date.now() + index).toString(),
         name: guest.name,
@@ -189,11 +156,8 @@ const EventInfo = () => {
     setEventTime("")
     setNumberOfGuests(15)
     setStatus('booked')
-    setGratuity(20)
     setGuests([])
   }
-
-  const totals = calculateTotal()
 
   return (
     <div className="space-y-6">
@@ -376,165 +340,116 @@ const EventInfo = () => {
             </div>
           </div>
 
-          {/* Guest List */}
+          {/* Guest Table */}
           {numberOfGuests === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Enter number of guests above to start adding guest information.</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {guests.map((guest, index) => (
-                <Card key={guest.id} className="border-l-4 border-l-primary/50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-semibold">Guest {index + 1}</h4>
-                      <Button 
-                        onClick={() => removeGuest(guest.id)} 
-                        size="sm" 
-                        variant="ghost"
-                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <Label>Guest Name</Label>
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[50px]">#</TableHead>
+                    <TableHead>Guest Name</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Protein 1</TableHead>
+                    <TableHead>Protein 2</TableHead>
+                    <TableHead>Special Requests</TableHead>
+                    <TableHead className="w-[50px]">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {guests.map((guest, index) => (
+                    <TableRow key={guest.id}>
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>
                         <Input
                           value={guest.name}
                           onChange={(e) => updateGuest(guest.id, 'name', e.target.value)}
-                          placeholder="Enter guest name"
+                          placeholder="Enter name"
+                          className="w-full"
                         />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Type</Label>
+                      </TableCell>
+                      <TableCell>
                         <Select value={guest.type} onValueChange={(value: 'adult' | 'child') => updateGuest(guest.id, 'type', value)}>
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="adult">Adult (${adultPlatePrice})</SelectItem>
-                            <SelectItem value="child">Child (${childPlatePrice})</SelectItem>
+                            <SelectItem value="adult">Adult</SelectItem>
+                            <SelectItem value="child">Child</SelectItem>
                           </SelectContent>
                         </Select>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 mb-4">
-                      <Label>Select 2 Proteins</Label>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {proteins.map((protein) => (
-                          <div
-                            key={protein.name}
-                            className={`flex items-center space-x-3 p-3 rounded-md border transition-colors ${
-                              guest.proteins.includes(protein.name)
-                                ? 'border-primary bg-primary/5'
-                                : 'border-border hover:bg-accent'
-                            }`}
-                          >
-                            <Checkbox
-                              id={`${guest.id}-${protein.name}`}
-                              checked={guest.proteins.includes(protein.name)}
-                              onCheckedChange={() => toggleGuestProtein(guest.id, protein.name)}
-                              disabled={
-                                !guest.proteins.includes(protein.name) && guest.proteins.length >= 2
-                              }
-                            />
-                            <Label
-                              htmlFor={`${guest.id}-${protein.name}`}
-                              className="flex-1 flex justify-between items-center cursor-pointer"
-                            >
-                              <span>{protein.name}</span>
-                              {protein.upcharge > 0 && (
-                                <Badge variant="secondary">+${protein.upcharge}</Badge>
-                              )}
-                            </Label>
-                          </div>
-                        ))}
-                      </div>
-                      {guest.proteins.length === 2 && (
-                        <p className="text-sm text-green-600">✓ Two proteins selected</p>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Special Requests / Allergies</Label>
-                      <Textarea
-                        value={guest.specialRequests}
-                        onChange={(e) => updateGuest(guest.id, 'specialRequests', e.target.value)}
-                        placeholder="Any dietary restrictions, allergies, or special requests..."
-                        rows={2}
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          value={guest.proteins[0] || ""} 
+                          onValueChange={(value) => {
+                            const newProteins = [value, guest.proteins[1] || ""].filter(Boolean)
+                            updateGuest(guest.id, 'proteins', newProteins)
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select protein" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {proteins.map((protein) => (
+                              <SelectItem key={protein.name} value={protein.name}>
+                                {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Select 
+                          value={guest.proteins[1] || ""} 
+                          onValueChange={(value) => {
+                            const newProteins = [guest.proteins[0] || "", value].filter(Boolean)
+                            updateGuest(guest.id, 'proteins', newProteins)
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select protein" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {proteins.map((protein) => (
+                              <SelectItem key={protein.name} value={protein.name}>
+                                {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Textarea
+                          value={guest.specialRequests}
+                          onChange={(e) => updateGuest(guest.id, 'specialRequests', e.target.value)}
+                          placeholder="Allergies, restrictions..."
+                          rows={2}
+                          className="w-full min-w-[200px]"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button 
+                          onClick={() => removeGuest(guest.id)} 
+                          size="sm" 
+                          variant="ghost"
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
-
-          {/* Gratuity */}
-          <div className="space-y-2">
-            <Label htmlFor="gratuity">Gratuity (%)</Label>
-            <Input
-              id="gratuity"
-              type="number"
-              min="0"
-              max="100"
-              value={gratuity}
-              onChange={(e) => setGratuity(Number(e.target.value) || 0)}
-            />
-          </div>
         </CardContent>
       </Card>
-
-      {/* Quote Summary */}
-      {guests.length > 0 && (
-        <Card className="glass-card">
-          <CardHeader>
-            <CardTitle>Event Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span>Adult Guests ({totals.adultCount})</span>
-                <span>${totals.adultTotal.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Children Guests ({totals.childCount})</span>
-                <span>${totals.childTotal.toLocaleString()}</span>
-              </div>
-              {totals.guestUpcharges > 0 && (
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Protein upcharges</span>
-                  <span>+${totals.guestUpcharges.toLocaleString()}</span>
-                </div>
-              )}
-              <div className="border-t pt-2">
-                <div className="flex justify-between">
-                  <span>Subtotal</span>
-                  <span>${totals.subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Gratuity ({gratuity}%)</span>
-                  <span>${totals.gratuityAmount.toLocaleString()}</span>
-                </div>
-              </div>
-              <div className="border-t pt-2">
-                <div className="flex justify-between text-lg font-semibold">
-                  <span>Total</span>
-                  <span>${totals.total.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-
-            <Button className="w-full" size="lg">
-              Generate Formal Quote
-            </Button>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

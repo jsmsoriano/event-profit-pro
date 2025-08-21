@@ -18,7 +18,6 @@ export interface EventData {
   address: string
   eventTime: string
   numberOfGuests: number
-  gratuity: number
   status: 'booked' | 'cancelled' | 'completed'
   guests: EventGuest[]
 }
@@ -46,7 +45,7 @@ export const useEvents = () => {
           address: eventData.address,
           event_time: eventData.eventTime || null,
           number_of_guests: eventData.numberOfGuests,
-          gratuity: eventData.gratuity,
+          gratuity: 20,
           status: eventData.status
         })
         .select()
@@ -124,7 +123,6 @@ export const useEvents = () => {
         address: eventData.address || '',
         eventTime: eventData.event_time || '',
         numberOfGuests: eventData.number_of_guests,
-        gratuity: eventData.gratuity,
         status: validStatus,
         guests: guestsData.map(guest => ({
           id: guest.id,
@@ -169,7 +167,6 @@ export const useEvents = () => {
           address: '',
           eventTime: '',
           numberOfGuests: event.number_of_guests,
-          gratuity: 20,
           status: validStatus,
           guests: []
         }
