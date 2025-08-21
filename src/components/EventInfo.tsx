@@ -3,11 +3,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CalendarDays, Plus, Trash2, Users, Save, FileText } from "lucide-react"
+import { CalendarDays, Plus, Trash2, Users, Save, FileText, Grid, List } from "lucide-react"
 import { useEvents, type EventData } from "@/hooks/useEvents"
 import { toast } from "sonner"
 
@@ -41,6 +42,7 @@ const EventInfo = () => {
   const [numberOfGuests, setNumberOfGuests] = useState(15)
   const [status, setStatus] = useState<'booked' | 'cancelled' | 'completed'>('booked')
   const [currentEventId, setCurrentEventId] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards')
   
   // Guest Management
   const [guests, setGuests] = useState<Guest[]>([])
@@ -303,10 +305,30 @@ const EventInfo = () => {
               <Users className="h-5 w-5 text-primary" />
               <CardTitle>Guest Menu</CardTitle>
             </div>
-            <Button onClick={addGuest} size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add Guest
-            </Button>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center border rounded-lg">
+                <Button
+                  onClick={() => setViewMode('cards')}
+                  size="sm"
+                  variant={viewMode === 'cards' ? 'default' : 'ghost'}
+                  className="rounded-r-none"
+                >
+                  <Grid className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => setViewMode('table')}
+                  size="sm"
+                  variant={viewMode === 'table' ? 'default' : 'ghost'}
+                  className="rounded-l-none"
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
+              <Button onClick={addGuest} size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Guest
+              </Button>
+            </div>
           </div>
           <CardDescription>
             Manage individual guest preferences and dietary requirements
@@ -340,113 +362,219 @@ const EventInfo = () => {
             </div>
           </div>
 
-          {/* Guest Table */}
-          {numberOfGuests === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Enter number of guests above to start adding guest information.</p>
-            </div>
-          ) : (
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px]">#</TableHead>
-                    <TableHead>Guest Name</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Protein 1</TableHead>
-                    <TableHead>Protein 2</TableHead>
-                    <TableHead>Special Requests</TableHead>
-                    <TableHead className="w-[50px]">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+          {/* Guest List - Cards View */}
+          {viewMode === 'cards' && (
+            <>
+              {numberOfGuests === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Enter number of guests above to start adding guest information.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
                   {guests.map((guest, index) => (
-                    <TableRow key={guest.id}>
-                      <TableCell className="font-medium">{index + 1}</TableCell>
-                      <TableCell>
-                        <Input
-                          value={guest.name}
-                          onChange={(e) => updateGuest(guest.id, 'name', e.target.value)}
-                          placeholder="Enter name"
-                          className="w-full"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Select value={guest.type} onValueChange={(value: 'adult' | 'child') => updateGuest(guest.id, 'type', value)}>
-                          <SelectTrigger className="w-full">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="adult">Adult</SelectItem>
-                            <SelectItem value="child">Child</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Select 
-                          value={guest.proteins[0] || ""} 
-                          onValueChange={(value) => {
-                            const newProteins = [value, guest.proteins[1] || ""].filter(Boolean)
-                            updateGuest(guest.id, 'proteins', newProteins)
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select protein" />
-                          </SelectTrigger>
-                          <SelectContent>
+                    <Card key={guest.id} className="border-l-4 border-l-primary/50">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="font-semibold">Guest {index + 1}</h4>
+                          <Button 
+                            onClick={() => removeGuest(guest.id)} 
+                            size="sm" 
+                            variant="ghost"
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="space-y-2">
+                            <Label>Guest Name</Label>
+                            <Input
+                              value={guest.name}
+                              onChange={(e) => updateGuest(guest.id, 'name', e.target.value)}
+                              placeholder="Enter guest name"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Type</Label>
+                            <Select value={guest.type} onValueChange={(value: 'adult' | 'child') => updateGuest(guest.id, 'type', value)}>
+                              <SelectTrigger>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="adult">Adult</SelectItem>
+                                <SelectItem value="child">Child</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+
+                        <div className="space-y-3 mb-4">
+                          <Label>Select 2 Proteins</Label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             {proteins.map((protein) => (
-                              <SelectItem key={protein.name} value={protein.name}>
-                                {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
-                              </SelectItem>
+                              <div
+                                key={protein.name}
+                                className={`flex items-center space-x-3 p-3 rounded-md border transition-colors ${
+                                  guest.proteins.includes(protein.name)
+                                    ? 'border-primary bg-primary/5'
+                                    : 'border-border hover:bg-accent'
+                                }`}
+                              >
+                                <Checkbox
+                                  id={`${guest.id}-${protein.name}`}
+                                  checked={guest.proteins.includes(protein.name)}
+                                  onCheckedChange={() => toggleGuestProtein(guest.id, protein.name)}
+                                  disabled={
+                                    !guest.proteins.includes(protein.name) && guest.proteins.length >= 2
+                                  }
+                                />
+                                <Label
+                                  htmlFor={`${guest.id}-${protein.name}`}
+                                  className="flex-1 flex justify-between items-center cursor-pointer"
+                                >
+                                  <span>{protein.name}</span>
+                                  {protein.upcharge > 0 && (
+                                    <Badge variant="secondary">+${protein.upcharge}</Badge>
+                                  )}
+                                </Label>
+                              </div>
                             ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Select 
-                          value={guest.proteins[1] || ""} 
-                          onValueChange={(value) => {
-                            const newProteins = [guest.proteins[0] || "", value].filter(Boolean)
-                            updateGuest(guest.id, 'proteins', newProteins)
-                          }}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select protein" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {proteins.map((protein) => (
-                              <SelectItem key={protein.name} value={protein.name}>
-                                {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell>
-                        <Textarea
-                          value={guest.specialRequests}
-                          onChange={(e) => updateGuest(guest.id, 'specialRequests', e.target.value)}
-                          placeholder="Allergies, restrictions..."
-                          rows={2}
-                          className="w-full min-w-[200px]"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          onClick={() => removeGuest(guest.id)} 
-                          size="sm" 
-                          variant="ghost"
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
+                          </div>
+                          {guest.proteins.length === 2 && (
+                            <p className="text-sm text-green-600">✓ Two proteins selected</p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label>Special Requests / Allergies</Label>
+                          <Textarea
+                            value={guest.specialRequests}
+                            onChange={(e) => updateGuest(guest.id, 'specialRequests', e.target.value)}
+                            placeholder="Any dietary restrictions, allergies, or special requests..."
+                            rows={2}
+                          />
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* Guest List - Table View */}
+          {viewMode === 'table' && (
+            <>
+              {numberOfGuests === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>Enter number of guests above to start adding guest information.</p>
+                </div>
+              ) : (
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[50px]">#</TableHead>
+                        <TableHead>Guest Name</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Protein 1</TableHead>
+                        <TableHead>Protein 2</TableHead>
+                        <TableHead>Special Requests</TableHead>
+                        <TableHead className="w-[50px]">Action</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {guests.map((guest, index) => (
+                        <TableRow key={guest.id}>
+                          <TableCell className="font-medium">{index + 1}</TableCell>
+                          <TableCell>
+                            <Input
+                              value={guest.name}
+                              onChange={(e) => updateGuest(guest.id, 'name', e.target.value)}
+                              placeholder="Enter name"
+                              className="w-full"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Select value={guest.type} onValueChange={(value: 'adult' | 'child') => updateGuest(guest.id, 'type', value)}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="adult">Adult</SelectItem>
+                                <SelectItem value="child">Child</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={guest.proteins[0] || ""} 
+                              onValueChange={(value) => {
+                                const newProteins = [value, guest.proteins[1] || ""].filter(Boolean)
+                                updateGuest(guest.id, 'proteins', newProteins)
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select protein" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {proteins.map((protein) => (
+                                  <SelectItem key={protein.name} value={protein.name}>
+                                    {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Select 
+                              value={guest.proteins[1] || ""} 
+                              onValueChange={(value) => {
+                                const newProteins = [guest.proteins[0] || "", value].filter(Boolean)
+                                updateGuest(guest.id, 'proteins', newProteins)
+                              }}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select protein" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {proteins.map((protein) => (
+                                  <SelectItem key={protein.name} value={protein.name}>
+                                    {protein.name} {protein.upcharge > 0 && `(+$${protein.upcharge})`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </TableCell>
+                          <TableCell>
+                            <Textarea
+                              value={guest.specialRequests}
+                              onChange={(e) => updateGuest(guest.id, 'specialRequests', e.target.value)}
+                              placeholder="Allergies, restrictions..."
+                              rows={2}
+                              className="w-full min-w-[200px]"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              onClick={() => removeGuest(guest.id)} 
+                              size="sm" 
+                              variant="ghost"
+                              className="text-red-500 hover:text-red-700"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
