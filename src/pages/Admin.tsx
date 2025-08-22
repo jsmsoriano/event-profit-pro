@@ -363,18 +363,19 @@ const Admin = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="border border-border/20 rounded-lg overflow-hidden overflow-x-auto">
-                  <div className="bg-muted/50 border-b border-border/20 p-3 hidden md:grid grid-cols-12 gap-3 font-semibold text-sm text-muted-foreground">
+                  <div className="bg-muted/50 border-b border-border/20 p-3 hidden md:grid grid-cols-13 gap-3 font-semibold text-sm text-muted-foreground">
                     <div className="col-span-3">Profile Name</div>
                     <div className="col-span-2">Labor %</div>
                     <div className="col-span-2">Food %</div>
                     <div className="col-span-2">Business Reserves %</div>
                     <div className="col-span-1">Profit %</div>
+                    <div className="col-span-1">Total %</div>
                     {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
                   {(settings.budgetProfiles || []).map((profile, index) => (
                     <div key={profile.id}>
                       {/* Desktop Grid Layout */}
-                      <div className={`hidden md:grid grid-cols-12 gap-3 p-3 items-center ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                      <div className={`hidden md:grid grid-cols-13 gap-3 p-3 items-center ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/10' : ''}`}>
                         {editingProfile === profile.id ? (
                           <>
                              <div className="col-span-3">
@@ -447,8 +448,18 @@ const Admin = () => {
                                  max="100"
                                  step="0.1"
                                />
-                             </div>
-                            {isAdmin && (
+                              </div>
+                              <div className="col-span-1 text-sm font-medium">
+                                {(() => {
+                                  const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
+                                  return (
+                                    <span className={total === 100 ? "text-green-600" : "text-red-600"}>
+                                      {total.toFixed(1)}%
+                                    </span>
+                                  );
+                                })()}
+                              </div>
+                             {isAdmin && (
                                <div className="col-span-2 flex justify-center gap-1">
                                  <Button
                                    variant="outline"
@@ -486,8 +497,18 @@ const Admin = () => {
                              </div>
                             <div className="col-span-1 text-sm">
                               <span className="font-medium">{profile.profitPercent}%</span>
-                            </div>
-                            {isAdmin && (
+                             </div>
+                             <div className="col-span-1 text-sm font-medium">
+                               {(() => {
+                                 const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
+                                 return (
+                                   <span className={total === 100 ? "text-green-600" : "text-red-600"}>
+                                     {total.toFixed(1)}%
+                                   </span>
+                                 );
+                               })()}
+                             </div>
+                             {isAdmin && (
                               <div className="col-span-2 flex justify-center gap-1">
                                  <Button
                                    variant="outline"
@@ -592,9 +613,20 @@ const Admin = () => {
                                   max="100"
                                   step="0.1"
                                 />
-                              </div>
-                            </div>
-                            {isAdmin && (
+                               </div>
+                             </div>
+                             <div className="flex justify-between pt-1 border-t border-border/20">
+                               <span className="text-muted-foreground font-medium">Total:</span>
+                               {(() => {
+                                 const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
+                                 return (
+                                   <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
+                                     {total.toFixed(1)}%
+                                   </span>
+                                 );
+                               })()}
+                             </div>
+                             {isAdmin && (
                               <div className="flex gap-2 pt-2">
                                 <Button
                                   variant="outline"
@@ -639,8 +671,19 @@ const Admin = () => {
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Profit:</span>
                                 <span className="font-medium">{profile.profitPercent}%</span>
-                              </div>
-                            </div>
+                               </div>
+                             </div>
+                             <div className="flex justify-between pt-1 border-t border-border/20">
+                               <span className="text-muted-foreground font-medium">Total:</span>
+                               {(() => {
+                                 const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
+                                 return (
+                                   <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
+                                     {total.toFixed(1)}%
+                                   </span>
+                                 );
+                               })()}
+                             </div>
                             {isAdmin && (
                               <div className="flex gap-2 pt-2">
                                 <Button
@@ -683,7 +726,7 @@ const Admin = () => {
                   {/* Add new profile section */}
                   <div className="border-t border-border/20 bg-muted/30 p-3">
                     {/* Desktop Add Form */}
-                    <div className="hidden md:grid grid-cols-12 gap-3">
+                    <div className="hidden md:grid grid-cols-13 gap-3">
                       <div className="col-span-3">
                         <Input
                           value={newProfile.name}
@@ -742,8 +785,18 @@ const Admin = () => {
                           max="100"
                           step="0.1"
                         />
-                      </div>
-                      <div className="col-span-2">
+                       </div>
+                       <div className="col-span-1 text-center">
+                         {(() => {
+                           const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
+                           return (
+                             <span className={`font-medium text-sm ${total === 100 ? "text-green-600" : "text-red-600"}`}>
+                               {total.toFixed(1)}%
+                             </span>
+                           );
+                         })()}
+                       </div>
+                       <div className="col-span-2">
                         <Button onClick={addBudgetProfile} className="btn-primary w-full">
                           <Plus className="w-4 h-4 mr-2" />
                           <span className="hidden lg:inline">Add Profile</span>
@@ -814,9 +867,20 @@ const Admin = () => {
                             min="0"
                             max="100"
                             step="0.1"
-                          />
-                        </div>
-                      </div>
+                           />
+                         </div>
+                       </div>
+                       <div className="flex justify-between pt-1 border-t border-border/20">
+                         <span className="text-muted-foreground font-medium">Total:</span>
+                         {(() => {
+                           const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
+                           return (
+                             <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
+                               {total.toFixed(1)}%
+                             </span>
+                           );
+                         })()}
+                       </div>
                       <Button onClick={addBudgetProfile} className="btn-primary w-full">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Budget Profile
