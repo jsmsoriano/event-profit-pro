@@ -19,7 +19,7 @@ interface BudgetProfile {
   name: string;
   laborPercent: number;
   foodPercent: number;
-  taxesPercent: number;
+  businessReservesPercent: number;
   profitPercent: number;
 }
 
@@ -50,7 +50,7 @@ const defaultBudgetProfiles: BudgetProfile[] = [
     name: 'Cash Only',
     laborPercent: 55,
     foodPercent: 35,
-    taxesPercent: 0,
+    businessReservesPercent: 0,
     profitPercent: 10
   },
   {
@@ -58,7 +58,7 @@ const defaultBudgetProfiles: BudgetProfile[] = [
     name: 'Credit Card Payments',
     laborPercent: 30,
     foodPercent: 35,
-    taxesPercent: 20,
+    businessReservesPercent: 20,
     profitPercent: 15
   }
 ];
@@ -89,7 +89,7 @@ const Admin = () => {
     name: '',
     laborPercent: 0,
     foodPercent: 0,
-    taxesPercent: 0,
+    businessReservesPercent: 0,
     profitPercent: 0
   });
   const [newRole, setNewRole] = useState<LaborRole>({
@@ -104,7 +104,7 @@ const Admin = () => {
     name: '',
     laborPercent: 0,
     foodPercent: 0,
-    taxesPercent: 0,
+    businessReservesPercent: 0,
     profitPercent: 0
   });
   const [isAdmin] = useState(true); // TODO: Implement actual admin check
@@ -183,7 +183,7 @@ const Admin = () => {
         name: '',
         laborPercent: 0,
         foodPercent: 0,
-        taxesPercent: 0,
+        businessReservesPercent: 0,
         profitPercent: 0
       });
     }
@@ -203,7 +203,7 @@ const Admin = () => {
       name: '',
       laborPercent: 0,
       foodPercent: 0,
-      taxesPercent: 0,
+      businessReservesPercent: 0,
       profitPercent: 0
     });
   };
@@ -367,7 +367,7 @@ const Admin = () => {
                     <div className="col-span-3">Profile Name</div>
                     <div className="col-span-2">Labor %</div>
                     <div className="col-span-2">Food %</div>
-                    <div className="col-span-2">Taxes %</div>
+                    <div className="col-span-2">Business Reserves %</div>
                     <div className="col-span-1">Profit %</div>
                     {isAdmin && <div className="col-span-2 text-center">Actions</div>}
                   </div>
@@ -390,7 +390,7 @@ const Admin = () => {
                                    if (e.key === 'Enter') updateBudgetProfile(profile.id, editingProfileValue);
                                    if (e.key === 'Escape') {
                                      setEditingProfile(null);
-                                     setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                      setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
                                    }
                                  }}
                                />
@@ -422,19 +422,19 @@ const Admin = () => {
                                  step="0.1"
                                />
                              </div>
-                             <div className="col-span-2">
-                               <Input
-                                 type="number"
-                                 value={editingProfileValue.taxesPercent}
-                                 onChange={(e) => {
-                                   setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
-                                 }}
-                                 className="input-modern"
-                                 min="0"
-                                 max="100"
-                                 step="0.1"
-                               />
-                             </div>
+                              <div className="col-span-2">
+                                <Input
+                                  type="number"
+                                  value={editingProfileValue.businessReservesPercent}
+                                  onChange={(e) => {
+                                    setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }));
+                                  }}
+                                  className="input-modern"
+                                  min="0"
+                                  max="100"
+                                  step="0.1"
+                                />
+                              </div>
                              <div className="col-span-1">
                                <Input
                                  type="number"
@@ -462,7 +462,7 @@ const Admin = () => {
                                    size="sm"
                                    onClick={() => {
                                      setEditingProfile(null);
-                                     setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                      setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
                                    }}
                                  >
                                    <X className="w-4 h-4" />
@@ -481,9 +481,9 @@ const Admin = () => {
                             <div className="col-span-2 text-sm">
                               <span className="font-medium">{profile.foodPercent}%</span>
                             </div>
-                            <div className="col-span-2 text-sm">
-                              <span className="font-medium">{profile.taxesPercent}%</span>
-                            </div>
+                             <div className="col-span-2 text-sm">
+                               <span className="font-medium">{profile.businessReservesPercent}%</span>
+                             </div>
                             <div className="col-span-1 text-sm">
                               <span className="font-medium">{profile.profitPercent}%</span>
                             </div>
@@ -495,14 +495,14 @@ const Admin = () => {
                                    onClick={() => {
                                      console.log('Edit button clicked for profile:', profile.id, profile);
                                      setEditingProfile(profile.id);
-                                     setEditingProfileValue({
-                                       id: profile.id,
-                                       name: profile.name,
-                                       laborPercent: profile.laborPercent,
-                                       foodPercent: profile.foodPercent,
-                                       taxesPercent: profile.taxesPercent,
-                                       profitPercent: profile.profitPercent
-                                     });
+                                      setEditingProfileValue({
+                                        id: profile.id,
+                                        name: profile.name,
+                                        laborPercent: profile.laborPercent,
+                                        foodPercent: profile.foodPercent,
+                                        businessReservesPercent: profile.businessReservesPercent,
+                                        profitPercent: profile.profitPercent
+                                      });
                                    }}
                                  >
                                   <Edit2 className="w-4 h-4" />
@@ -565,20 +565,20 @@ const Admin = () => {
                                   step="0.1"
                                 />
                               </div>
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Taxes %</Label>
-                                <Input
-                                  type="number"
-                                  value={editingProfileValue.taxesPercent}
-                                  onChange={(e) => {
-                                    setEditingProfileValue(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }));
-                                  }}
-                                  className="input-modern mt-1"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                              </div>
+                               <div>
+                                 <Label className="text-xs text-muted-foreground">Business Reserves %</Label>
+                                 <Input
+                                   type="number"
+                                   value={editingProfileValue.businessReservesPercent}
+                                   onChange={(e) => {
+                                     setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }));
+                                   }}
+                                   className="input-modern mt-1"
+                                   min="0"
+                                   max="100"
+                                   step="0.1"
+                                 />
+                               </div>
                               <div>
                                 <Label className="text-xs text-muted-foreground">Profit %</Label>
                                 <Input
@@ -610,7 +610,7 @@ const Admin = () => {
                                   size="sm"
                                   onClick={() => {
                                     setEditingProfile(null);
-                                    setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, taxesPercent: 0, profitPercent: 0 });
+                                    setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
                                   }}
                                   className="flex-1"
                                 >
@@ -632,10 +632,10 @@ const Admin = () => {
                                 <span className="text-muted-foreground">Food:</span>
                                 <span className="font-medium">{profile.foodPercent}%</span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Taxes:</span>
-                                <span className="font-medium">{profile.taxesPercent}%</span>
-                              </div>
+                               <div className="flex justify-between">
+                                 <span className="text-muted-foreground">Business Reserves:</span>
+                                 <span className="font-medium">{profile.businessReservesPercent}%</span>
+                               </div>
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">Profit:</span>
                                 <span className="font-medium">{profile.profitPercent}%</span>
@@ -648,14 +648,14 @@ const Admin = () => {
                                   size="sm"
                                   onClick={() => {
                                     setEditingProfile(profile.id);
-                                    setEditingProfileValue({
-                                      id: profile.id,
-                                      name: profile.name,
-                                      laborPercent: profile.laborPercent,
-                                      foodPercent: profile.foodPercent,
-                                      taxesPercent: profile.taxesPercent,
-                                      profitPercent: profile.profitPercent
-                                    });
+                                     setEditingProfileValue({
+                                       id: profile.id,
+                                       name: profile.name,
+                                       laborPercent: profile.laborPercent,
+                                       foodPercent: profile.foodPercent,
+                                       businessReservesPercent: profile.businessReservesPercent,
+                                       profitPercent: profile.profitPercent
+                                     });
                                   }}
                                   className="flex-1"
                                 >
@@ -720,12 +720,12 @@ const Admin = () => {
                         />
                       </div>
                       <div className="col-span-2">
-                        <Input
-                          type="number"
-                          value={newProfile.taxesPercent}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }))}
-                          placeholder="Taxes %"
-                          className="input-modern"
+                         <Input
+                           type="number"
+                           value={newProfile.businessReservesPercent}
+                           onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                           placeholder="Business Reserves %"
+                           className="input-modern"
                           min="0"
                           max="100"
                           step="0.1"
@@ -790,14 +790,14 @@ const Admin = () => {
                             step="0.1"
                           />
                         </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Taxes %</Label>
-                          <Input
-                            type="number"
-                            value={newProfile.taxesPercent}
-                            onChange={(e) => setNewProfile(prev => ({ ...prev, taxesPercent: parseFloat(e.target.value) || 0 }))}
-                            placeholder="0"
-                            className="input-modern mt-1"
+                         <div>
+                           <Label className="text-xs text-muted-foreground">Business Reserves %</Label>
+                           <Input
+                             type="number"
+                             value={newProfile.businessReservesPercent}
+                             onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                             placeholder="0"
+                             className="input-modern mt-1"
                             min="0"
                             max="100"
                             step="0.1"
