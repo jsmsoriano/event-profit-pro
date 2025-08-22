@@ -190,7 +190,6 @@ const Admin = () => {
   };
 
   const updateBudgetProfile = (id: string, updatedProfile: Partial<BudgetProfile>) => {
-    console.log('updateBudgetProfile called:', id, updatedProfile);
     setSettings(prev => ({
       ...prev,
       budgetProfiles: prev.budgetProfiles.map(profile => 
@@ -359,283 +358,106 @@ const Admin = () => {
           <TabsContent value="budget" className="space-y-4 mt-4">
             <Card className="glass-card">
               <CardHeader>
-                <CardTitle className="text-card-foreground">Budget Allocation Profiles</CardTitle>
+                <CardTitle className="text-card-foreground flex items-center gap-2">
+                  <div className="w-2 h-6 bg-gradient-to-b from-primary to-primary-glow rounded-full"></div>
+                  Budget Allocation Profiles
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="border border-border/20 rounded-lg overflow-hidden overflow-x-auto">
-                  <div className="bg-muted/50 border-b border-border/20 p-3 hidden md:grid grid-cols-13 gap-3 font-semibold text-sm text-muted-foreground">
-                    <div className="col-span-3">Profile Name</div>
-                    <div className="col-span-2">Labor %</div>
-                    <div className="col-span-2">Food %</div>
-                    <div className="col-span-2">Business Reserves %</div>
-                    <div className="col-span-1">Profit %</div>
-                    <div className="col-span-1">Total %</div>
-                    {isAdmin && <div className="col-span-2 text-center">Actions</div>}
+              <CardContent className="space-y-6">
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <div className="bg-gradient-to-r from-muted/80 to-muted/40 rounded-t-lg border border-border/50">
+                    <div className="grid grid-cols-13 gap-4 p-4 font-semibold text-sm text-muted-foreground">
+                      <div className="col-span-3 flex items-center">Profile Name</div>
+                      <div className="col-span-2 text-center">Labor %</div>
+                      <div className="col-span-2 text-center">Food %</div>
+                      <div className="col-span-2 text-center">Business Reserves %</div>
+                      <div className="col-span-2 text-center">Profit %</div>
+                      <div className="col-span-1 text-center">Total %</div>
+                      {isAdmin && <div className="col-span-1 text-center">Actions</div>}
+                    </div>
                   </div>
-                  {(settings.budgetProfiles || []).map((profile, index) => (
-                    <div key={profile.id}>
-                      {/* Desktop Grid Layout */}
-                      <div className={`hidden md:grid grid-cols-13 gap-3 p-3 items-center ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/10' : ''}`}>
+                  
+                  <div className="border-x border-b border-border/50 rounded-b-lg">
+                    {(settings.budgetProfiles || []).map((profile, index) => (
+                      <div key={profile.id} className={`grid grid-cols-13 gap-4 p-4 items-center bg-card hover:bg-muted/20 transition-colors ${index !== settings.budgetProfiles.length - 1 ? 'border-b border-border/30' : ''}`}>
                         {editingProfile === profile.id ? (
                           <>
-                             <div className="col-span-3">
-                               <Input
-                                 value={editingProfileValue.name}
-                                 onChange={(e) => {
-                                   console.log('Budget profile name onChange:', e.target.value);
-                                   setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
-                                 }}
-                                 className="input-modern"
-                                 autoFocus
-                                 onKeyDown={(e) => {
-                                   if (e.key === 'Enter') updateBudgetProfile(profile.id, editingProfileValue);
-                                   if (e.key === 'Escape') {
-                                     setEditingProfile(null);
-                                      setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
-                                   }
-                                 }}
-                               />
-                             </div>
-                             <div className="col-span-2">
-                               <Input
-                                 type="number"
-                                 value={editingProfileValue.laborPercent}
-                                 onChange={(e) => {
-                                   console.log('Budget profile labor onChange:', e.target.value);
-                                   setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
-                                 }}
-                                 className="input-modern"
-                                 min="0"
-                                 max="100"
-                                 step="0.1"
-                               />
-                             </div>
-                             <div className="col-span-2">
-                               <Input
-                                 type="number"
-                                 value={editingProfileValue.foodPercent}
-                                 onChange={(e) => {
-                                   setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
-                                 }}
-                                 className="input-modern"
-                                 min="0"
-                                 max="100"
-                                 step="0.1"
-                               />
-                             </div>
-                              <div className="col-span-2">
-                                <Input
-                                  type="number"
-                                  value={editingProfileValue.businessReservesPercent}
-                                  onChange={(e) => {
-                                    setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }));
-                                  }}
-                                  className="input-modern"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                              </div>
-                             <div className="col-span-1">
-                               <Input
-                                 type="number"
-                                 value={editingProfileValue.profitPercent}
-                                 onChange={(e) => {
-                                   setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
-                                 }}
-                                 className="input-modern"
-                                 min="0"
-                                 max="100"
-                                 step="0.1"
-                               />
-                              </div>
-                              <div className="col-span-1 text-sm font-medium">
-                                {(() => {
-                                  const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
-                                  return (
-                                    <span className={total === 100 ? "text-green-600" : "text-red-600"}>
-                                      {total.toFixed(1)}%
-                                    </span>
-                                  );
-                                })()}
-                              </div>
-                             {isAdmin && (
-                               <div className="col-span-2 flex justify-center gap-1">
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
-                                 >
-                                   <Save className="w-4 h-4" />
-                                 </Button>
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => {
-                                     setEditingProfile(null);
-                                      setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
-                                   }}
-                                 >
-                                   <X className="w-4 h-4" />
-                                 </Button>
-                               </div>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div className="col-span-3 font-medium text-card-foreground truncate">
-                              {profile.name}
-                            </div>
-                            <div className="col-span-2 text-sm">
-                              <span className="font-medium">{profile.laborPercent}%</span>
-                            </div>
-                            <div className="col-span-2 text-sm">
-                              <span className="font-medium">{profile.foodPercent}%</span>
-                            </div>
-                             <div className="col-span-2 text-sm">
-                               <span className="font-medium">{profile.businessReservesPercent}%</span>
-                             </div>
-                            <div className="col-span-1 text-sm">
-                              <span className="font-medium">{profile.profitPercent}%</span>
-                             </div>
-                             <div className="col-span-1 text-sm font-medium">
-                               {(() => {
-                                 const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
-                                 return (
-                                   <span className={total === 100 ? "text-green-600" : "text-red-600"}>
-                                     {total.toFixed(1)}%
-                                   </span>
-                                 );
-                               })()}
-                             </div>
-                             {isAdmin && (
-                              <div className="col-span-2 flex justify-center gap-1">
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => {
-                                     console.log('Edit button clicked for profile:', profile.id, profile);
-                                     setEditingProfile(profile.id);
-                                      setEditingProfileValue({
-                                        id: profile.id,
-                                        name: profile.name,
-                                        laborPercent: profile.laborPercent,
-                                        foodPercent: profile.foodPercent,
-                                        businessReservesPercent: profile.businessReservesPercent,
-                                        profitPercent: profile.profitPercent
-                                      });
-                                   }}
-                                 >
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => deleteBudgetProfile(profile.id)}
-                                  disabled={settings.budgetProfiles.length <= 2}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            )}
-                          </>
-                        )}
-                      </div>
-                      
-                      {/* Mobile Card Layout */}
-                      <div className={`md:hidden p-3 border border-border/20 rounded-lg mb-3 bg-card`}>
-                        {editingProfile === profile.id ? (
-                          <div className="space-y-3">
-                            <div>
-                              <Label className="text-xs text-muted-foreground">Profile Name</Label>
+                            <div className="col-span-3">
                               <Input
                                 value={editingProfileValue.name}
-                                onChange={(e) => {
-                                  setEditingProfileValue(prev => ({ ...prev, name: e.target.value }));
-                                }}
-                                className="input-modern mt-1"
-                                autoFocus
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, name: e.target.value }))}
+                                className="input-modern text-sm"
+                                placeholder="Profile name"
                               />
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Labor %</Label>
-                                <Input
-                                  type="number"
-                                  value={editingProfileValue.laborPercent}
-                                  onChange={(e) => {
-                                    setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }));
-                                  }}
-                                  className="input-modern mt-1"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Food %</Label>
-                                <Input
-                                  type="number"
-                                  value={editingProfileValue.foodPercent}
-                                  onChange={(e) => {
-                                    setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }));
-                                  }}
-                                  className="input-modern mt-1"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                              </div>
-                               <div>
-                                 <Label className="text-xs text-muted-foreground">Business Reserves %</Label>
-                                 <Input
-                                   type="number"
-                                   value={editingProfileValue.businessReservesPercent}
-                                   onChange={(e) => {
-                                     setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }));
-                                   }}
-                                   className="input-modern mt-1"
-                                   min="0"
-                                   max="100"
-                                   step="0.1"
-                                 />
-                               </div>
-                              <div>
-                                <Label className="text-xs text-muted-foreground">Profit %</Label>
-                                <Input
-                                  type="number"
-                                  value={editingProfileValue.profitPercent}
-                                  onChange={(e) => {
-                                    setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }));
-                                  }}
-                                  className="input-modern mt-1"
-                                  min="0"
-                                  max="100"
-                                  step="0.1"
-                                />
-                               </div>
-                             </div>
-                             <div className="flex justify-between pt-1 border-t border-border/20">
-                               <span className="text-muted-foreground font-medium">Total:</span>
-                               {(() => {
-                                 const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
-                                 return (
-                                   <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
-                                     {total.toFixed(1)}%
-                                   </span>
-                                 );
-                               })()}
-                             </div>
-                             {isAdmin && (
-                              <div className="flex gap-2 pt-2">
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                value={editingProfileValue.laborPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-sm text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                value={editingProfileValue.foodPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-sm text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                value={editingProfileValue.businessReservesPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-sm text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="col-span-2">
+                              <Input
+                                type="number"
+                                value={editingProfileValue.profitPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-sm text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div className="col-span-1 text-center">
+                              {(() => {
+                                const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
+                                return (
+                                  <div className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                                    {total.toFixed(1)}%
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                            {isAdmin && (
+                              <div className="col-span-1 flex justify-center gap-1">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
-                                  className="flex-1"
+                                  className="w-8 h-8 p-0"
                                 >
-                                  <Save className="w-4 h-4 mr-2" />
-                                  Save
+                                  <Save className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -644,248 +466,436 @@ const Admin = () => {
                                     setEditingProfile(null);
                                     setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
                                   }}
-                                  className="flex-1"
+                                  className="w-8 h-8 p-0"
                                 >
-                                  <X className="w-4 h-4 mr-2" />
-                                  Cancel
+                                  <X className="w-4 h-4" />
                                 </Button>
                               </div>
                             )}
-                          </div>
+                          </>
                         ) : (
-                          <div className="space-y-2">
-                            <div className="font-medium text-card-foreground text-base">{profile.name}</div>
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Labor:</span>
-                                <span className="font-medium">{profile.laborPercent}%</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Food:</span>
-                                <span className="font-medium">{profile.foodPercent}%</span>
-                              </div>
-                               <div className="flex justify-between">
-                                 <span className="text-muted-foreground">Business Reserves:</span>
-                                 <span className="font-medium">{profile.businessReservesPercent}%</span>
-                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Profit:</span>
-                                <span className="font-medium">{profile.profitPercent}%</span>
-                               </div>
-                             </div>
-                             <div className="flex justify-between pt-1 border-t border-border/20">
-                               <span className="text-muted-foreground font-medium">Total:</span>
-                               {(() => {
-                                 const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
-                                 return (
-                                   <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
-                                     {total.toFixed(1)}%
-                                   </span>
-                                 );
-                               })()}
-                             </div>
+                          <>
+                            <div className="col-span-3 font-medium text-card-foreground">
+                              {profile.name}
+                            </div>
+                            <div className="col-span-2 text-center">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-200">
+                                {profile.laborPercent}%
+                              </span>
+                            </div>
+                            <div className="col-span-2 text-center">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-orange-50 text-orange-700 text-sm font-medium border border-orange-200">
+                                {profile.foodPercent}%
+                              </span>
+                            </div>
+                            <div className="col-span-2 text-center">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-sm font-medium border border-purple-200">
+                                {profile.businessReservesPercent}%
+                              </span>
+                            </div>
+                            <div className="col-span-2 text-center">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-green-50 text-green-700 text-sm font-medium border border-green-200">
+                                {profile.profitPercent}%
+                              </span>
+                            </div>
+                            <div className="col-span-1 text-center">
+                              {(() => {
+                                const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
+                                return (
+                                  <div className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                                    {total.toFixed(1)}%
+                                  </div>
+                                );
+                              })()}
+                            </div>
                             {isAdmin && (
-                              <div className="flex gap-2 pt-2">
+                              <div className="col-span-1 flex justify-center gap-1">
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => {
                                     setEditingProfile(profile.id);
-                                     setEditingProfileValue({
-                                       id: profile.id,
-                                       name: profile.name,
-                                       laborPercent: profile.laborPercent,
-                                       foodPercent: profile.foodPercent,
-                                       businessReservesPercent: profile.businessReservesPercent,
-                                       profitPercent: profile.profitPercent
-                                     });
+                                    setEditingProfileValue({
+                                      id: profile.id,
+                                      name: profile.name,
+                                      laborPercent: profile.laborPercent,
+                                      foodPercent: profile.foodPercent,
+                                      businessReservesPercent: profile.businessReservesPercent,
+                                      profitPercent: profile.profitPercent
+                                    });
                                   }}
-                                  className="flex-1"
+                                  className="w-8 h-8 p-0"
                                 >
-                                  <Edit2 className="w-4 h-4 mr-2" />
-                                  Edit
+                                  <Edit2 className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
                                   size="sm"
                                   onClick={() => deleteBudgetProfile(profile.id)}
                                   disabled={settings.budgetProfiles.length <= 2}
-                                  className="flex-1"
+                                  className="w-8 h-8 p-0"
                                 >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete
+                                  <Trash2 className="w-4 h-4" />
                                 </Button>
                               </div>
                             )}
-                          </div>
+                          </>
                         )}
                       </div>
-                    </div>
-                  ))}
-                  
-                  {/* Add new profile section */}
-                  <div className="border-t border-border/20 bg-muted/30 p-3">
-                    {/* Desktop Add Form */}
-                    <div className="hidden md:grid grid-cols-13 gap-3">
-                      <div className="col-span-3">
-                        <Input
-                          value={newProfile.name}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Profile name"
-                          className="input-modern"
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') addBudgetProfile();
-                          }}
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          value={newProfile.laborPercent}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
-                          placeholder="Labor %"
-                          className="input-modern"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                        <Input
-                          type="number"
-                          value={newProfile.foodPercent}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
-                          placeholder="Food %"
-                          className="input-modern"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                      </div>
-                      <div className="col-span-2">
-                         <Input
-                           type="number"
-                           value={newProfile.businessReservesPercent}
-                           onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
-                           placeholder="Business Reserves %"
-                           className="input-modern"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                      </div>
-                      <div className="col-span-1">
-                        <Input
-                          type="number"
-                          value={newProfile.profitPercent}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
-                          placeholder="Profit %"
-                          className="input-modern"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                        />
-                       </div>
-                       <div className="col-span-1 text-center">
-                         {(() => {
-                           const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
-                           return (
-                             <span className={`font-medium text-sm ${total === 100 ? "text-green-600" : "text-red-600"}`}>
-                               {total.toFixed(1)}%
-                             </span>
-                           );
-                         })()}
-                       </div>
-                       <div className="col-span-2">
-                        <Button onClick={addBudgetProfile} className="btn-primary w-full">
-                          <Plus className="w-4 h-4 mr-2" />
-                          <span className="hidden lg:inline">Add Profile</span>
-                          <span className="lg:hidden">Add</span>
-                        </Button>
-                      </div>
-                    </div>
+                    ))}
                     
-                    {/* Mobile Add Form */}
-                    <div className="md:hidden space-y-3">
-                      <div>
-                        <Label className="text-xs text-muted-foreground">Profile Name</Label>
-                        <Input
-                          value={newProfile.name}
-                          onChange={(e) => setNewProfile(prev => ({ ...prev, name: e.target.value }))}
-                          placeholder="Enter profile name"
-                          className="input-modern mt-1"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Labor %</Label>
+                    {/* Add New Profile Form - Desktop */}
+                    <div className="p-4 bg-gradient-to-r from-muted/40 to-muted/20 border-t border-border/30">
+                      <div className="grid grid-cols-13 gap-4 items-center">
+                        <div className="col-span-3">
+                          <Input
+                            value={newProfile.name}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="New profile name"
+                            className="input-modern"
+                          />
+                        </div>
+                        <div className="col-span-2">
                           <Input
                             type="number"
                             value={newProfile.laborPercent}
                             onChange={(e) => setNewProfile(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
-                            placeholder="0"
-                            className="input-modern mt-1"
+                            placeholder="Labor %"
+                            className="input-modern text-center"
                             min="0"
                             max="100"
                             step="0.1"
                           />
                         </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Food %</Label>
+                        <div className="col-span-2">
                           <Input
                             type="number"
                             value={newProfile.foodPercent}
                             onChange={(e) => setNewProfile(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
-                            placeholder="0"
-                            className="input-modern mt-1"
+                            placeholder="Food %"
+                            className="input-modern text-center"
                             min="0"
                             max="100"
                             step="0.1"
                           />
                         </div>
-                         <div>
-                           <Label className="text-xs text-muted-foreground">Business Reserves %</Label>
-                           <Input
-                             type="number"
-                             value={newProfile.businessReservesPercent}
-                             onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
-                             placeholder="0"
-                             className="input-modern mt-1"
+                        <div className="col-span-2">
+                          <Input
+                            type="number"
+                            value={newProfile.businessReservesPercent}
+                            onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                            placeholder="Business Reserves %"
+                            className="input-modern text-center"
                             min="0"
                             max="100"
                             step="0.1"
                           />
                         </div>
-                        <div>
-                          <Label className="text-xs text-muted-foreground">Profit %</Label>
+                        <div className="col-span-2">
                           <Input
                             type="number"
                             value={newProfile.profitPercent}
                             onChange={(e) => setNewProfile(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
-                            placeholder="0"
-                            className="input-modern mt-1"
+                            placeholder="Profit %"
+                            className="input-modern text-center"
                             min="0"
                             max="100"
                             step="0.1"
-                           />
-                         </div>
-                       </div>
-                       <div className="flex justify-between pt-1 border-t border-border/20">
-                         <span className="text-muted-foreground font-medium">Total:</span>
-                         {(() => {
-                           const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
-                           return (
-                             <span className={`font-medium ${total === 100 ? "text-green-600" : "text-red-600"}`}>
-                               {total.toFixed(1)}%
-                             </span>
-                           );
-                         })()}
-                       </div>
-                      <Button onClick={addBudgetProfile} className="btn-primary w-full">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Budget Profile
-                      </Button>
+                          />
+                        </div>
+                        <div className="col-span-1 text-center">
+                          {(() => {
+                            const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
+                            return (
+                              <div className={`inline-flex items-center justify-center px-2 py-1 rounded-full text-xs font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                                {total.toFixed(1)}%
+                              </div>
+                            );
+                          })()}
+                        </div>
+                        <div className="col-span-1 flex justify-center">
+                          <Button 
+                            onClick={addBudgetProfile} 
+                            className="btn-primary px-4 py-2 text-sm"
+                            disabled={!newProfile.name.trim()}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Add
+                          </Button>
+                        </div>
+                      </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Mobile Cards View */}
+                <div className="md:hidden space-y-4">
+                  {(settings.budgetProfiles || []).map((profile, index) => (
+                    <div key={profile.id} className="p-4 border border-border/30 rounded-lg bg-card space-y-3">
+                      {editingProfile === profile.id ? (
+                        <div className="space-y-3">
+                          <div>
+                            <Label className="text-xs font-medium text-muted-foreground mb-2 block">Profile Name</Label>
+                            <Input
+                              value={editingProfileValue.name}
+                              onChange={(e) => setEditingProfileValue(prev => ({ ...prev, name: e.target.value }))}
+                              className="input-modern"
+                              placeholder="Profile name"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground mb-2 block">Labor %</Label>
+                              <Input
+                                type="number"
+                                value={editingProfileValue.laborPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground mb-2 block">Food %</Label>
+                              <Input
+                                type="number"
+                                value={editingProfileValue.foodPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground mb-2 block">Business Reserves %</Label>
+                              <Input
+                                type="number"
+                                value={editingProfileValue.businessReservesPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-xs font-medium text-muted-foreground mb-2 block">Profit %</Label>
+                              <Input
+                                type="number"
+                                value={editingProfileValue.profitPercent}
+                                onChange={(e) => setEditingProfileValue(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
+                                className="input-modern text-center"
+                                min="0"
+                                max="100"
+                                step="0.1"
+                                placeholder="0"
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-border/20">
+                            <span className="text-muted-foreground font-medium">Total:</span>
+                            {(() => {
+                              const total = editingProfileValue.laborPercent + editingProfileValue.foodPercent + editingProfileValue.businessReservesPercent + editingProfileValue.profitPercent;
+                              return (
+                                <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                                  {total.toFixed(1)}%
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          {isAdmin && (
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
+                                className="flex-1"
+                              >
+                                <Save className="w-4 h-4 mr-2" />
+                                Save
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingProfile(null);
+                                  setEditingProfileValue({ id: '', name: '', laborPercent: 0, foodPercent: 0, businessReservesPercent: 0, profitPercent: 0 });
+                                }}
+                                className="flex-1"
+                              >
+                                <X className="w-4 h-4 mr-2" />
+                                Cancel
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="font-medium text-card-foreground text-lg">{profile.name}</div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground text-sm">Labor:</span>
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-200">
+                                {profile.laborPercent}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground text-sm">Food:</span>
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded-full bg-orange-50 text-orange-700 text-sm font-medium border border-orange-200">
+                                {profile.foodPercent}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground text-sm">Business Reserves:</span>
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded-full bg-purple-50 text-purple-700 text-sm font-medium border border-purple-200">
+                                {profile.businessReservesPercent}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                              <span className="text-muted-foreground text-sm">Profit:</span>
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded-full bg-green-50 text-green-700 text-sm font-medium border border-green-200">
+                                {profile.profitPercent}%
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center pt-2 border-t border-border/20">
+                            <span className="text-muted-foreground font-medium">Total:</span>
+                            {(() => {
+                              const total = profile.laborPercent + profile.foodPercent + profile.businessReservesPercent + profile.profitPercent;
+                              return (
+                                <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                                  {total.toFixed(1)}%
+                                </div>
+                              );
+                            })()}
+                          </div>
+                          {isAdmin && (
+                            <div className="flex gap-2 pt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingProfile(profile.id);
+                                  setEditingProfileValue({
+                                    id: profile.id,
+                                    name: profile.name,
+                                    laborPercent: profile.laborPercent,
+                                    foodPercent: profile.foodPercent,
+                                    businessReservesPercent: profile.businessReservesPercent,
+                                    profitPercent: profile.profitPercent
+                                  });
+                                }}
+                                className="flex-1"
+                              >
+                                <Edit2 className="w-4 h-4 mr-2" />
+                                Edit
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => deleteBudgetProfile(profile.id)}
+                                disabled={settings.budgetProfiles.length <= 2}
+                                className="flex-1"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {/* Add New Profile Form - Mobile */}
+                  <div className="p-4 bg-gradient-to-r from-muted/40 to-muted/20 rounded-lg border border-border/30 space-y-3">
+                    <div>
+                      <Label className="text-xs font-medium text-muted-foreground mb-2 block">Profile Name</Label>
+                      <Input
+                        value={newProfile.name}
+                        onChange={(e) => setNewProfile(prev => ({ ...prev, name: e.target.value }))}
+                        placeholder="New profile name"
+                        className="input-modern"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-2 block">Labor %</Label>
+                        <Input
+                          type="number"
+                          value={newProfile.laborPercent}
+                          onChange={(e) => setNewProfile(prev => ({ ...prev, laborPercent: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                          className="input-modern text-center"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-2 block">Food %</Label>
+                        <Input
+                          type="number"
+                          value={newProfile.foodPercent}
+                          onChange={(e) => setNewProfile(prev => ({ ...prev, foodPercent: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                          className="input-modern text-center"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-2 block">Business Reserves %</Label>
+                        <Input
+                          type="number"
+                          value={newProfile.businessReservesPercent}
+                          onChange={(e) => setNewProfile(prev => ({ ...prev, businessReservesPercent: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                          className="input-modern text-center"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs font-medium text-muted-foreground mb-2 block">Profit %</Label>
+                        <Input
+                          type="number"
+                          value={newProfile.profitPercent}
+                          onChange={(e) => setNewProfile(prev => ({ ...prev, profitPercent: parseFloat(e.target.value) || 0 }))}
+                          placeholder="0"
+                          className="input-modern text-center"
+                          min="0"
+                          max="100"
+                          step="0.1"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center pt-2 border-t border-border/20">
+                      <span className="text-muted-foreground font-medium">Total:</span>
+                      {(() => {
+                        const total = newProfile.laborPercent + newProfile.foodPercent + newProfile.businessReservesPercent + newProfile.profitPercent;
+                        return (
+                          <div className={`inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-semibold ${total === 100 ? "bg-green-100 text-green-800 border border-green-200" : "bg-red-100 text-red-800 border border-red-200"}`}>
+                            {total.toFixed(1)}%
+                          </div>
+                        );
+                      })()}
+                    </div>
+                    <Button 
+                      onClick={addBudgetProfile} 
+                      className="btn-primary w-full"
+                      disabled={!newProfile.name.trim()}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Profile
+                    </Button>
                   </div>
                 </div>
               </CardContent>
