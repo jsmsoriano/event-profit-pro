@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
+import { Settings, Plus, Edit2, Trash2, X, Check } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -159,13 +159,6 @@ const Admin = () => {
     }
   }, []);
 
-  const saveSettings = () => {
-    localStorage.setItem('adminSettings', JSON.stringify(settings));
-    toast({
-      title: "Settings Saved",
-      description: "Admin settings have been successfully saved.",
-    });
-  };
 
   const addBudgetProfile = () => {
     if (newProfile.name.trim()) {
@@ -323,16 +316,9 @@ const Admin = () => {
   return (
     <div className="min-h-screen p-2 sm:p-4 overflow-x-hidden">
       <div className="max-w-6xl mx-auto">
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground truncate">Admin Settings</h1>
-          </div>
-          <Button onClick={saveSettings} className="btn-primary w-full sm:w-auto">
-            <Save className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Save Settings</span>
-            <span className="sm:hidden">Save</span>
-          </Button>
+        <div className="flex items-center gap-2 sm:gap-3 mb-6">
+          <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary flex-shrink-0" />
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground truncate">Admin Settings</h1>
         </div>
 
         <Tabs defaultValue="budget" className="w-full">
@@ -457,7 +443,7 @@ const Admin = () => {
                                   onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
                                   className="w-8 h-8 p-0"
                                 >
-                                  <Save className="w-4 h-4" />
+                                  <Check className="w-4 h-4" />
                                 </Button>
                                 <Button
                                   variant="outline"
@@ -716,7 +702,7 @@ const Admin = () => {
                                 onClick={() => updateBudgetProfile(profile.id, editingProfileValue)}
                                 className="flex-1"
                               >
-                                <Save className="w-4 h-4 mr-2" />
+                                <Check className="w-4 h-4 mr-2" />
                                 Save
                               </Button>
                               <Button
@@ -995,7 +981,7 @@ const Admin = () => {
                                    setEditingRoleValue({ id: '', name: '', laborPercentage: 0 });
                                  }}
                                >
-                                 <Save className="w-4 h-4" />
+                                  <Check className="w-4 h-4" />
                                </Button>
                                <Button
                                  variant="outline"
@@ -1130,7 +1116,7 @@ const Admin = () => {
                               size="sm"
                               onClick={() => updateExpense(expense, editingExpenseValue)}
                             >
-                              <Save className="w-4 h-4" />
+                              <Check className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="outline"
@@ -1231,7 +1217,7 @@ const Admin = () => {
                               size="sm"
                               onClick={() => updateFoodCost(foodCost, editingFoodCostValue)}
                             >
-                              <Save className="w-4 h-4" />
+                              <Check className="w-4 h-4" />
                             </Button>
                             <Button
                               variant="outline"
