@@ -323,9 +323,11 @@ const EventProfitCalculator = () => {
 
   // Load labor roles from admin settings when default allocation is selected
   const loadDefaultLaborRoles = async () => {
+    console.log('loadDefaultLaborRoles called, user:', !!user);
     if (!user) return;
     
     try {
+      console.log('Fetching labor roles from database...');
       const { data, error } = await supabase
         .from('labor_roles')
         .select('*')
@@ -333,6 +335,8 @@ const EventProfitCalculator = () => {
         .order('name');
 
       if (error) throw error;
+      
+      console.log('Database labor roles:', data);
       
       if (data && data.length > 0) {
         const defaultRoles: LaborRole[] = data.map(role => ({
@@ -343,9 +347,11 @@ const EventProfitCalculator = () => {
           gratuityPercentage: 0,
           fixedAmount: 0
         }));
+        console.log('Setting database roles:', defaultRoles);
         setLaborRoles(defaultRoles);
       } else {
         // If no database roles exist, use admin settings as fallback
+        console.log('No database roles found, using admin settings:', adminSettings.laborRoles);
         const adminRoles: LaborRole[] = adminSettings.laborRoles.map((role, index) => ({
           id: `admin-default-${index}`,
           name: role.name,
@@ -354,11 +360,13 @@ const EventProfitCalculator = () => {
           gratuityPercentage: 0,
           fixedAmount: role.fixedAmount || 0
         }));
+        console.log('Setting admin fallback roles:', adminRoles);
         setLaborRoles(adminRoles);
       }
     } catch (error) {
       console.error('Error loading labor roles:', error);
       // On error, use admin settings as fallback
+      console.log('Using admin settings fallback due to error:', adminSettings.laborRoles);
       const adminRoles: LaborRole[] = adminSettings.laborRoles.map((role, index) => ({
         id: `admin-fallback-${index}`,
         name: role.name,
@@ -367,19 +375,25 @@ const EventProfitCalculator = () => {
         gratuityPercentage: 0,
         fixedAmount: role.fixedAmount || 0
       }));
+      console.log('Setting admin error fallback roles:', adminRoles);
       setLaborRoles(adminRoles);
     }
   };
 
   // Effect to load default labor roles and admin settings when allocation source changes
   useEffect(() => {
+    console.log('Allocation source changed to:', allocationSource);
     if (allocationSource === 'default' && user) {
+      console.log('Loading default labor roles and admin settings...');
+      console.log('Admin settings:', adminSettings);
       loadDefaultLaborRoles();
       // Also load admin defaults for allocation percentages
       setTargetProfitMargin(25); // Default profit margin
       setBusinessTaxPercentage(8); // Default tax percentage
+    } else if (allocationSource === 'custom') {
+      console.log('Switched to custom mode - keeping current roles:', laborRoles.length);
     }
-  }, [allocationSource, user]);
+  }, [allocationSource, user, adminSettings]);
 
   const resetInputs = useCallback(() => {
     setNumberOfGuests(10);
