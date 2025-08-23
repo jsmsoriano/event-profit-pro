@@ -344,9 +344,30 @@ const EventProfitCalculator = () => {
           fixedAmount: 0
         }));
         setLaborRoles(defaultRoles);
+      } else {
+        // If no database roles exist, use admin settings as fallback
+        const adminRoles: LaborRole[] = adminSettings.laborRoles.map((role, index) => ({
+          id: `admin-default-${index}`,
+          name: role.name,
+          payType: role.payType,
+          revenuePercentage: role.revenuePercentage || 0,
+          gratuityPercentage: 0,
+          fixedAmount: role.fixedAmount || 0
+        }));
+        setLaborRoles(adminRoles);
       }
     } catch (error) {
       console.error('Error loading labor roles:', error);
+      // On error, use admin settings as fallback
+      const adminRoles: LaborRole[] = adminSettings.laborRoles.map((role, index) => ({
+        id: `admin-fallback-${index}`,
+        name: role.name,
+        payType: role.payType,
+        revenuePercentage: role.revenuePercentage || 0,
+        gratuityPercentage: 0,
+        fixedAmount: role.fixedAmount || 0
+      }));
+      setLaborRoles(adminRoles);
     }
   };
 
