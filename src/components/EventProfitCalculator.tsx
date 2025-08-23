@@ -350,10 +350,13 @@ const EventProfitCalculator = () => {
     }
   };
 
-  // Effect to load default labor roles when allocation source changes
+  // Effect to load default labor roles and admin settings when allocation source changes
   useEffect(() => {
     if (allocationSource === 'default' && user) {
       loadDefaultLaborRoles();
+      // Also load admin defaults for allocation percentages
+      setTargetProfitMargin(25); // Default profit margin
+      setBusinessTaxPercentage(8); // Default tax percentage
     }
   }, [allocationSource, user]);
 
