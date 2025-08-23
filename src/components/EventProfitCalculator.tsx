@@ -68,6 +68,9 @@ const defaultAdminSettings: AdminSettings = {
 const EventProfitCalculator = () => {
   // Admin settings
   const [adminSettings, setAdminSettings] = useState<AdminSettings>(defaultAdminSettings);
+  const [budgetProfiles, setBudgetProfiles] = useState<any[]>([]);
+  const [selectedBudgetProfile, setSelectedBudgetProfile] = useState<string>('');
+  const [allocationSource, setAllocationSource] = useState<'custom' | 'default'>('custom');
 
   // Main calculator states with default values
   const [numberOfGuests, setNumberOfGuests] = useState(15);
@@ -105,8 +108,11 @@ const EventProfitCalculator = () => {
   useEffect(() => {
     const savedSettings = localStorage.getItem('adminSettings');
     if (savedSettings) {
-      setAdminSettings(JSON.parse(savedSettings));
+      const settings = JSON.parse(savedSettings);
+      setAdminSettings(settings);
     }
+
+    loadBudgetProfiles();
 
     // Load saved calculator data to maintain state between screens
     const savedCalculatorData = localStorage.getItem('calculatorState');
@@ -123,6 +129,8 @@ const EventProfitCalculator = () => {
         setMiscExpenses(data.miscExpenses || []);
         setTargetProfitMargin(data.targetProfitMargin || 25);
         setBusinessTaxPercentage(data.businessTaxPercentage || 8);
+        setAllocationSource(data.allocationSource || 'custom');
+        setSelectedBudgetProfile(data.selectedBudgetProfile || '');
       } catch (error) {
         console.error('Error loading calculator state:', error);
       }
@@ -141,10 +149,12 @@ const EventProfitCalculator = () => {
       foodCostItems,
       miscExpenses,
       targetProfitMargin,
-      businessTaxPercentage
+      businessTaxPercentage,
+      allocationSource,
+      selectedBudgetProfile
     };
     localStorage.setItem('calculatorState', JSON.stringify(calculatorState));
-  }, [numberOfGuests, pricePerPerson, gratuityPercentage, gratuityMode, gratuityEnabled, laborRoles, foodCostItems, miscExpenses, targetProfitMargin, businessTaxPercentage, discountType, discountValue]);
+  }, [numberOfGuests, pricePerPerson, gratuityPercentage, gratuityMode, gratuityEnabled, laborRoles, foodCostItems, miscExpenses, targetProfitMargin, businessTaxPercentage, discountType, discountValue, allocationSource, selectedBudgetProfile]);
 
   // Revenue calculations
   const baseRevenue = useMemo(() => numberOfGuests * pricePerPerson, [numberOfGuests, pricePerPerson]);
@@ -286,6 +296,66 @@ const EventProfitCalculator = () => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
   };
+
+  // Load budget profiles from database
+  const loadBudgetProfiles = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('budget_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name');
+
+      if (error) throw error;
+      setBudgetProfiles(data || []);
+      
+      // Set default profile if none selected
+      if (data && data.length > 0 && !selectedBudgetProfile) {
+        const defaultProfile = data.find(p => p.is_default) || data[0];
+        setSelectedBudgetProfile(defaultProfile.id);
+      }
+    } catch (error) {
+      console.error('Error loading budget profiles:', error);
+    }
+  };
+
+  // Load labor roles from admin settings when default allocation is selected
+  const loadDefaultLaborRoles = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('labor_roles')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name');
+
+      if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const defaultRoles: LaborRole[] = data.map(role => ({
+          id: role.id,
+          name: role.name,
+          payType: 'percentage',
+          revenuePercentage: role.labor_percentage,
+          gratuityPercentage: 0,
+          fixedAmount: 0
+        }));
+        setLaborRoles(defaultRoles);
+      }
+    } catch (error) {
+      console.error('Error loading labor roles:', error);
+    }
+  };
+
+  // Effect to load default labor roles when allocation source changes
+  useEffect(() => {
+    if (allocationSource === 'default' && user) {
+      loadDefaultLaborRoles();
+    }
+  }, [allocationSource, user]);
 
   const resetInputs = useCallback(() => {
     setNumberOfGuests(10);
@@ -752,6 +822,65 @@ const EventProfitCalculator = () => {
               </CardContent>
             </Card>
 
+            {/* Budget Allocation Source */}
+            <Card className="glass-card border-blue-200/50 bg-blue-50/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-card-foreground">
+                  <Target className="w-5 h-5 text-blue-600" />
+                  Budget Allocation Source
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="allocation-source">Allocation Source</Label>
+                    <Select 
+                      value={allocationSource} 
+                      onValueChange={(value: 'custom' | 'default') => setAllocationSource(value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select allocation source" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="custom">Custom Labor Roles</SelectItem>
+                        <SelectItem value="default">Default Admin Settings</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {allocationSource === 'default' 
+                        ? 'Uses labor roles defined in Admin Settings' 
+                        : 'Allows custom labor role configuration'
+                      }
+                    </p>
+                  </div>
+                  
+                  {budgetProfiles.length > 0 && (
+                    <div>
+                      <Label htmlFor="budget-profile">Budget Profile</Label>
+                      <Select 
+                        value={selectedBudgetProfile} 
+                        onValueChange={setSelectedBudgetProfile}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select budget profile" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {budgetProfiles.map(profile => (
+                            <SelectItem key={profile.id} value={profile.id}>
+                              {profile.name} ({profile.labor_percent}% Labor, {profile.food_percent}% Food)
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Budget allocation percentages from Admin Settings
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Labor Budget Info */}
             <Card className="glass-card border-amber-200/50 bg-amber-50/20">
               <CardHeader>
@@ -889,7 +1018,26 @@ const EventProfitCalculator = () => {
 
                 {/* Labor Costs */}
                 <div>
-                  <h3 className="text-lg font-semibold text-card-foreground mb-2">Labor</h3>
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="text-lg font-semibold text-card-foreground">Labor</h3>
+                    {allocationSource === 'custom' && (
+                      <Button onClick={addLaborRole} size="sm" className="btn-primary">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Labor
+                      </Button>
+                    )}
+                    {allocationSource === 'default' && (
+                      <Button 
+                        onClick={loadDefaultLaborRoles} 
+                        size="sm" 
+                        variant="outline"
+                        className="flex items-center gap-2"
+                      >
+                        <RefreshCw className="w-4 h-4" />
+                        Reload Default
+                      </Button>
+                    )}
+                  </div>
                     <div className="border border-border/20 rounded-lg overflow-hidden">
                       <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-10 gap-2 font-semibold text-sm text-muted-foreground">
                         <div className="col-span-4">Role</div>
@@ -898,50 +1046,63 @@ const EventProfitCalculator = () => {
                       </div>
                       {calculatedLaborRoles.map((role, index) => (
                         <div key={role.id} className={`grid grid-cols-10 gap-2 p-2 items-center ${index !== calculatedLaborRoles.length - 1 ? 'border-b border-border/10' : ''}`}>
-                          <div className="col-span-4">
-                            <Select value={role.name} onValueChange={(value) => {
-                              const adminRole = adminSettings.laborRoles.find(r => r.name === value);
-                              if (adminRole) {
-                                updateLaborRole(role.id, {
-                                  name: value,
-                                  payType: adminRole.payType,
-                                  revenuePercentage: adminRole.revenuePercentage,
-                                  fixedAmount: adminRole.fixedAmount
-                                });
-                              }
-                            }}>
-                              <SelectTrigger className="input-modern">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {adminSettings.laborRoles.map(adminRole => (
-                                  <SelectItem key={adminRole.id} value={adminRole.name}>{adminRole.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                           <div className="col-span-4">
+                             <Select 
+                               value={role.name} 
+                               onValueChange={(value) => {
+                                 const adminRole = adminSettings.laborRoles.find(r => r.name === value);
+                                 if (adminRole) {
+                                   updateLaborRole(role.id, {
+                                     name: value,
+                                     payType: adminRole.payType,
+                                     revenuePercentage: adminRole.revenuePercentage,
+                                     fixedAmount: adminRole.fixedAmount
+                                   });
+                                 }
+                               }}
+                               disabled={allocationSource === 'default'}
+                             >
+                               <SelectTrigger className="input-modern">
+                                 <SelectValue />
+                               </SelectTrigger>
+                               <SelectContent>
+                                 {adminSettings.laborRoles.map(adminRole => (
+                                   <SelectItem key={adminRole.id} value={adminRole.name}>{adminRole.name}</SelectItem>
+                                 ))}
+                               </SelectContent>
+                             </Select>
+                           </div>
                           <div className="col-span-4 text-right">
                             <div className="font-bold text-green-600">
                               {formatCurrency(role.calculatedCost || 0)}
                             </div>
                           </div>
-                          <div className="col-span-2 flex justify-center">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => deleteLaborRole(role.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
+                           <div className="col-span-2 flex justify-center">
+                             {allocationSource === 'custom' && (
+                               <Button
+                                 variant="outline"
+                                 size="sm"
+                                 onClick={() => deleteLaborRole(role.id)}
+                               >
+                                 <Trash2 className="w-4 h-4" />
+                               </Button>
+                             )}
+                             {allocationSource === 'default' && (
+                               <div className="text-xs text-muted-foreground p-2 text-center">
+                                 Admin
+                               </div>
+                             )}
+                           </div>
                         </div>
                       ))}
-                    <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
-                      <Button onClick={addLaborRole} className="btn-primary">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Labor
-                      </Button>
-                    </div>
+                     {allocationSource === 'custom' && (
+                       <div className="border-t border-border/20 bg-muted/30 p-2 flex justify-end">
+                         <Button onClick={addLaborRole} className="btn-primary">
+                           <Plus className="w-4 h-4 mr-2" />
+                           Add Labor
+                         </Button>
+                       </div>
+                     )}
                     <div className="border-t-2 border-primary/20 bg-primary/5 p-2 grid grid-cols-10 gap-2">
                       <div className="col-span-6 font-semibold text-card-foreground">Total Labor Costs (with gratuity)</div>
                       <div className="col-span-4 font-bold text-lg text-primary text-right">{formatCurrency(adjustedLaborCosts)}</div>
