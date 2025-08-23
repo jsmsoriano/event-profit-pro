@@ -225,6 +225,31 @@ const EventProfitCalculator = () => {
     [totalCosts, pricePerPerson, gratuityPercentage]
   );
 
+  // Test function to set up specific labor roles for testing toggle functionality
+  const setupTestLaborRoles = useCallback(() => {
+    const testRoles: LaborRole[] = [
+      {
+        id: 'test-chef',
+        name: 'Chef',
+        payType: 'percentage',
+        revenuePercentage: 60,
+        gratuityPercentage: 0,
+        fixedAmount: 0
+      },
+      {
+        id: 'test-admin', 
+        name: 'Admin',
+        payType: 'percentage',
+        revenuePercentage: 40,
+        gratuityPercentage: 0,
+        fixedAmount: 0
+      }
+    ];
+    setLaborRoles(testRoles);
+    setAllocationSource('custom');
+    console.log('Test labor roles set up:', testRoles);
+  }, []);
+
   // Labor role management
   const addLaborRole = useCallback(() => {
     if (adminSettings.laborRoles.length > 0) {
@@ -401,11 +426,33 @@ const EventProfitCalculator = () => {
     setGratuityPercentage(20);
     setGratuityMode('20');
     setGratuityEnabled(true);
-    setLaborRoles([]);
+    
+    // Set up test labor roles for custom mode: Chef 60%, Admin 40%
+    const testLaborRoles: LaborRole[] = [
+      {
+        id: 'test-chef',
+        name: 'Chef',
+        payType: 'percentage',
+        revenuePercentage: 60,
+        gratuityPercentage: 0,
+        fixedAmount: 0
+      },
+      {
+        id: 'test-admin',
+        name: 'Admin',
+        payType: 'percentage',
+        revenuePercentage: 40,
+        gratuityPercentage: 0,
+        fixedAmount: 0
+      }
+    ];
+    setLaborRoles(testLaborRoles);
+    
     setFoodCostItems([]);
     setMiscExpenses([]);
     setTargetProfitMargin(25);
     setBusinessTaxPercentage(8);
+    setAllocationSource('custom'); // Start in custom mode for testing
     // Clear saved state
     localStorage.removeItem('calculatorState');
   }, []);
@@ -1058,23 +1105,35 @@ const EventProfitCalculator = () => {
                 <div>
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-lg font-semibold text-card-foreground">Labor</h3>
-                    {allocationSource === 'custom' && (
-                      <Button onClick={addLaborRole} size="sm" className="btn-primary">
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Labor
-                      </Button>
-                    )}
-                    {allocationSource === 'default' && (
-                      <Button 
-                        onClick={loadDefaultLaborRoles} 
-                        size="sm" 
-                        variant="outline"
-                        className="flex items-center gap-2"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        Reload Default
-                      </Button>
-                    )}
+                    <div className="flex gap-2">
+                      {allocationSource === 'custom' && (
+                        <>
+                          <Button 
+                            onClick={setupTestLaborRoles} 
+                            size="sm" 
+                            variant="secondary"
+                            className="text-xs"
+                          >
+                            Test Setup (60/40)
+                          </Button>
+                          <Button onClick={addLaborRole} size="sm" className="btn-primary">
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add Labor
+                          </Button>
+                        </>
+                      )}
+                      {allocationSource === 'default' && (
+                        <Button 
+                          onClick={loadDefaultLaborRoles} 
+                          size="sm" 
+                          variant="outline"
+                          className="flex items-center gap-2"
+                        >
+                          <RefreshCw className="w-4 h-4" />
+                          Reload Default
+                        </Button>
+                      )}
+                    </div>
                   </div>
                     <div className="border border-border/20 rounded-lg overflow-hidden">
                       <div className="bg-muted/50 border-b border-border/20 p-2 grid grid-cols-10 gap-2 font-semibold text-sm text-muted-foreground">
