@@ -1076,17 +1076,22 @@ export type Database = {
           address: string | null
           client_name: string
           created_at: string
+          deposit_amount: number | null
           deposit_due_on: string | null
+          deposit_paid: boolean | null
           event_date: string | null
           event_time: string | null
           final_count_due_on: string | null
+          food_cost: number | null
           gratuity: number | null
           id: string
+          labor_cost: number | null
           number_of_guests: number | null
           organization_id: string | null
           special_requests: string | null
           status: string
           title: string | null
+          total_revenue: number | null
           updated_at: string
           user_id: string
           venue_id: string | null
@@ -1095,17 +1100,22 @@ export type Database = {
           address?: string | null
           client_name: string
           created_at?: string
+          deposit_amount?: number | null
           deposit_due_on?: string | null
+          deposit_paid?: boolean | null
           event_date?: string | null
           event_time?: string | null
           final_count_due_on?: string | null
+          food_cost?: number | null
           gratuity?: number | null
           id?: string
+          labor_cost?: number | null
           number_of_guests?: number | null
           organization_id?: string | null
           special_requests?: string | null
           status?: string
           title?: string | null
+          total_revenue?: number | null
           updated_at?: string
           user_id: string
           venue_id?: string | null
@@ -1114,17 +1124,22 @@ export type Database = {
           address?: string | null
           client_name?: string
           created_at?: string
+          deposit_amount?: number | null
           deposit_due_on?: string | null
+          deposit_paid?: boolean | null
           event_date?: string | null
           event_time?: string | null
           final_count_due_on?: string | null
+          food_cost?: number | null
           gratuity?: number | null
           id?: string
+          labor_cost?: number | null
           number_of_guests?: number | null
           organization_id?: string | null
           special_requests?: string | null
           status?: string
           title?: string | null
+          total_revenue?: number | null
           updated_at?: string
           user_id?: string
           venue_id?: string | null
@@ -1251,6 +1266,47 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string | null
+          reference_number: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string | null
+          reference_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
             referencedColumns: ["id"]
           },
         ]

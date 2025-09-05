@@ -4,10 +4,31 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Star, Users, Calendar, ChefHat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useRole } from '@/hooks/useRole';
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { role, loading } = useRole();
+
+  // Redirect admin users to admin dashboard
+  if (!loading && role === 'admin') {
+    navigate('/admin');
+    return null;
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="glass-card p-8">
+          <div className="animate-pulse text-center">
+            <div className="w-8 h-8 bg-primary rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const featuredPackages = [
     {
@@ -57,7 +78,7 @@ export default function Home() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button 
                 size="lg" 
-                onClick={() => navigate('/book')}
+                onClick={() => navigate('/book-event')}
                 className="text-lg px-8 py-3"
               >
                 Book Your Event
@@ -127,7 +148,7 @@ export default function Home() {
                   </ul>
                   <Button 
                     className="w-full" 
-                    onClick={() => navigate('/book')}
+                    onClick={() => navigate('/book-event')}
                   >
                     Get Quote
                   </Button>
@@ -151,7 +172,7 @@ export default function Home() {
             <Button 
               size="lg" 
               variant="secondary"
-              onClick={() => navigate('/book')}
+              onClick={() => navigate('/book-event')}
               className="text-lg px-8 py-3"
             >
               Start Planning
