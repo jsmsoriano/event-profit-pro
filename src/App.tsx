@@ -24,6 +24,7 @@ import BookEvent from "./pages/BookEvent";
 import MyEvents from "./pages/MyEvents";
 import Support from "./pages/Support";
 import AdminDashboard from "./pages/AdminDashboard";
+import RoleTest from "./pages/RoleTest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                     <Route path="/my-events" element={<MyEvents />} />
                     <Route path="/support" element={<Support />} />
                     <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/role-test" element={<RoleTest />} />
                     <Route path="/auth" element={<Auth />} />
                     {/* Legacy routes */}
                     <Route path="/calculator" element={<BreakevenAnalysis />} />

@@ -38,6 +38,7 @@ const adminItems = [
 
 // Additional admin tools
 const adminToolsItems = [
+  { title: "Role Testing", url: "/role-test", icon: Settings },
   { title: "Reports", url: "/reporting", icon: FileText },
   { title: "Team Management", url: "/team", icon: Clock },
   { title: "Event Info", url: "/quotes", icon: FileText },
