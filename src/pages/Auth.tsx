@@ -37,6 +37,41 @@ export default function Auth() {
     setLoading(false);
   };
 
+  const handleTestLogin = async () => {
+    setLoading(true);
+    
+    // Create a test email based on the selected role
+    const testEmail = `test-${role}@example.com`;
+    const testPassword = 'testpassword123';
+    
+    try {
+      // Try to sign in first
+      const { error: signInError } = await signIn(testEmail, testPassword);
+      
+      if (signInError && signInError.message.includes('Invalid login credentials')) {
+        // If account doesn't exist, create it
+        const { error: signUpError } = await signUp(testEmail, testPassword, {
+          first_name: 'Test',
+          last_name: role === 'customer' ? 'Customer' : 'Admin',
+          role: role,
+        });
+        
+        if (!signUpError) {
+          // After successful signup, try to sign in
+          await signIn(testEmail, testPassword);
+        }
+      }
+      
+      if (!signInError) {
+        navigate('/');
+      }
+    } catch (error) {
+      console.error('Test login error:', error);
+    }
+    
+    setLoading(false);
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -102,6 +137,39 @@ export default function Auth() {
                   {loading ? 'Signing in...' : 'Sign In'}
                 </Button>
               </form>
+              
+              {/* Testing Mode Section */}
+              <div className="mt-6 pt-4 border-t border-border">
+                <div className="text-center mb-3">
+                  <Label className="text-sm text-muted-foreground font-medium">Testing Mode</Label>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="test-role" className="text-xs">Quick Test As:</Label>
+                    <Select defaultValue="customer" onValueChange={(value: 'customer' | 'admin') => setRole(value)}>
+                      <SelectTrigger className="input-modern">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="customer">Customer View</SelectItem>
+                        <SelectItem value="admin">Admin View</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => handleTestLogin()}
+                    disabled={loading}
+                  >
+                    {loading ? 'Creating Test Session...' : `Test as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
+                  </Button>
+                  <p className="text-xs text-muted-foreground text-center">
+                    Creates a temporary test account for development
+                  </p>
+                </div>
+              </div>
             </TabsContent>
             
             <TabsContent value="signup">
