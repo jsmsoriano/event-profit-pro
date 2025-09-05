@@ -23,27 +23,25 @@ const customerItems = [
   { title: "Support", url: "/support", icon: Contact },
 ];
 
-// Admin/Backend navigation items
+// Admin/Backend navigation items - management focused
 const adminItems = [
-  { title: "Dashboard", url: "/admin", icon: BarChart3 },
-  { title: "Events Management", url: "/admin/events", icon: CalendarDays },
-  { title: "Clients", url: "/admin/clients", icon: Users },
-  { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
+  { title: "Admin Dashboard", url: "/admin", icon: BarChart3 },
+  { title: "Event Management", url: "/admin/events", icon: CalendarDays },
+  { title: "Client Management", url: "/admin/clients", icon: Users },
   { title: "Staff Management", url: "/staff", icon: Users },
-  { title: "Inventory", url: "/inventory", icon: Package },
+  { title: "Inventory Management", url: "/inventory", icon: Package },
   { title: "Financial Reports", url: "/financial-summary", icon: TrendingUp },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Analytics & Reports", url: "/analytics", icon: BarChart3 },
   { title: "Event Calculator", url: "/calculator", icon: Calculator },
 ];
 
 // Additional admin tools
 const adminToolsItems = [
-  { title: "Role Testing", url: "/role-test", icon: Settings },
-  { title: "Reports", url: "/reporting", icon: FileText },
-  { title: "Team Management", url: "/team", icon: Clock },
-  { title: "Event Info", url: "/quotes", icon: FileText },
-  { title: "Contacts", url: "/contacts", icon: Contact },
+  { title: "Quote Management", url: "/quotes", icon: FileText },
+  { title: "Team Settings", url: "/team", icon: Clock },
+  { title: "System Reports", url: "/reporting", icon: FileText },
   { title: "Admin Settings", url: "/admin-old", icon: Settings },
+  { title: "Role Testing", url: "/role-test", icon: Settings },
 ];
 
 export function AppSidebar() {
