@@ -42,9 +42,9 @@ export default function Auth() {
   const handleTestLogin = async () => {
     setLoading(true);
     
-    // Create a test email based on the selected role with a valid domain
-    const testEmail = `test-${role}@test.com`;
-    const testPassword = 'testpassword123';
+    // Create a test email based on the selected role with a standard domain
+    const testEmail = `test${role}${Date.now()}@gmail.com`;
+    const testPassword = 'TestPassword123!';
     
     try {
       // Try to sign in first
@@ -52,25 +52,32 @@ export default function Auth() {
       
       if (signInError && signInError.message.includes('Invalid login credentials')) {
         // If account doesn't exist, create it
+        console.log('Creating test account:', testEmail);
         const { error: signUpError } = await signUp(testEmail, testPassword, {
           first_name: 'Test',
           last_name: role === 'customer' ? 'Customer' : 'Admin',
           role: role,
         });
         
-        if (!signUpError) {
+        if (signUpError) {
+          console.error('Signup error:', signUpError);
+        } else {
+          console.log('Test account created successfully, attempting login...');
           // After successful signup, try to sign in again
           setTimeout(async () => {
             const { error: secondSignInError } = await signIn(testEmail, testPassword);
             if (!secondSignInError) {
               navigate('/');
+            } else {
+              console.error('Second signin error:', secondSignInError);
             }
-          }, 1000);
+          }, 2000);
         }
-      }
-      
-      if (!signInError) {
+      } else if (!signInError) {
+        console.log('Signed in successfully');
         navigate('/');
+      } else {
+        console.error('Signin error:', signInError);
       }
     } catch (error) {
       console.error('Test login error:', error);
