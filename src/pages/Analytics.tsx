@@ -222,7 +222,12 @@ export default function Analytics() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {[].map((entry, index) => (
+                    {[
+                      { name: 'Cash', value: revenue.filter(r => r.payment_method === 'cash').length },
+                      { name: 'Credit', value: revenue.filter(r => r.payment_method === 'credit').length },
+                      { name: 'Check', value: revenue.filter(r => r.payment_method === 'check').length },
+                      { name: 'Bank Transfer', value: revenue.filter(r => r.payment_method === 'bank_transfer').length }
+                    ].filter(item => item.value > 0).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>

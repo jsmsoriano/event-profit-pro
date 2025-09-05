@@ -1,6 +1,8 @@
-import { Settings, User } from "lucide-react"
+import { Settings, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { useAuth } from "@/hooks/useAuth"
+import { NotificationBell } from "./NotificationBell"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,6 +12,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 export function AppHeader() {
+  const { user, signOut } = useAuth();
+
   return (
     <header className="flex h-14 sm:h-16 items-center justify-between border-b bg-background px-3 sm:px-4 sticky top-0 z-50 backdrop-blur-sm bg-background/95">
       <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -25,6 +29,8 @@ export function AppHeader() {
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+        {user && <NotificationBell />}
+        
         <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10">
           <Settings className="h-3 w-3 sm:h-4 sm:w-4" />
         </Button>
@@ -36,10 +42,25 @@ export function AppHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem>Profile</DropdownMenuItem>
-            <DropdownMenuItem>Account Settings</DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Sign out</DropdownMenuItem>
+            {user ? (
+              <>
+                <DropdownMenuItem disabled className="font-medium">
+                  {user.email}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>Profile</DropdownMenuItem>
+                <DropdownMenuItem>Account Settings</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut()} className="text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign out
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <DropdownMenuItem onClick={() => window.location.href = '/auth'}>
+                Sign In
+              </DropdownMenuItem>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
