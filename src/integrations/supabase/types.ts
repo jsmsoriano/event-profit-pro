@@ -342,6 +342,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "client_payments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
+          },
         ]
       }
       client_preferences: {
@@ -812,6 +819,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_guests_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
+          },
         ]
       }
       event_menu_items: {
@@ -848,11 +862,25 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_menu_items_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "v_popular_dishes"
+            referencedColumns: ["dish_id"]
+          },
+          {
             foreignKeyName: "event_menu_items_event_id_fkey"
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_menu_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
           },
           {
             foreignKeyName: "event_menu_items_package_id_fkey"
@@ -912,6 +940,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "event_milestones_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
+          },
         ]
       }
       event_staff: {
@@ -952,6 +987,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_staff_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
           },
           {
             foreignKeyName: "event_staff_staff_id_fkey"
@@ -1019,6 +1061,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_tasks_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
           },
         ]
       }
@@ -1287,6 +1336,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
           },
           {
             foreignKeyName: "invoices_organization_id_fkey"
@@ -1691,6 +1747,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "package_items_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "v_popular_dishes"
+            referencedColumns: ["dish_id"]
+          },
+          {
             foreignKeyName: "package_items_package_id_fkey"
             columns: ["package_id"]
             isOneToOne: false
@@ -1995,6 +2058,13 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "revenue_records_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
+          },
         ]
       }
       saved_reports: {
@@ -2140,6 +2210,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_assignments_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "v_event_profit"
+            referencedColumns: ["event_id"]
           },
           {
             foreignKeyName: "staff_assignments_staff_id_fkey"
@@ -2508,7 +2585,29 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_event_profit: {
+        Row: {
+          event_date: string | null
+          event_id: string | null
+          food_cost: number | null
+          gross_profit: number | null
+          guest_count: number | null
+          labor_cost: number | null
+          revenue_menu: number | null
+          status: string | null
+          subtotal_revenue: number | null
+          title: string | null
+        }
+        Relationships: []
+      }
+      v_popular_dishes: {
+        Row: {
+          dish_id: string | null
+          name: string | null
+          times_selected: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       check_month_end_auto_items: {
