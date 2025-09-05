@@ -18,6 +18,12 @@ import Admin from "./pages/Admin";
 import StaffManagement from "./pages/StaffManagement";
 import Inventory from "./pages/Inventory";
 import Analytics from "./pages/Analytics";
+import Home from "./pages/Home";
+import Menu from "./pages/Menu";
+import BookEvent from "./pages/BookEvent";
+import MyEvents from "./pages/MyEvents";
+import Support from "./pages/Support";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,17 +42,24 @@ const App = () => (
                 <AppHeader />
                 <main className="flex-1 overflow-auto">
                   <Routes>
-                    <Route path="/" element={<BreakevenAnalysis />} />
+                    <Route path="/" element={<Home />} />
+                    <Route path="/menu" element={<Menu />} />
+                    <Route path="/book" element={<BookEvent />} />
+                    <Route path="/my-events" element={<MyEvents />} />
+                    <Route path="/support" element={<Support />} />
+                    <Route path="/admin" element={<AdminDashboard />} />
+                    <Route path="/auth" element={<Auth />} />
+                    {/* Legacy routes */}
+                    <Route path="/calculator" element={<BreakevenAnalysis />} />
                     <Route path="/financial-summary" element={<FinancialSummary />} />
                     <Route path="/staff" element={<StaffManagement />} />
                     <Route path="/inventory" element={<Inventory />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/reporting" element={<Reporting />} />
-                    <Route path="/auth" element={<Auth />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/quotes" element={<Quotes />} />
                     <Route path="/contacts" element={<Contacts />} />
-                    <Route path="/admin" element={<Admin />} />
+                    <Route path="/admin-old" element={<Admin />} />
                     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
