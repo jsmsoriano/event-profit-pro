@@ -44,6 +44,44 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          endpoint: string
+          id: string
+          organization_id: string | null
+          payload_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          endpoint: string
+          id?: string
+          organization_id?: string | null
+          payload_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          endpoint?: string
+          id?: string
+          organization_id?: string | null
+          payload_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       billing_performance: {
         Row: {
           approved_claims: number
@@ -368,11 +406,13 @@ export type Database = {
           contract_start_date: string | null
           created_at: string
           email: string
+          full_name: string | null
           id: string
           monthly_revenue: number | null
           name: string
           notes: string | null
           office_contact_name: string | null
+          organization_id: string | null
           phone: string | null
           practice_type: string | null
           state: string | null
@@ -388,11 +428,13 @@ export type Database = {
           contract_start_date?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           id?: string
           monthly_revenue?: number | null
           name: string
           notes?: string | null
           office_contact_name?: string | null
+          organization_id?: string | null
           phone?: string | null
           practice_type?: string | null
           state?: string | null
@@ -408,11 +450,13 @@ export type Database = {
           contract_start_date?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
           monthly_revenue?: number | null
           name?: string
           notes?: string | null
           office_contact_name?: string | null
+          organization_id?: string | null
           phone?: string | null
           practice_type?: string | null
           state?: string | null
@@ -420,7 +464,15 @@ export type Database = {
           updated_at?: string
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "clients_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       credentialing_applications: {
         Row: {
@@ -668,6 +720,59 @@ export type Database = {
         }
         Relationships: []
       }
+      dishes: {
+        Row: {
+          base_price_per_guest: number | null
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          is_gluten_free: boolean | null
+          is_vegan: boolean | null
+          is_vegetarian: boolean | null
+          name: string
+          organization_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          base_price_per_guest?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_gluten_free?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          base_price_per_guest?: number | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_gluten_free?: boolean | null
+          is_vegan?: boolean | null
+          is_vegetarian?: boolean | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dishes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_guests: {
         Row: {
           created_at: string
@@ -705,6 +810,55 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_menu_items: {
+        Row: {
+          created_at: string
+          dish_id: string | null
+          event_id: string | null
+          id: string
+          package_id: string | null
+          per_guest_overrides: Json | null
+        }
+        Insert: {
+          created_at?: string
+          dish_id?: string | null
+          event_id?: string | null
+          id?: string
+          package_id?: string | null
+          per_guest_overrides?: Json | null
+        }
+        Update: {
+          created_at?: string
+          dish_id?: string | null
+          event_id?: string | null
+          id?: string
+          package_id?: string | null
+          per_guest_overrides?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_menu_items_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_menu_items_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_menu_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
             referencedColumns: ["id"]
           },
         ]
@@ -756,6 +910,54 @@ export type Database = {
             columns: ["event_id"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_staff: {
+        Row: {
+          created_at: string
+          end_time: string | null
+          event_id: string | null
+          flat_fee: number | null
+          id: string
+          notes: string | null
+          staff_id: string | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          flat_fee?: number | null
+          id?: string
+          notes?: string | null
+          staff_id?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          event_id?: string | null
+          flat_fee?: number | null
+          id?: string
+          notes?: string | null
+          staff_id?: string | null
+          start_time?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_staff_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_staff_staff_id_fkey"
+            columns: ["staff_id"]
+            isOneToOne: false
+            referencedRelation: "staff"
             referencedColumns: ["id"]
           },
         ]
@@ -825,42 +1027,75 @@ export type Database = {
           address: string | null
           client_name: string
           created_at: string
+          deposit_due_on: string | null
           event_date: string | null
           event_time: string | null
+          final_count_due_on: string | null
           gratuity: number | null
           id: string
           number_of_guests: number | null
+          organization_id: string | null
+          special_requests: string | null
           status: string
+          title: string | null
           updated_at: string
           user_id: string
+          venue_id: string | null
         }
         Insert: {
           address?: string | null
           client_name: string
           created_at?: string
+          deposit_due_on?: string | null
           event_date?: string | null
           event_time?: string | null
+          final_count_due_on?: string | null
           gratuity?: number | null
           id?: string
           number_of_guests?: number | null
+          organization_id?: string | null
+          special_requests?: string | null
           status?: string
+          title?: string | null
           updated_at?: string
           user_id: string
+          venue_id?: string | null
         }
         Update: {
           address?: string | null
           client_name?: string
           created_at?: string
+          deposit_due_on?: string | null
           event_date?: string | null
           event_time?: string | null
+          final_count_due_on?: string | null
           gratuity?: number | null
           id?: string
           number_of_guests?: number | null
+          organization_id?: string | null
+          special_requests?: string | null
           status?: string
+          title?: string | null
           updated_at?: string
           user_id?: string
+          venue_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       file_vault: {
         Row: {
@@ -978,14 +1213,19 @@ export type Database = {
           client_id: string
           created_at: string
           due_date: string | null
+          event_id: string | null
           fee_percentage: number
           id: string
           invoice_amount: number
           invoice_number: string
+          issued_at: string | null
           notes: string | null
+          organization_id: string | null
           paid_date: string | null
           sent_date: string | null
           status: string
+          subtotal: number | null
+          tax: number | null
           total_collections: number
           updated_at: string
         }
@@ -995,14 +1235,19 @@ export type Database = {
           client_id: string
           created_at?: string
           due_date?: string | null
+          event_id?: string | null
           fee_percentage: number
           id?: string
           invoice_amount: number
           invoice_number: string
+          issued_at?: string | null
           notes?: string | null
+          organization_id?: string | null
           paid_date?: string | null
           sent_date?: string | null
           status?: string
+          subtotal?: number | null
+          tax?: number | null
           total_collections?: number
           updated_at?: string
         }
@@ -1012,14 +1257,19 @@ export type Database = {
           client_id?: string
           created_at?: string
           due_date?: string | null
+          event_id?: string | null
           fee_percentage?: number
           id?: string
           invoice_amount?: number
           invoice_number?: string
+          issued_at?: string | null
           notes?: string | null
+          organization_id?: string | null
           paid_date?: string | null
           sent_date?: string | null
           status?: string
+          subtotal?: number | null
+          tax?: number | null
           total_collections?: number
           updated_at?: string
         }
@@ -1029,6 +1279,20 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1368,6 +1632,116 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "supplier_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          tax_rate: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          tax_rate?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          tax_rate?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      package_items: {
+        Row: {
+          created_at: string
+          dish_id: string | null
+          id: string
+          package_id: string | null
+          qty_per_guest: number | null
+        }
+        Insert: {
+          created_at?: string
+          dish_id?: string | null
+          id?: string
+          package_id?: string | null
+          qty_per_guest?: number | null
+        }
+        Update: {
+          created_at?: string
+          dish_id?: string | null
+          id?: string
+          package_id?: string | null
+          qty_per_guest?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "package_items_dish_id_fkey"
+            columns: ["dish_id"]
+            isOneToOne: false
+            referencedRelation: "dishes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "package_items_package_id_fkey"
+            columns: ["package_id"]
+            isOneToOne: false
+            referencedRelation: "packages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      packages: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          min_guests: number | null
+          name: string
+          organization_id: string | null
+          price_per_guest: number | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_guests?: number | null
+          name: string
+          organization_id?: string | null
+          price_per_guest?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          min_guests?: number | null
+          name?: string
+          organization_id?: string | null
+          price_per_guest?: number | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "packages_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -2049,6 +2423,7 @@ export type Database = {
           granted_at: string
           granted_by: string | null
           id: string
+          organization_id: string | null
           permissions: string[] | null
           role: string
           user_id: string | null
@@ -2057,6 +2432,7 @@ export type Database = {
           granted_at?: string
           granted_by?: string | null
           id?: string
+          organization_id?: string | null
           permissions?: string[] | null
           role?: string
           user_id?: string | null
@@ -2065,11 +2441,70 @@ export type Database = {
           granted_at?: string
           granted_by?: string | null
           id?: string
+          organization_id?: string | null
           permissions?: string[] | null
           role?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          address: string | null
+          city: string | null
+          contact_name: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          name: string
+          organization_id: string | null
+          postal_code: string | null
+          state: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          organization_id?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          contact_name?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          organization_id?: string | null
+          postal_code?: string | null
+          state?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
