@@ -25,6 +25,7 @@ const customerItems = [
 const adminItems = [
   { title: "Dashboard", url: "/", icon: Home },
   { title: "My Events", url: "/my-events", icon: CalendarDays },
+  { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Team", url: "/team", icon: Users },
   { title: "Staff Management", url: "/staff-management", icon: Users },
