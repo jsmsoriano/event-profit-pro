@@ -155,6 +155,7 @@ export default function Auth() {
                     id="testing-mode"
                     checked={testingMode}
                     onCheckedChange={setTestingMode}
+                    className="border border-border data-[state=checked]:border-primary"
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
