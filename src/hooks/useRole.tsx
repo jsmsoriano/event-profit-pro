@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from './useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'owner' | 'manager' | 'staff' | 'accountant' | 'client';
+export type UserRole = 'customer' | 'admin';
 
 export function useRole() {
   const [role, setRole] = useState<UserRole | null>(null);
@@ -17,23 +18,21 @@ export function useRole() {
       }
 
       try {
-        // Simple fetch using vanilla fetch to avoid type issues
-        const response = await fetch('/api/user-role', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ userId: user.id })
-        });
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
         
-        if (response.ok) {
-          const data = await response.json();
-          setRole(data.role || 'client');
+        if (error) {
+          console.error('Error fetching user role:', error);
+          setRole('customer'); // Default to customer
         } else {
-          setRole('client');
+          setRole(data?.role || 'customer');
         }
       } catch (error) {
         console.error('Error fetching user role:', error);
-        // For now, determine role based on user existence and set default
-        setRole(user ? 'owner' : 'client'); // Default to owner for testing
+        setRole('customer'); // Default to customer
       } finally {
         setLoading(false);
       }
@@ -47,19 +46,11 @@ export function useRole() {
   };
 
   const isAdmin = () => {
-    return hasRole(['owner', 'manager']);
+    return role === 'admin';
   };
 
-  const isStaff = () => {
-    return hasRole(['owner', 'manager', 'staff']);
-  };
-
-  const canViewBilling = () => {
-    return hasRole(['owner', 'manager', 'accountant']);
-  };
-
-  const canManageEvents = () => {
-    return hasRole(['owner', 'manager', 'staff']);
+  const isCustomer = () => {
+    return role === 'customer';
   };
 
   return {
@@ -67,13 +58,9 @@ export function useRole() {
     loading,
     hasRole,
     isAdmin,
-    isStaff,
-    canViewBilling,
-    canManageEvents,
+    isCustomer,
     // Additional convenience properties
-    isOwner: role === 'owner',
-    isManager: role === 'manager',
-    isAccountant: role === 'accountant',
-    isClient: role === 'client',
+    isAdminUser: role === 'admin',
+    isCustomerUser: role === 'customer',
   };
 }

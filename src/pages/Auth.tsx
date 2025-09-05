@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function Auth() {
@@ -12,6 +13,7 @@ export default function Auth() {
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [role, setRole] = useState<'customer' | 'admin'>('customer');
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -42,6 +44,7 @@ export default function Auth() {
     const { error } = await signUp(email, password, {
       first_name: firstName,
       last_name: lastName,
+      role: role,
     });
     
     setLoading(false);
@@ -128,6 +131,18 @@ export default function Auth() {
                       className="input-modern"
                     />
                   </div>
+                </div>
+                <div>
+                  <Label htmlFor="role">Account Type</Label>
+                  <Select value={role} onValueChange={(value: 'customer' | 'admin') => setRole(value)}>
+                    <SelectTrigger className="input-modern">
+                      <SelectValue placeholder="Select account type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="customer">Customer - Book events and view menu</SelectItem>
+                      <SelectItem value="admin">Admin - Full management access</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="signup-email">Email</Label>

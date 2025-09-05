@@ -9,9 +9,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function RoleTest() {
-  const { role, loading, isAdmin, isStaff, canViewBilling, canManageEvents } = useRole();
+  const { role, loading, isAdmin, isCustomer } = useRole();
   const { user } = useAuth();
-  const [testRole, setTestRole] = useState<UserRole>('client');
+  const [testRole, setTestRole] = useState<UserRole>('customer');
   const [updating, setUpdating] = useState(false);
 
   const handleRoleUpdate = async () => {
@@ -19,16 +19,11 @@ export default function RoleTest() {
     
     setUpdating(true);
     try {
-      // Insert or update user role
+      // Update user profile with new role
       const { error } = await supabase
-        .from('user_roles')
-        .upsert({
-          user_id: user.id,
-          role: testRole,
-          is_active: true
-        }, {
-          onConflict: 'user_id,role'
-        });
+        .from('profiles')
+        .update({ role: testRole })
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -51,7 +46,7 @@ export default function RoleTest() {
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Role Testing & Management</h1>
-        <Badge variant={role === 'owner' ? 'default' : 'secondary'}>
+        <Badge variant={role === 'admin' ? 'default' : 'secondary'}>
           Current Role: {role || 'None'}
         </Badge>
       </div>
@@ -70,21 +65,15 @@ export default function RoleTest() {
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span>Is Staff:</span>
-              <Badge variant={isStaff() ? 'default' : 'secondary'}>
-                {isStaff() ? 'Yes' : 'No'}
+              <span>Is Customer:</span>
+              <Badge variant={isCustomer() ? 'default' : 'secondary'}>
+                {isCustomer() ? 'Yes' : 'No'}
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span>Can View Billing:</span>
-              <Badge variant={canViewBilling() ? 'default' : 'secondary'}>
-                {canViewBilling() ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Can Manage Events:</span>
-              <Badge variant={canManageEvents() ? 'default' : 'secondary'}>
-                {canManageEvents() ? 'Yes' : 'No'}
+              <span>Navigation Access:</span>
+              <Badge variant="outline">
+                {role === 'customer' ? 'Menu, Book Event, Support' : 'Full Admin Access'}
               </Badge>
             </div>
           </CardContent>
@@ -103,11 +92,8 @@ export default function RoleTest() {
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="staff">Staff</SelectItem>
-                  <SelectItem value="accountant">Accountant</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
-                  <SelectItem value="owner">Owner</SelectItem>
+                  <SelectItem value="customer">Customer</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -127,35 +113,17 @@ export default function RoleTest() {
           <CardTitle>Role Descriptions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-blue-600">Client</h3>
+              <h3 className="font-semibold text-blue-600">Customer</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Can book events, view menu, manage their own events
+                Can view menu, book events, and access support. Limited to customer-facing features only.
               </p>
             </div>
             <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-green-600">Staff</h3>
+              <h3 className="font-semibold text-red-600">Admin</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Can manage events, view client data, handle day-to-day operations
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-purple-600">Accountant</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Can view billing, financial reports, manage payments
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-orange-600">Manager</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Full access except owner settings, can manage staff and operations
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-red-600">Owner</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Complete access to all features including system settings
+                Full access to all features including event management, analytics, staff management, inventory, and system settings.
               </p>
             </div>
           </div>

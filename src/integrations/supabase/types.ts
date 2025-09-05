@@ -1918,6 +1918,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           last_name: string | null
+          role: Database["public"]["Enums"]["app_role"]
           subscription_end_date: string | null
           subscription_start_date: string | null
           subscription_tier:
@@ -1932,6 +1933,7 @@ export type Database = {
           id: string
           is_active?: boolean | null
           last_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_tier?:
@@ -1946,6 +1948,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_name?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
           subscription_tier?:
@@ -2618,12 +2621,24 @@ export type Database = {
         Args: { period_id: string }
         Returns: undefined
       }
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
       get_user_subscription_limit: {
         Args: { feature_name: string; user_id: string }
         Returns: number
       }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
+      app_role: "customer" | "admin"
       subscription_tier: "starter" | "professional" | "growth"
     }
     CompositeTypes: {
@@ -2752,6 +2767,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["customer", "admin"],
       subscription_tier: ["starter", "professional", "growth"],
     },
   },
