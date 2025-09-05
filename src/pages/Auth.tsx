@@ -40,8 +40,8 @@ export default function Auth() {
   const handleTestLogin = async () => {
     setLoading(true);
     
-    // Create a test email based on the selected role
-    const testEmail = `test-${role}@example.com`;
+    // Create a test email based on the selected role with a valid domain
+    const testEmail = `test-${role}@test.com`;
     const testPassword = 'testpassword123';
     
     try {
@@ -57,8 +57,13 @@ export default function Auth() {
         });
         
         if (!signUpError) {
-          // After successful signup, try to sign in
-          await signIn(testEmail, testPassword);
+          // After successful signup, try to sign in again
+          setTimeout(async () => {
+            const { error: secondSignInError } = await signIn(testEmail, testPassword);
+            if (!secondSignInError) {
+              navigate('/');
+            }
+          }, 1000);
         }
       }
       
