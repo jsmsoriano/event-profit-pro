@@ -65,10 +65,10 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        {/* Customer-only section */}
-        {isCustomer && (
+        {/* Customer features - visible to customers and admins */}
+        {(isCustomer || isAdmin) && (
           <SidebarGroup>
-            <SidebarGroupLabel>Customer Portal</SidebarGroupLabel>
+            <SidebarGroupLabel>{isAdmin ? 'Customer Features' : 'Customer Portal'}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {customerItems.map((item) => (
