@@ -14,7 +14,8 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 
-const clientItems = [
+// Customer-facing navigation items
+const customerItems = [
   { title: "Home", url: "/", icon: Home },
   { title: "Menu", url: "/menu", icon: ChefHat },
   { title: "Book Event", url: "/book", icon: BookOpen },
@@ -22,28 +23,26 @@ const clientItems = [
   { title: "Support", url: "/support", icon: Contact },
 ];
 
+// Admin/Backend navigation items
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: BarChart3 },
-  { title: "Events", url: "/admin/events", icon: CalendarDays },
+  { title: "Events Management", url: "/admin/events", icon: CalendarDays },
   { title: "Clients", url: "/admin/clients", icon: Users },
   { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
-  { title: "Staff", url: "/admin/staff", icon: Users },
-  { title: "Billing", url: "/admin/billing", icon: CreditCard },
-  { title: "Analytics", url: "/admin/analytics", icon: TrendingUp },
-];
-
-// Legacy items for existing functionality
-const legacyItems = [
-  { title: "Event Calculator", url: "/calculator", icon: Calculator },
-  { title: "Financial Summary", url: "/financial-summary", icon: TrendingUp },
   { title: "Staff Management", url: "/staff", icon: Users },
   { title: "Inventory", url: "/inventory", icon: Package },
+  { title: "Financial Reports", url: "/financial-summary", icon: TrendingUp },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Event Calculator", url: "/calculator", icon: Calculator },
+];
+
+// Additional admin tools
+const adminToolsItems = [
   { title: "Reports", url: "/reporting", icon: FileText },
-  { title: "Team", url: "/team", icon: Clock },
+  { title: "Team Management", url: "/team", icon: Clock },
   { title: "Event Info", url: "/quotes", icon: FileText },
   { title: "Contacts", url: "/contacts", icon: Contact },
-  { title: "Admin", url: "/admin-old", icon: Settings },
+  { title: "Admin Settings", url: "/admin-old", icon: Settings },
 ];
 
 export function AppSidebar() {
@@ -54,33 +53,34 @@ export function AppSidebar() {
 
   const isActive = (path: string) => currentPath === path
 
-  // Determine which items to show based on role
-  const getItemsForRole = () => {
-    if (loading) return [];
-    
-    if (role === 'client') {
-      return clientItems;
-    } else if (role && ['owner', 'manager', 'staff', 'accountant'].includes(role)) {
-      return adminItems;
-    } else {
-      // Fallback to legacy items for existing users
-      return legacyItems;
-    }
-  };
+  // Show loading state
+  if (loading) {
+    return (
+      <Sidebar collapsible="icon">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Loading...</SidebarGroupLabel>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    )
+  }
 
-  const items = getItemsForRole();
-  const sectionLabel = role === 'client' ? 'Client Portal' : 
-                      role && ['owner', 'manager', 'staff', 'accountant'].includes(role) ? 'Administration' : 
-                      'Event Management';
+  // Determine sections to show based on role
+  const isCustomer = role === 'client'
+  const isAdmin = role && ['owner', 'manager', 'staff', 'accountant'].includes(role)
 
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
+        {/* Customer-facing section - always visible */}
         <SidebarGroup>
-          <SidebarGroupLabel>{sectionLabel}</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            {isCustomer ? 'Customer Portal' : 'Customer Features'}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
+              {customerItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={isActive(item.url)}>
                     <NavLink to={item.url} end>
@@ -93,6 +93,68 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Admin sections - only visible to admin users */}
+        {isAdmin && (
+          <>
+            <SidebarGroup>
+              <SidebarGroupLabel>Administration</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                        <NavLink to={item.url} end>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+
+            <SidebarGroup>
+              <SidebarGroupLabel>Admin Tools</SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {adminToolsItems.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                        <NavLink to={item.url} end>
+                          <item.icon />
+                          <span>{item.title}</span>
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          </>
+        )}
+
+        {/* Fallback section for users without defined roles */}
+        {!isCustomer && !isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Event Management</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {[...customerItems, ...adminItems, ...adminToolsItems].map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <NavLink to={item.url} end>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   )
