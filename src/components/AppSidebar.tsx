@@ -65,10 +65,10 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
-        {/* Customer features - visible to customers and admins */}
-        {(isCustomer || isAdmin) && (
+        {/* Customer features - visible to customers only */}
+        {isCustomer && !isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>{isAdmin ? 'Customer Features' : 'Customer Portal'}</SidebarGroupLabel>
+            <SidebarGroupLabel>Customer Portal</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {customerItems.map((item) => (
@@ -86,10 +86,31 @@ export function AppSidebar() {
           </SidebarGroup>
         )}
 
-        {/* Admin section - only visible to admin users */}
+        {/* Admin view - Customer Features section */}
         {isAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administration</SidebarGroupLabel>
+            <SidebarGroupLabel>Customer Features</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {customerItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <NavLink to={item.url} end>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
+
+        {/* Admin view - Admin Features section */}
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin Features</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (
