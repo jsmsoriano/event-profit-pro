@@ -39,23 +39,38 @@ export default function Auth() {
     setLoading(false);
   };
 
+  // Fixed test accounts for each role
+  const testAccounts = {
+    customer: {
+      email: 'testcustomer@gmail.com',
+      password: 'TestPassword123!',
+      firstName: 'Test',
+      lastName: 'Customer'
+    },
+    admin: {
+      email: 'testadmin@gmail.com', 
+      password: 'TestPassword123!',
+      firstName: 'Test',
+      lastName: 'Admin'
+    }
+  };
+
   const handleTestLogin = async () => {
     setLoading(true);
     
-    // Create a test email based on the selected role with a standard domain
-    const testEmail = `test${role}${Date.now()}@gmail.com`;
-    const testPassword = 'TestPassword123!';
+    const testAccount = testAccounts[role];
     
     try {
+      console.log(`Attempting to sign in with: ${testAccount.email}`);
       // Try to sign in first
-      const { error: signInError } = await signIn(testEmail, testPassword);
+      const { error: signInError } = await signIn(testAccount.email, testAccount.password);
       
       if (signInError && signInError.message.includes('Invalid login credentials')) {
         // If account doesn't exist, create it
-        console.log('Creating test account:', testEmail);
-        const { error: signUpError } = await signUp(testEmail, testPassword, {
-          first_name: 'Test',
-          last_name: role === 'customer' ? 'Customer' : 'Admin',
+        console.log('Creating test account:', testAccount.email);
+        const { error: signUpError } = await signUp(testAccount.email, testAccount.password, {
+          first_name: testAccount.firstName,
+          last_name: testAccount.lastName,
           role: role,
         });
         
@@ -65,7 +80,7 @@ export default function Auth() {
           console.log('Test account created successfully, attempting login...');
           // After successful signup, try to sign in again
           setTimeout(async () => {
-            const { error: secondSignInError } = await signIn(testEmail, testPassword);
+            const { error: secondSignInError } = await signIn(testAccount.email, testAccount.password);
             if (!secondSignInError) {
               navigate('/');
             } else {
@@ -199,7 +214,10 @@ export default function Auth() {
                       {loading ? 'Creating Test Session...' : `Test as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
                     </Button>
                     <p className="text-xs text-muted-foreground text-center">
-                      Creates a temporary test account for development
+                      <strong>Test Accounts:</strong><br/>
+                      Customer: testcustomer@gmail.com<br/>
+                      Admin: testadmin@gmail.com<br/>
+                      Password: TestPassword123!
                     </p>
                   </div>
                 </div>
