@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from './use-toast';
@@ -46,7 +46,7 @@ export function useMenu() {
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
-  const fetchDishes = async () => {
+  const fetchDishes = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -66,27 +66,46 @@ export function useMenu() {
         variant: "destructive",
       });
     }
-  };
+  }, [user]);
 
-  const fetchPackages = async () => {
+  const fetchPackages = useCallback(async () => {
     if (!user) return;
     
     try {
-      const { data, error } = await supabase
+      // Fetch packages first with minimal data
+      const { data: packagesData, error: packagesError } = await supabase
         .from('packages')
-        .select(`
-          *,
-          package_items (
-            *,
-            dish:dishes (*)
-          )
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('is_active', true)
         .order('name');
 
-      if (error) throw error;
-      setPackages(data || []);
+      if (packagesError) throw packagesError;
+
+      // If packages exist, fetch package items with dishes in parallel
+      if (packagesData && packagesData.length > 0) {
+        const packageIds = packagesData.map(pkg => pkg.id);
+        
+        const { data: packageItemsData, error: itemsError } = await supabase
+          .from('package_items')
+          .select(`
+            *,
+            dish:dishes (*)
+          `)
+          .in('package_id', packageIds);
+
+        if (itemsError) throw itemsError;
+
+        // Combine the data
+        const packagesWithItems = packagesData.map(pkg => ({
+          ...pkg,
+          package_items: packageItemsData?.filter(item => item.package_id === pkg.id) || []
+        }));
+
+        setPackages(packagesWithItems);
+      } else {
+        setPackages([]);
+      }
     } catch (error: any) {
       toast({
         title: "Error fetching packages",
@@ -96,7 +115,7 @@ export function useMenu() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   const createDish = async (dishData: Omit<Dish, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) return null;
@@ -265,7 +284,7 @@ export function useMenu() {
     }
   };
 
-  const getFilteredMenu = (filters: {
+  const getFilteredMenu = useCallback((filters: {
     vegetarian?: boolean;
     vegan?: boolean;
     glutenFree?: boolean;
@@ -302,12 +321,12 @@ export function useMenu() {
     }
 
     return { dishes: filteredDishes, packages: filteredPackages };
-  };
+  }, [dishes, packages]);
 
   useEffect(() => {
     if (user) {
-      fetchDishes();
-      fetchPackages();
+      // Fetch dishes and packages in parallel
+      Promise.all([fetchDishes(), fetchPackages()]);
     }
   }, [user]);
 
@@ -322,9 +341,8 @@ export function useMenu() {
     addDishToPackage,
     removeDishFromPackage,
     getFilteredMenu,
-    refetch: () => {
-      fetchDishes();
-      fetchPackages();
-    }
+    refetch: useCallback(() => {
+      Promise.all([fetchDishes(), fetchPackages()]);
+    }, [fetchDishes, fetchPackages])
   };
 }

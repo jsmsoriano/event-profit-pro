@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,7 +24,11 @@ export default function Menu() {
     packages: []
   });
 
-  const { dishes: filteredDishes, packages: filteredPackages } = getFilteredMenu(filters);
+  // Memoize filtered results to prevent unnecessary recalculations
+  const { dishes: filteredDishes, packages: filteredPackages } = useMemo(
+    () => getFilteredMenu(filters), 
+    [dishes, packages, filters, getFilteredMenu]
+  );
 
   const handleFilterChange = (filterType: keyof typeof filters) => {
     setFilters(prev => ({
@@ -52,7 +56,28 @@ export default function Menu() {
   const totalSelected = selectedItems.dishes.length + selectedItems.packages.length;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">Loading menu...</div>;
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-foreground mb-4">Our Menu</h1>
+          <p className="text-xl text-muted-foreground">Loading our delicious offerings...</p>
+        </div>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-6 bg-muted rounded mb-2" />
+                <div className="h-4 bg-muted rounded w-3/4" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-4 bg-muted rounded mb-2" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
