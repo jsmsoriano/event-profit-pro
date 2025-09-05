@@ -1,0 +1,223 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from './useAuth';
+import { toast } from './use-toast';
+
+export interface RevenueRecord {
+  id: string;
+  user_id: string;
+  event_id?: string;
+  client_id?: string;
+  revenue_date: string;
+  gross_revenue: number;
+  food_costs: number;
+  labor_costs: number;
+  other_expenses: number;
+  net_profit: number;
+  tax_amount: number;
+  payment_method: string;
+  created_at: string;
+}
+
+export interface RevenueAnalytics {
+  totalRevenue: number;
+  totalProfit: number;
+  profitMargin: number;
+  averageEventRevenue: number;
+  topPaymentMethod: string;
+  revenueByMonth: { month: string; revenue: number; profit: number }[];
+  revenueByClient: { client_name: string; revenue: number; events: number }[];
+}
+
+export function useRevenue() {
+  const [revenue, setRevenue] = useState<RevenueRecord[]>([]);
+  const [analytics, setAnalytics] = useState<RevenueAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+
+  const fetchRevenue = async (startDate?: string, endDate?: string) => {
+    if (!user) return;
+    
+    try {
+      let query = supabase
+        .from('revenue_records')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('revenue_date', { ascending: false });
+
+      if (startDate) query = query.gte('revenue_date', startDate);
+      if (endDate) query = query.lte('revenue_date', endDate);
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+      setRevenue(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error fetching revenue data",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createRevenueRecord = async (revenueData: Omit<RevenueRecord, 'id' | 'user_id' | 'net_profit' | 'created_at'>) => {
+    if (!user) return null;
+
+    try {
+      const { data, error } = await supabase
+        .from('revenue_records')
+        .insert([{ ...revenueData, user_id: user.id }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setRevenue(prev => [data, ...prev]);
+      toast({
+        title: "Revenue record added",
+        description: "Revenue data has been recorded successfully",
+      });
+      return data;
+    } catch (error: any) {
+      toast({
+        title: "Error adding revenue record",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+
+  const calculateAnalytics = async (startDate?: string, endDate?: string) => {
+    if (!user) return;
+
+    try {
+      // Fetch revenue data for analytics
+      let query = supabase
+        .from('revenue_records')
+        .select(`
+          *,
+          clients (name)
+        `)
+        .eq('user_id', user.id);
+
+      if (startDate) query = query.gte('revenue_date', startDate);
+      if (endDate) query = query.lte('revenue_date', endDate);
+
+      const { data: revenueData, error } = await query;
+      if (error) throw error;
+
+      if (!revenueData || revenueData.length === 0) {
+        setAnalytics({
+          totalRevenue: 0,
+          totalProfit: 0,
+          profitMargin: 0,
+          averageEventRevenue: 0,
+          topPaymentMethod: 'cash',
+          revenueByMonth: [],
+          revenueByClient: []
+        });
+        return;
+      }
+
+      const totalRevenue = revenueData.reduce((sum, record) => sum + record.gross_revenue, 0);
+      const totalProfit = revenueData.reduce((sum, record) => sum + record.net_profit, 0);
+      const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+      const averageEventRevenue = totalRevenue / revenueData.length;
+
+      // Find top payment method
+      const paymentMethods = revenueData.reduce((acc, record) => {
+        acc[record.payment_method] = (acc[record.payment_method] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const topPaymentMethod = Object.entries(paymentMethods).sort(([,a], [,b]) => b - a)[0]?.[0] || 'cash';
+
+      // Revenue by month
+      const revenueByMonth = revenueData.reduce((acc, record) => {
+        const month = new Date(record.revenue_date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+        const existing = acc.find(item => item.month === month);
+        if (existing) {
+          existing.revenue += record.gross_revenue;
+          existing.profit += record.net_profit;
+        } else {
+          acc.push({ month, revenue: record.gross_revenue, profit: record.net_profit });
+        }
+        return acc;
+      }, [] as { month: string; revenue: number; profit: number }[]);
+
+      // Revenue by client
+      const revenueByClient = revenueData.reduce((acc, record) => {
+        const clientName = record.clients?.name || 'Unknown Client';
+        const existing = acc.find(item => item.client_name === clientName);
+        if (existing) {
+          existing.revenue += record.gross_revenue;
+          existing.events += 1;
+        } else {
+          acc.push({ client_name: clientName, revenue: record.gross_revenue, events: 1 });
+        }
+        return acc;
+      }, [] as { client_name: string; revenue: number; events: number }[]);
+
+      setAnalytics({
+        totalRevenue,
+        totalProfit,
+        profitMargin,
+        averageEventRevenue,
+        topPaymentMethod,
+        revenueByMonth: revenueByMonth.sort((a, b) => new Date(a.month).getTime() - new Date(b.month).getTime()),
+        revenueByClient: revenueByClient.sort((a, b) => b.revenue - a.revenue)
+      });
+
+    } catch (error: any) {
+      toast({
+        title: "Error calculating analytics",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getTaxReport = (year: number) => {
+    const yearStart = `${year}-01-01`;
+    const yearEnd = `${year}-12-31`;
+    
+    const yearRevenue = revenue.filter(record => {
+      const recordDate = new Date(record.revenue_date);
+      return recordDate.getFullYear() === year;
+    });
+
+    const totalTaxes = yearRevenue.reduce((sum, record) => sum + record.tax_amount, 0);
+    const totalRevenue = yearRevenue.reduce((sum, record) => sum + record.gross_revenue, 0);
+    
+    return {
+      year,
+      totalRevenue,
+      totalTaxes,
+      effectiveTaxRate: totalRevenue > 0 ? (totalTaxes / totalRevenue) * 100 : 0,
+      records: yearRevenue
+    };
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchRevenue();
+      calculateAnalytics();
+    }
+  }, [user]);
+
+  return {
+    revenue,
+    analytics,
+    loading,
+    createRevenueRecord,
+    calculateAnalytics,
+    getTaxReport,
+    refetch: () => {
+      fetchRevenue();
+      calculateAnalytics();
+    }
+  };
+}

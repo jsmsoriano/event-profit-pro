@@ -15,6 +15,9 @@ import Team from "./pages/Team";
 import Quotes from "./pages/Quotes";
 import Contacts from "./pages/Contacts";
 import Admin from "./pages/Admin";
+import StaffManagement from "./pages/StaffManagement";
+import Inventory from "./pages/Inventory";
+import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +38,9 @@ const App = () => (
                   <Routes>
                     <Route path="/" element={<BreakevenAnalysis />} />
                     <Route path="/financial-summary" element={<FinancialSummary />} />
+                    <Route path="/staff" element={<StaffManagement />} />
+                    <Route path="/inventory" element={<Inventory />} />
+                    <Route path="/analytics" element={<Analytics />} />
                     <Route path="/reporting" element={<Reporting />} />
                     <Route path="/auth" element={<Auth />} />
                     <Route path="/team" element={<Team />} />
