@@ -26,6 +26,13 @@ export default function Auth() {
     }
   }, [user, navigate]);
 
+  // Auto-login bypass for testing mode
+  useEffect(() => {
+    if (testingMode && !user && !loading) {
+      handleTestLogin();
+    }
+  }, [testingMode, user, loading]);
+
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -171,7 +178,7 @@ export default function Auth() {
               <div className="mt-4 pt-4 border-t border-border">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="testing-mode" className="text-sm font-medium">
-                    Testing Mode
+                    Testing Mode (Auto-Login)
                   </Label>
                   <Switch
                     id="testing-mode"
@@ -181,7 +188,7 @@ export default function Auth() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Enable quick testing with predefined accounts
+                  {testingMode ? `Auto-logging in as ${role}...` : 'Enable to bypass login completely'}
                 </p>
               </div>
               
@@ -189,11 +196,11 @@ export default function Auth() {
               {testingMode && (
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="text-center mb-3">
-                    <Label className="text-sm text-muted-foreground font-medium">Quick Test Access</Label>
+                    <Label className="text-sm text-muted-foreground font-medium">Quick Role Switch</Label>
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <Label htmlFor="test-role" className="text-xs">Test As:</Label>
+                      <Label htmlFor="test-role" className="text-xs">Switch to Role:</Label>
                       <Select value={role} onValueChange={(value: 'customer' | 'admin') => setRole(value)}>
                         <SelectTrigger className="input-modern bg-background">
                           <SelectValue />
@@ -204,20 +211,10 @@ export default function Auth() {
                         </SelectContent>
                       </Select>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full"
-                      onClick={() => handleTestLogin()}
-                      disabled={loading}
-                    >
-                      {loading ? 'Creating Test Session...' : `Test as ${role.charAt(0).toUpperCase() + role.slice(1)}`}
-                    </Button>
                     <p className="text-xs text-muted-foreground text-center">
-                      <strong>Test Accounts:</strong><br/>
-                      Customer: testcustomer@gmail.com<br/>
-                      Admin: testadmin@gmail.com<br/>
-                      Password: TestPassword123!
+                      <strong>Current Test Account:</strong><br/>
+                      {testAccounts[role].email}<br/>
+                      Password: {testAccounts[role].password}
                     </p>
                   </div>
                 </div>
