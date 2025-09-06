@@ -38,11 +38,11 @@ const initialFormData: DishFormData = {
   is_gluten_free: false,
   is_active: true,
   category: 'protein',
-  event_type: '',
+  event_type: 'regular',
   protein_types: [],
   side_types: [],
   vegetable_type: '',
-  appetizer_type: ''
+  appetizer_type: 'none'
 };
 
 const categories = [
@@ -103,7 +103,7 @@ export default function MenuManagement() {
         toast.error('Please specify a vegetable type for hibachi dinner');
         return;
       }
-      if (!formData.appetizer_type) {
+      if (!formData.appetizer_type || formData.appetizer_type === 'none') {
         toast.error('Please select an appetizer type for hibachi dinner');
         return;
       }
@@ -135,11 +135,11 @@ export default function MenuManagement() {
       is_gluten_free: dish.is_gluten_free,
       is_active: dish.is_active ?? true,
       category: dish.category || 'protein',
-      event_type: dish.event_type || '',
+      event_type: dish.event_type || 'regular',
       protein_types: dish.protein_types || [],
       side_types: dish.side_types || [],
       vegetable_type: dish.vegetable_type || '',
-      appetizer_type: dish.appetizer_type || ''
+      appetizer_type: dish.appetizer_type || 'none'
     });
     setEditingDish(dish.id);
     setIsDialogOpen(true);
@@ -237,21 +237,21 @@ export default function MenuManagement() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="eventType">Event Type</Label>
-                <Select 
-                  value={formData.event_type || ''} 
-                  onValueChange={(value) => handleInputChange('event_type', value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">Regular Menu Item</SelectItem>
-                    <SelectItem value="hibachi_dinner">Hibachi Dinner</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="space-y-2">
+                  <Label htmlFor="eventType">Event Type</Label>
+                  <Select 
+                    value={formData.event_type || 'regular'} 
+                    onValueChange={(value) => handleInputChange('event_type', value === 'regular' ? '' : value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select event type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">Regular Menu Item</SelectItem>
+                      <SelectItem value="hibachi_dinner">Hibachi Dinner</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
 
               {formData.event_type === 'hibachi_dinner' && (
                 <div className="space-y-4">
@@ -317,13 +317,14 @@ export default function MenuManagement() {
                     <div className="space-y-2">
                       <Label htmlFor="appetizer">Appetizer Type</Label>
                       <Select 
-                        value={formData.appetizer_type || ''} 
-                        onValueChange={(value) => handleInputChange('appetizer_type', value)}
+                        value={formData.appetizer_type || 'none'} 
+                        onValueChange={(value) => handleInputChange('appetizer_type', value === 'none' ? '' : value)}
                       >
                         <SelectTrigger>
                           <SelectValue placeholder="Select appetizer" />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="none">No appetizer</SelectItem>
                           {appetizerOptions.map((appetizer) => (
                             <SelectItem key={appetizer} value={appetizer}>
                               {appetizer}
