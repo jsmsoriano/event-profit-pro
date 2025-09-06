@@ -8,7 +8,6 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { CalendarIcon, Users, Mail, Phone, ArrowRight, ArrowLeft, Check } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { useMenu } from '@/hooks/useMenu';
 import { toast } from '@/hooks/use-toast';
 
@@ -40,7 +39,6 @@ export default function BookEvent() {
   });
 
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { dishes, packages } = useMenu();
 
   useEffect(() => {
@@ -92,16 +90,6 @@ export default function BookEvent() {
   };
 
   const submitBooking = async () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to complete your booking",
-        variant: "destructive",
-      });
-      navigate('/auth');
-      return;
-    }
-
     // Here would be the API call to create the event
     toast({
       title: "Booking submitted!",

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface RevenueRecord {
@@ -33,16 +32,13 @@ export function useRevenue() {
   const [revenue, setRevenue] = useState<RevenueRecord[]>([]);
   const [analytics, setAnalytics] = useState<RevenueAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchRevenue = async (startDate?: string, endDate?: string) => {
-    if (!user) return;
-    
     try {
       let query = supabase
         .from('revenue_records')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', 'default-user')
         .order('revenue_date', { ascending: false });
 
       if (startDate) query = query.gte('revenue_date', startDate);
@@ -64,12 +60,10 @@ export function useRevenue() {
   };
 
   const createRevenueRecord = async (revenueData: Omit<RevenueRecord, 'id' | 'user_id' | 'net_profit' | 'created_at'>) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('revenue_records')
-        .insert([{ ...revenueData, user_id: user.id }])
+        .insert([{ ...revenueData, user_id: 'default-user' }])
         .select()
         .single();
 
@@ -92,8 +86,6 @@ export function useRevenue() {
   };
 
   const calculateAnalytics = async (startDate?: string, endDate?: string) => {
-    if (!user) return;
-
     try {
       // Fetch revenue data for analytics
       let query = supabase
@@ -102,7 +94,7 @@ export function useRevenue() {
           *,
           clients (name)
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', 'default-user');
 
       if (startDate) query = query.gte('revenue_date', startDate);
       if (endDate) query = query.lte('revenue_date', endDate);
@@ -202,11 +194,9 @@ export function useRevenue() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchRevenue();
-      calculateAnalytics();
-    }
-  }, [user]);
+    fetchRevenue();
+    calculateAnalytics();
+  }, []);
 
   return {
     revenue,

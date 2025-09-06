@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useRole, UserRole } from '@/hooks/useRole';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -10,24 +9,14 @@ import { toast } from 'sonner';
 
 export default function RoleTest() {
   const { role, loading, isAdmin, isCustomer } = useRole();
-  const { user } = useAuth();
   const [testRole, setTestRole] = useState<UserRole>('customer');
   const [updating, setUpdating] = useState(false);
 
   const handleRoleUpdate = async () => {
-    if (!user?.id) return;
-    
     setUpdating(true);
     try {
-      // Update user profile with new role
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: testRole })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      toast.success(`Role updated to ${testRole}`);
+      // Simulate role update - in a real app without auth, this would be handled differently
+      toast.success(`Role updated to ${testRole} (simulated)`);
       // Refresh the page to see changes
       window.location.reload();
     } catch (error) {

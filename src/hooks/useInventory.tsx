@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface InventoryItem {
@@ -37,11 +36,8 @@ export function useInventory() {
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchInventory = async () => {
-    if (!user) return;
-    
     try {
       const { data, error } = await supabase
         .from('inventory_items')
@@ -49,7 +45,7 @@ export function useInventory() {
           *,
           supplier:suppliers (*)
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', 'default-user')
         .order('name');
 
       if (error) throw error;
@@ -64,13 +60,11 @@ export function useInventory() {
   };
 
   const fetchSuppliers = async () => {
-    if (!user) return;
-    
     try {
       const { data, error } = await supabase
         .from('suppliers')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', 'default-user')
         .order('name');
 
       if (error) throw error;
@@ -87,12 +81,10 @@ export function useInventory() {
   };
 
   const createInventoryItem = async (itemData: Omit<InventoryItem, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('inventory_items')
-        .insert([{ ...itemData, user_id: user.id }])
+        .insert([{ ...itemData, user_id: 'default-user' }])
         .select()
         .single();
 
@@ -142,12 +134,10 @@ export function useInventory() {
   };
 
   const createSupplier = async (supplierData: Omit<Supplier, 'id' | 'user_id'>) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('suppliers')
-        .insert([{ ...supplierData, user_id: user.id }])
+        .insert([{ ...supplierData, user_id: 'default-user' }])
         .select()
         .single();
 
@@ -185,11 +175,9 @@ export function useInventory() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchInventory();
-      fetchSuppliers();
-    }
-  }, [user]);
+    fetchInventory();
+    fetchSuppliers();
+  }, []);
 
   return {
     inventory,

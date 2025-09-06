@@ -10,7 +10,6 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +30,6 @@ export default function Reporting() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   // Add report dialog state
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -42,11 +40,9 @@ export default function Reporting() {
 
 
   useEffect(() => {
-    if (user) {
-      loadSavedReports();
-      loadClients();
-    }
-  }, [user]);
+    loadSavedReports();
+    loadClients();
+  }, []);
 
   const loadSavedReports = async () => {
     try {
@@ -98,15 +94,6 @@ export default function Reporting() {
       return;
     }
 
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create reports",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setLoading(true);
       
@@ -122,7 +109,7 @@ export default function Reporting() {
       const { error } = await supabase
         .from('saved_reports')
         .insert({
-          user_id: user.id,
+          user_id: 'default-user',
           report_name: reportName.trim(),
           report_type: 'event_calculator',
           report_data: reportData

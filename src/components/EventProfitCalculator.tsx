@@ -9,7 +9,6 @@ import { Slider } from '@/components/ui/slider';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import FinancialSummary from '@/pages/FinancialSummary';
 import * as XLSX from 'xlsx';
@@ -93,7 +92,6 @@ const EventProfitCalculator = () => {
   const [reportName, setReportName] = useState('');
   const [savedReports, setSavedReports] = useState<any[]>([]);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   // Expenses states - now using admin-controlled dropdowns
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
@@ -324,13 +322,11 @@ const EventProfitCalculator = () => {
 
   // Load budget profiles from database
   const loadBudgetProfiles = async () => {
-    if (!user) return;
-    
     try {
       const { data, error } = await supabase
         .from('budget_profiles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', 'default-user')
         .order('name');
 
       if (error) throw error;
@@ -348,15 +344,11 @@ const EventProfitCalculator = () => {
 
   // Load labor roles from admin settings when default allocation is selected
   const loadDefaultLaborRoles = async () => {
-    console.log('loadDefaultLaborRoles called, user:', !!user);
-    if (!user) return;
-    
     try {
-      console.log('Fetching labor roles from database...');
       const { data, error } = await supabase
         .from('labor_roles')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', 'default-user')
         .order('name');
 
       if (error) throw error;
@@ -407,18 +399,13 @@ const EventProfitCalculator = () => {
 
   // Effect to load default labor roles and admin settings when allocation source changes
   useEffect(() => {
-    console.log('Allocation source changed to:', allocationSource);
-    if (allocationSource === 'default' && user) {
-      console.log('Loading default labor roles and admin settings...');
-      console.log('Admin settings:', adminSettings);
+    if (allocationSource === 'default') {
       loadDefaultLaborRoles();
       // Also load admin defaults for allocation percentages
       setTargetProfitMargin(25); // Default profit margin
       setBusinessTaxPercentage(8); // Default tax percentage
-    } else if (allocationSource === 'custom') {
-      console.log('Switched to custom mode - keeping current roles:', laborRoles.length);
     }
-  }, [allocationSource, user, adminSettings]);
+  }, [allocationSource, adminSettings]);
 
   const resetInputs = useCallback(() => {
     setNumberOfGuests(10);
@@ -508,10 +495,8 @@ const EventProfitCalculator = () => {
 
   // Load saved reports
   useEffect(() => {
-    if (user) {
-      loadSavedReports();
-    }
-  }, [user]);
+    loadSavedReports();
+  }, []);
 
   const loadSavedReports = async () => {
     try {
@@ -534,7 +519,7 @@ const EventProfitCalculator = () => {
   };
 
   const saveReport = async () => {
-    if (!user || !reportName.trim()) {
+    if (!reportName.trim()) {
       toast({
         title: "Error",
         description: "Please enter a report name",
@@ -582,7 +567,7 @@ const EventProfitCalculator = () => {
       const { error } = await supabase
         .from('saved_reports')
         .insert({
-          user_id: user.id,
+          user_id: 'default-user',
           report_name: reportName,
           report_data: reportData,
           report_type: 'event_calculator'

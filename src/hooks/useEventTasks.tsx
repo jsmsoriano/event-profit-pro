@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface EventTask {
@@ -36,10 +35,9 @@ export function useEventTasks(eventId?: string) {
   const [tasks, setTasks] = useState<EventTask[]>([]);
   const [milestones, setMilestones] = useState<EventMilestone[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchTasks = async (targetEventId?: string) => {
-    if (!user || !targetEventId) return;
+    if (!targetEventId) return;
     
     try {
       const { data, error } = await supabase
@@ -63,7 +61,7 @@ export function useEventTasks(eventId?: string) {
   };
 
   const fetchMilestones = async (targetEventId?: string) => {
-    if (!user || !targetEventId) return;
+    if (!targetEventId) return;
     
     try {
       const { data, error } = await supabase
@@ -246,7 +244,7 @@ export function useEventTasks(eventId?: string) {
       fetchTasks(eventId);
       fetchMilestones(eventId);
     }
-  }, [eventId, user]);
+  }, [eventId]);
 
   return {
     tasks,
