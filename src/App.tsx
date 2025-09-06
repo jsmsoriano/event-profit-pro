@@ -7,6 +7,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import FinancialSummary from "./pages/FinancialSummary";
 import BreakevenAnalysis from "./pages/BreakevenAnalysis";
+import Billing from "./pages/Billing";
 import Reporting from "./pages/Reporting";
 import Team from "./pages/Team";
 import Quotes from "./pages/Quotes";
@@ -58,7 +59,7 @@ const App = () => (
                   <Route path="/admin/events/:id" element={<MyEvents />} />
                   <Route path="/admin/clients" element={<Contacts />} />
                   <Route path="/admin/menu" element={<Menu />} />
-                  <Route path="/admin/billing" element={<FinancialSummary />} />
+                  <Route path="/admin/billing" element={<Billing />} />
                   <Route path="/admin/analytics" element={<Analytics />} />
                   <Route path="/admin/settings" element={<RoleTest />} />
                   
