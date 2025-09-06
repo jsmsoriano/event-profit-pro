@@ -4,13 +4,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Users, Clock, MapPin, Phone, Mail, DollarSign, Eye } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 export default function MyEvents() {
-  const { user } = useAuth();
   const { events, loading } = useEvents();
   const navigate = useNavigate();
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
@@ -95,12 +93,15 @@ export default function MyEvents() {
     </Card>
   );
 
-  if (!user) {
+  if (loading) {
     return (
-      <div className="container mx-auto p-6 text-center">
-        <h1 className="text-2xl font-bold mb-4">Please Sign In</h1>
-        <p className="text-muted-foreground mb-4">You need to sign in to view your events.</p>
-        <Button onClick={() => navigate('/auth')}>Sign In</Button>
+      <div className="container mx-auto p-6">
+        <div className="glass-card p-8">
+          <div className="animate-pulse text-center">
+            <div className="w-8 h-8 bg-primary rounded-full mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading your events...</p>
+          </div>
+        </div>
       </div>
     );
   }
