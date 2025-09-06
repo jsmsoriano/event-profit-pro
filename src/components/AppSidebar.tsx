@@ -86,7 +86,7 @@ export function AppSidebar() {
         )}
 
         {/* Admin view - Customer Features section */}
-        {isAdmin && (
+        {(isAdmin || (!isCustomer && !isAdmin)) && (
           <SidebarGroup>
             <SidebarGroupLabel>Customer Features</SidebarGroupLabel>
             <SidebarGroupContent>
@@ -107,30 +107,9 @@ export function AppSidebar() {
         )}
 
         {/* Admin view - Admin Features section */}
-        {isAdmin && (
+        {(isAdmin || (!isCustomer && !isAdmin)) && (
           <SidebarGroup>
             <SidebarGroupLabel>Admin Features</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {adminItems.map((item) => (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                      <NavLink to={item.url} end>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
-
-        {/* Fallback section for users without defined roles */}
-        {!isCustomer && !isAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Event Management</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {adminItems.map((item) => (

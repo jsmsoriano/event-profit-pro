@@ -4,7 +4,7 @@ export type UserRole = 'customer' | 'admin';
 
 export function useRole() {
   const [role] = useState<UserRole>('admin'); // Default to admin since auth is disabled
-  const [loading] = useState(false);
+  const [loading] = useState(false); // No loading needed since we're not fetching
 
   const hasRole = (requiredRoles: UserRole[]) => {
     return role && requiredRoles.includes(role);
