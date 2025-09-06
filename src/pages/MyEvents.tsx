@@ -111,11 +111,11 @@ export default function MyEvents() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Events</h1>
+          <h1 className="text-3xl font-bold text-foreground">Events</h1>
           <p className="text-muted-foreground">Manage your upcoming and past events</p>
         </div>
-        <Button onClick={() => navigate('/book')}>
-          Book New Event
+        <Button onClick={() => navigate('/admin/events/new')}>
+          Create New Event
         </Button>
       </div>
 
@@ -176,8 +176,8 @@ export default function MyEvents() {
                 <p className="text-muted-foreground text-center mb-4">
                   You don't have any upcoming events scheduled yet.
                 </p>
-                <Button onClick={() => navigate('/book')}>
-                  Book Your First Event
+                <Button onClick={() => navigate('/admin/events/new')}>
+                  Create Your First Event
                 </Button>
               </CardContent>
             </Card>

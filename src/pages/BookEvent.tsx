@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -27,14 +28,19 @@ export default function BookEvent() {
   const [currentStep, setCurrentStep] = useState(0);
   const [bookingData, setBookingData] = useState({
     selectedItems: { dishes: [], packages: [] },
-    eventDate: '',
-    eventTime: '',
-    guestCount: '',
-    venue: '',
-    specialRequests: '',
-    contactName: '',
-    contactEmail: '',
-    contactPhone: '',
+    eventDetails: {
+      eventDate: '',
+      eventTime: '',
+      guestCount: '',
+      venue: '',
+      specialRequests: '',
+      eventType: ''
+    },
+    contactInfo: {
+      contactName: '',
+      contactEmail: '',
+      contactPhone: ''
+    },
     estimatedTotal: 0
   });
 
@@ -56,10 +62,10 @@ export default function BookEvent() {
 
   const calculateTotal = (selectedItems: any) => {
     let total = 0;
-    const guestCount = parseInt(bookingData.guestCount) || 20; // Default estimate
+    const guestCount = parseInt(bookingData.eventDetails.guestCount) || 20; // Default estimate
 
     // Calculate dish costs
-    selectedItems.dishes.forEach((dishId: string) => {
+    selectedItems.dishes?.forEach((dishId: string) => {
       const dish = dishes.find(d => d.id === dishId);
       if (dish) {
         total += dish.base_price_per_guest * guestCount;
@@ -67,12 +73,43 @@ export default function BookEvent() {
     });
 
     // Calculate package costs
-    selectedItems.packages.forEach((packageId: string) => {
+    selectedItems.packages?.forEach((packageId: string) => {
       const pkg = packages.find(p => p.id === packageId);
       if (pkg) {
         total += pkg.price_per_guest * guestCount;
       }
     });
+
+    // Handle menu builder selections
+    if (selectedItems.menuBuilder) {
+      selectedItems.menuBuilder.menuItems?.forEach((menuItem: any) => {
+        // Main course
+        if (menuItem.mainCourse) {
+          const dish = dishes.find(d => d.id === menuItem.mainCourse);
+          if (dish) {
+            total += dish.base_price_per_guest * guestCount;
+          }
+        }
+        // Sides
+        menuItem.sides?.forEach((sideId: string) => {
+          const side = dishes.find(d => d.id === sideId);
+          if (side) {
+            total += side.base_price_per_guest * guestCount;
+          }
+        });
+      });
+      
+      // Update guest count from menu builder if available
+      if (selectedItems.menuBuilder.guestCount) {
+        setBookingData(prev => ({
+          ...prev,
+          eventDetails: {
+            ...prev.eventDetails,
+            guestCount: selectedItems.menuBuilder.guestCount.toString()
+          }
+        }));
+      }
+    }
 
     setBookingData(prev => ({ ...prev, estimatedTotal: total }));
   };
@@ -164,14 +201,40 @@ export default function BookEvent() {
           <div className="space-y-6">
             <h3 className="text-xl font-semibold">Event Details</h3>
             
+            <div>
+              <Label htmlFor="eventType">Event Type</Label>
+              <Select
+                value={bookingData.eventDetails.eventType}
+                onValueChange={(value) => setBookingData(prev => ({
+                  ...prev,
+                  eventDetails: { ...prev.eventDetails, eventType: value }
+                }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select event type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private-dinner">Private Dinner</SelectItem>
+                  <SelectItem value="wedding">Wedding</SelectItem>
+                  <SelectItem value="catering">Catering</SelectItem>
+                  <SelectItem value="corporate">Corporate Event</SelectItem>
+                  <SelectItem value="birthday">Birthday Party</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="eventDate">Event Date</Label>
                 <Input
                   id="eventDate"
                   type="date"
-                  value={bookingData.eventDate}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, eventDate: e.target.value }))}
+                  value={bookingData.eventDetails.eventDate}
+                  onChange={(e) => setBookingData(prev => ({ 
+                    ...prev, 
+                    eventDetails: { ...prev.eventDetails, eventDate: e.target.value }
+                  }))}
                 />
               </div>
               
@@ -180,8 +243,11 @@ export default function BookEvent() {
                 <Input
                   id="eventTime"
                   type="time"
-                  value={bookingData.eventTime}
-                  onChange={(e) => setBookingData(prev => ({ ...prev, eventTime: e.target.value }))}
+                  value={bookingData.eventDetails.eventTime}
+                  onChange={(e) => setBookingData(prev => ({ 
+                    ...prev, 
+                    eventDetails: { ...prev.eventDetails, eventTime: e.target.value }
+                  }))}
                 />
               </div>
             </div>
@@ -192,9 +258,12 @@ export default function BookEvent() {
                 id="guestCount"
                 type="number"
                 placeholder="e.g., 50"
-                value={bookingData.guestCount}
+                value={bookingData.eventDetails.guestCount}
                 onChange={(e) => {
-                  setBookingData(prev => ({ ...prev, guestCount: e.target.value }));
+                  setBookingData(prev => ({ 
+                    ...prev, 
+                    eventDetails: { ...prev.eventDetails, guestCount: e.target.value }
+                  }));
                   calculateTotal(bookingData.selectedItems);
                 }}
               />
@@ -205,8 +274,11 @@ export default function BookEvent() {
               <Input
                 id="venue"
                 placeholder="Event venue or address"
-                value={bookingData.venue}
-                onChange={(e) => setBookingData(prev => ({ ...prev, venue: e.target.value }))}
+                value={bookingData.eventDetails.venue}
+                onChange={(e) => setBookingData(prev => ({ 
+                  ...prev, 
+                  eventDetails: { ...prev.eventDetails, venue: e.target.value }
+                }))}
               />
             </div>
             
@@ -215,8 +287,11 @@ export default function BookEvent() {
               <Textarea
                 id="specialRequests"
                 placeholder="Any dietary restrictions, special arrangements, or additional requests..."
-                value={bookingData.specialRequests}
-                onChange={(e) => setBookingData(prev => ({ ...prev, specialRequests: e.target.value }))}
+                value={bookingData.eventDetails.specialRequests}
+                onChange={(e) => setBookingData(prev => ({ 
+                  ...prev, 
+                  eventDetails: { ...prev.eventDetails, specialRequests: e.target.value }
+                }))}
               />
             </div>
           </div>
@@ -232,8 +307,11 @@ export default function BookEvent() {
               <Input
                 id="contactName"
                 placeholder="Your full name"
-                value={bookingData.contactName}
-                onChange={(e) => setBookingData(prev => ({ ...prev, contactName: e.target.value }))}
+                value={bookingData.contactInfo.contactName}
+                onChange={(e) => setBookingData(prev => ({ 
+                  ...prev, 
+                  contactInfo: { ...prev.contactInfo, contactName: e.target.value }
+                }))}
               />
             </div>
             
@@ -243,8 +321,11 @@ export default function BookEvent() {
                 id="contactEmail"
                 type="email"
                 placeholder="your.email@example.com"
-                value={bookingData.contactEmail}
-                onChange={(e) => setBookingData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                value={bookingData.contactInfo.contactEmail}
+                onChange={(e) => setBookingData(prev => ({ 
+                  ...prev, 
+                  contactInfo: { ...prev.contactInfo, contactEmail: e.target.value }
+                }))}
               />
             </div>
             
@@ -254,8 +335,11 @@ export default function BookEvent() {
                 id="contactPhone"
                 type="tel"
                 placeholder="(555) 123-4567"
-                value={bookingData.contactPhone}
-                onChange={(e) => setBookingData(prev => ({ ...prev, contactPhone: e.target.value }))}
+                value={bookingData.contactInfo.contactPhone}
+                onChange={(e) => setBookingData(prev => ({ 
+                  ...prev, 
+                  contactInfo: { ...prev.contactInfo, contactPhone: e.target.value }
+                }))}
               />
             </div>
           </div>
@@ -273,20 +357,24 @@ export default function BookEvent() {
                 </CardHeader>
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
+                    <span>Type:</span>
+                    <span>{bookingData.eventDetails.eventType || 'Not specified'}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span>Date:</span>
-                    <span>{bookingData.eventDate || 'Not specified'}</span>
+                    <span>{bookingData.eventDetails.eventDate || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Time:</span>
-                    <span>{bookingData.eventTime || 'Not specified'}</span>
+                    <span>{bookingData.eventDetails.eventTime || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Guests:</span>
-                    <span>{bookingData.guestCount || 'Not specified'}</span>
+                    <span>{bookingData.eventDetails.guestCount || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Venue:</span>
-                    <span className="text-right">{bookingData.venue || 'Not specified'}</span>
+                    <span className="text-right">{bookingData.eventDetails.venue || 'Not specified'}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -298,15 +386,15 @@ export default function BookEvent() {
                 <CardContent className="space-y-2">
                   <div className="flex justify-between">
                     <span>Name:</span>
-                    <span>{bookingData.contactName || 'Not specified'}</span>
+                    <span>{bookingData.contactInfo.contactName || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Email:</span>
-                    <span>{bookingData.contactEmail || 'Not specified'}</span>
+                    <span>{bookingData.contactInfo.contactEmail || 'Not specified'}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Phone:</span>
-                    <span>{bookingData.contactPhone || 'Not specified'}</span>
+                    <span>{bookingData.contactInfo.contactPhone || 'Not specified'}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -326,13 +414,13 @@ export default function BookEvent() {
               </CardContent>
             </Card>
             
-            {bookingData.specialRequests && (
+            {bookingData.eventDetails.specialRequests && (
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Special Requests</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p>{bookingData.specialRequests}</p>
+                  <p>{bookingData.eventDetails.specialRequests}</p>
                 </CardContent>
               </Card>
             )}
@@ -349,9 +437,14 @@ export default function BookEvent() {
       case 0:
         return bookingData.selectedItems.dishes.length > 0 || bookingData.selectedItems.packages.length > 0;
       case 1:
-        return bookingData.eventDate && bookingData.guestCount && bookingData.venue;
+        return bookingData.eventDetails.eventDate && 
+               bookingData.eventDetails.guestCount && 
+               bookingData.eventDetails.venue &&
+               bookingData.eventDetails.eventType;
       case 2:
-        return bookingData.contactName && bookingData.contactEmail && bookingData.contactPhone;
+        return bookingData.contactInfo.contactName && 
+               bookingData.contactInfo.contactEmail && 
+               bookingData.contactInfo.contactPhone;
       case 3:
         return true;
       default:

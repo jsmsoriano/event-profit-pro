@@ -53,6 +53,10 @@ export default function Menu() {
     navigate('/book');
   };
 
+  const buildCustomMenu = () => {
+    navigate('/admin/events/new');
+  };
+
   const totalSelected = selectedItems.dishes.length + selectedItems.packages.length;
 
   if (loading) {
@@ -85,10 +89,15 @@ export default function Menu() {
       {/* Header */}
       <div className="text-center">
         <h1 className="text-4xl font-bold text-foreground mb-4">Our Menu</h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
           Discover our carefully curated selection of dishes and packages, 
           crafted with the finest ingredients and attention to detail.
         </p>
+        <div className="flex justify-center space-x-4">
+          <Button variant="outline" onClick={buildCustomMenu}>
+            Build Custom Menu
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}

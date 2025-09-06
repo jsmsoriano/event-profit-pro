@@ -19,7 +19,8 @@ import Analytics from "./pages/Analytics";
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
 import BookEvent from "./pages/BookEvent";
-import MyEvents from "./pages/MyEvents";
+import MyEvents from './pages/MyEvents';
+import MenuBuilder from './pages/MenuBuilder';
 import Support from "./pages/Support";
 import AdminDashboard from "./pages/AdminDashboard";
 import RoleTest from "./pages/RoleTest";
@@ -55,7 +56,8 @@ const App = () => (
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/events" element={<MyEvents />} />
-                  <Route path="/admin/events/new" element={<BookEvent />} />
+                  <Route path="/admin/events/new" element={<MenuBuilder />} />
+                  <Route path="/book" element={<BookEvent />} />
                   <Route path="/admin/events/:id" element={<MyEvents />} />
                   <Route path="/admin/clients" element={<Contacts />} />
                   <Route path="/admin/menu" element={<Menu />} />
