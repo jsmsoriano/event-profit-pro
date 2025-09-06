@@ -25,7 +25,6 @@ const customerItems = [
 const adminItems = [
   { title: "Dashboard", url: "/admin", icon: Home },
   { title: "Events", url: "/admin/events", icon: CalendarDays },
-  { title: "Create Event", url: "/admin/events/new", icon: Calendar },
   { title: "Clients", url: "/admin/clients", icon: Users },
   { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
   { title: "Billing", url: "/admin/billing", icon: CreditCard },
