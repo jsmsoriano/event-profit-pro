@@ -3,12 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ArrowRight, Star, Users, Calendar, ChefHat } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
 import { useRole } from '@/hooks/useRole';
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { role, loading } = useRole();
 
   // Redirect admin users to admin dashboard
@@ -178,16 +176,6 @@ export default function Home() {
               Start Planning
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            {!user && (
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => navigate('/auth')}
-                className="text-lg px-8 py-3 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-primary"
-              >
-                Sign In
-              </Button>
-            )}
           </div>
         </div>
       </section>
