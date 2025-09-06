@@ -22,6 +22,11 @@ interface DishFormData {
   is_gluten_free: boolean;
   is_active: boolean;
   category: string;
+  event_type?: string;
+  protein_types?: string[];
+  side_types?: string[];
+  vegetable_type?: string;
+  appetizer_type?: string;
 }
 
 const initialFormData: DishFormData = {
@@ -32,15 +37,33 @@ const initialFormData: DishFormData = {
   is_vegan: false,
   is_gluten_free: false,
   is_active: true,
-  category: 'main'
+  category: 'protein',
+  event_type: '',
+  protein_types: [],
+  side_types: [],
+  vegetable_type: '',
+  appetizer_type: ''
 };
 
 const categories = [
-  { value: 'main', label: 'Main Course' },
+  { value: 'protein', label: 'Protein' },
   { value: 'side', label: 'Side Dish' },
   { value: 'appetizer', label: 'Appetizer' },
   { value: 'dessert', label: 'Dessert' },
-  { value: 'beverage', label: 'Beverage' }
+  { value: 'beverage', label: 'Beverage' },
+  { value: 'vegetables', label: 'Vegetables' }
+];
+
+const proteinOptions = [
+  'Chicken', 'Beef', 'Salmon', 'Shrimp', 'Scallops', 'Filet Mignon', 'Lobster', 'Tofu'
+];
+
+const sideOptions = [
+  'Fried Rice', 'Noodles'
+];
+
+const appetizerOptions = [
+  'Salad', 'Soup'
 ];
 
 export default function MenuManagement() {
@@ -55,12 +78,7 @@ export default function MenuManagement() {
     if (!dish.is_active) return false;
     
     if (filter === 'all') return true;
-    return dish.name.toLowerCase().includes('main') || 
-           dish.name.toLowerCase().includes('entree') ||
-           dish.name.toLowerCase().includes('chicken') ||
-           dish.name.toLowerCase().includes('beef') ||
-           dish.name.toLowerCase().includes('fish') ||
-           dish.name.toLowerCase().includes('salmon');
+    return dish.category === 'protein';
   });
 
   const handleSubmit = async (e: React.FormEvent) => {

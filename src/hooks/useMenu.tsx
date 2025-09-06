@@ -4,15 +4,18 @@ import { toast } from './use-toast';
 
 export interface Dish {
   id: string;
-  user_id: string;
-  organization_id?: string;
+  user_id?: string;
   name: string;
   description?: string;
-  base_price_per_guest: number;
-  is_vegetarian: boolean;
-  is_vegan: boolean;
-  is_gluten_free: boolean;
+  category?: string;
+  base_price: number;
+  cost_per_serving: number;
+  prep_time?: number;
+  cooking_time?: number;
+  serves: number;
+  dietary_info?: string[];
   is_active: boolean;
+  popularity_score: number;
   created_at: string;
   updated_at: string;
 }
@@ -47,7 +50,7 @@ export function useMenu() {
   const fetchDishes = useCallback(async () => {    
     try {
       const { data, error } = await supabase
-        .from('dishes')
+        .from('menu_items')
         .select('*')
         .eq('is_active', true)
         .order('name');
