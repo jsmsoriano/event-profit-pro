@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface Notification {
@@ -21,16 +20,12 @@ export function useNotifications() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchNotifications = async () => {
-    if (!user) return;
-    
     try {
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50);
 
@@ -56,14 +51,12 @@ export function useNotifications() {
     related_id?: string;
     scheduled_for?: string;
   }) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('notifications')
         .insert([{
           ...notificationData,
-          user_id: user.id,
+          user_id: 'default-user', // Placeholder since auth is disabled
           notification_type: notificationData.notification_type || 'general',
           scheduled_for: notificationData.scheduled_for || new Date().toISOString()
         }])
@@ -120,7 +113,6 @@ export function useNotifications() {
       const { error } = await supabase
         .from('notifications')
         .update({ is_read: true })
-        .eq('user_id', user?.id)
         .eq('is_read', false);
 
       if (error) throw error;
@@ -213,7 +205,7 @@ export function useNotifications() {
 
   useEffect(() => {
     fetchNotifications();
-  }, [user]);
+  }, []);
 
   return {
     notifications,

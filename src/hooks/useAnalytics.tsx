@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface EventProfit {
@@ -33,7 +32,6 @@ export function useAnalytics() {
   const [popularDishes, setPopularDishes] = useState<PopularDish[]>([]);
   const [monthlyRevenue, setMonthlyRevenue] = useState<MonthlyRevenue[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
   const fetchEventProfits = async (eventId?: string) => {
     try {
@@ -86,14 +84,11 @@ export function useAnalytics() {
     }
   };
 
-  const fetchMonthlyRevenue = async () => {
-    if (!user) return [];
-    
+  const fetchMonthlyRevenue = async () => {    
     try {
       const { data, error } = await supabase
         .from('events')
         .select('event_date, total_revenue, status')
-        .eq('user_id', user.id)
         .in('status', ['confirmed', 'in_progress', 'completed'])
         .not('event_date', 'is', null)
         .not('total_revenue', 'is', null)
@@ -160,7 +155,7 @@ export function useAnalytics() {
     };
 
     fetchAllData();
-  }, [user]);
+  }, []);
 
   return {
     eventProfits,

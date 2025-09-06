@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
-import { useAuth } from './useAuth'
 import { toast } from 'sonner'
 
 export interface EventGuest {
@@ -23,23 +22,17 @@ export interface EventData {
 }
 
 export const useEvents = () => {
-  const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [events, setEvents] = useState<EventData[]>([])
 
   const saveEvent = async (eventData: EventData) => {
-    if (!user) {
-      toast.error('Please log in to save events')
-      return null
-    }
-
     setLoading(true)
     try {
       const { data: eventResult, error: eventError } = await supabase
         .from('events')
         .upsert({
           id: eventData.id,
-          user_id: user.id,
+          user_id: 'default-user', // Placeholder since auth is disabled
           client_name: eventData.clientName,
           event_date: eventData.eventDate || null,
           address: eventData.address,
@@ -90,15 +83,12 @@ export const useEvents = () => {
   }
 
   const loadEvent = async (eventId: string): Promise<EventData | null> => {
-    if (!user) return null
-
     setLoading(true)
     try {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
         .eq('id', eventId)
-        .eq('user_id', user.id)
         .single()
 
       if (eventError) throw eventError
@@ -142,14 +132,11 @@ export const useEvents = () => {
   }
 
   const loadUserEvents = async () => {
-    if (!user) return
-
     setLoading(true)
     try {
       const { data, error } = await supabase
         .from('events')
         .select('id, client_name, event_date, status, number_of_guests')
-        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error

@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface Dish {
@@ -44,16 +43,12 @@ export function useMenu() {
   const [dishes, setDishes] = useState<Dish[]>([]);
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
-  const fetchDishes = useCallback(async () => {
-    if (!user) return;
-    
+  const fetchDishes = useCallback(async () => {    
     try {
       const { data, error } = await supabase
         .from('dishes')
         .select('*')
-        .eq('user_id', user.id)
         .eq('is_active', true)
         .order('name');
 
@@ -66,17 +61,14 @@ export function useMenu() {
         variant: "destructive",
       });
     }
-  }, [user]);
+  }, []);
 
   const fetchPackages = useCallback(async () => {
-    if (!user) return;
-    
     try {
       // Fetch packages first with minimal data
       const { data: packagesData, error: packagesError } = await supabase
         .from('packages')
         .select('*')
-        .eq('user_id', user.id)
         .eq('is_active', true)
         .order('name');
 
@@ -115,15 +107,13 @@ export function useMenu() {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, []);
 
   const createDish = async (dishData: Omit<Dish, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('dishes')
-        .insert([{ ...dishData, user_id: user.id }])
+        .insert([{ ...dishData, user_id: 'default-user' }])
         .select()
         .single();
 
@@ -173,12 +163,10 @@ export function useMenu() {
   };
 
   const createPackage = async (packageData: Omit<Package, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
-    if (!user) return null;
-
     try {
       const { data, error } = await supabase
         .from('packages')
-        .insert([{ ...packageData, user_id: user.id }])
+        .insert([{ ...packageData, user_id: 'default-user' }])
         .select()
         .single();
 
@@ -324,11 +312,9 @@ export function useMenu() {
   }, [dishes, packages]);
 
   useEffect(() => {
-    if (user) {
-      // Fetch dishes and packages in parallel
-      Promise.all([fetchDishes(), fetchPackages()]);
-    }
-  }, [user]);
+    // Fetch dishes and packages in parallel
+    Promise.all([fetchDishes(), fetchPackages()]);
+  }, []);
 
   return {
     dishes,

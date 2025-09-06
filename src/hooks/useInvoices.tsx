@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './useAuth';
 import { toast } from './use-toast';
 
 export interface Invoice {
@@ -48,11 +47,8 @@ export interface InvoicePayment {
 export function useInvoices() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
 
-  const fetchInvoices = async () => {
-    if (!user) return;
-    
+  const fetchInvoices = async () => {    
     try {
       const { data, error } = await supabase
         .from('invoices')
@@ -196,7 +192,7 @@ export function useInvoices() {
 
   useEffect(() => {
     fetchInvoices();
-  }, [user]);
+  }, []);
 
   return {
     invoices,
