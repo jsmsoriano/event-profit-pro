@@ -14,7 +14,6 @@ import Quotes from "./pages/Quotes";
 import Contacts from "./pages/Contacts";
 import Admin from "./pages/Admin";
 import StaffManagement from "./pages/StaffManagement";
-import Inventory from "./pages/Inventory";
 import Analytics from "./pages/Analytics";
 import Home from "./pages/Home";
 import Menu from "./pages/Menu";
@@ -71,7 +70,6 @@ const App = () => (
                   <Route path="/analytics" element={<Analytics />} />
                   <Route path="/financial-summary" element={<FinancialSummary />} />
                   <Route path="/staff-management" element={<StaffManagement />} />
-                  <Route path="/inventory" element={<Inventory />} />
                   <Route path="/reporting" element={<Reporting />} />
                   <Route path="/team" element={<Team />} />
                   <Route path="/quotes" element={<Quotes />} />

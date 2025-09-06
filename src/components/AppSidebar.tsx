@@ -1,4 +1,4 @@
-import { Calculator, Users, FileText, Contact, TrendingUp, Settings, Package, BarChart3, Clock, Home, ChefHat, BookOpen, CreditCard, CalendarDays, Calendar } from "lucide-react"
+import { Calculator, Users, FileText, Contact, TrendingUp, Settings, BarChart3, Clock, Home, ChefHat, BookOpen, CreditCard, CalendarDays, Calendar } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useRole } from "@/hooks/useRole"
 
@@ -31,7 +31,6 @@ const adminItems = [
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
   { title: "Staff Management", url: "/staff-management", icon: Users },
-  { title: "Inventory", url: "/inventory", icon: Package },
   { title: "Admin Settings", url: "/admin/settings", icon: Settings },
 ];
 
