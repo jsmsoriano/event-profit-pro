@@ -730,6 +730,7 @@ export type Database = {
       dishes: {
         Row: {
           base_price_per_guest: number | null
+          category: string | null
           created_at: string
           description: string | null
           id: string
@@ -744,6 +745,7 @@ export type Database = {
         }
         Insert: {
           base_price_per_guest?: number | null
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -758,6 +760,7 @@ export type Database = {
         }
         Update: {
           base_price_per_guest?: number | null
+          category?: string | null
           created_at?: string
           description?: string | null
           id?: string

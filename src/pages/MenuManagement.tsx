@@ -89,6 +89,26 @@ export default function MenuManagement() {
       return;
     }
 
+    // Validate hibachi dinner requirements
+    if (formData.event_type === 'hibachi_dinner') {
+      if ((formData.protein_types?.length || 0) !== 2) {
+        toast.error('Please select exactly 2 protein types for hibachi dinner');
+        return;
+      }
+      if ((formData.side_types?.length || 0) !== 2) {
+        toast.error('Please select exactly 2 side types for hibachi dinner');
+        return;
+      }
+      if (!formData.vegetable_type) {
+        toast.error('Please specify a vegetable type for hibachi dinner');
+        return;
+      }
+      if (!formData.appetizer_type) {
+        toast.error('Please select an appetizer type for hibachi dinner');
+        return;
+      }
+    }
+
     try {
       if (editingDish) {
         await updateDish(editingDish, formData);
@@ -114,7 +134,12 @@ export default function MenuManagement() {
       is_vegan: dish.is_vegan,
       is_gluten_free: dish.is_gluten_free,
       is_active: dish.is_active ?? true,
-      category: dish.category || 'main'
+      category: dish.category || 'protein',
+      event_type: dish.event_type || '',
+      protein_types: dish.protein_types || [],
+      side_types: dish.side_types || [],
+      vegetable_type: dish.vegetable_type || '',
+      appetizer_type: dish.appetizer_type || ''
     });
     setEditingDish(dish.id);
     setIsDialogOpen(true);
@@ -211,6 +236,105 @@ export default function MenuManagement() {
                   </Select>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="eventType">Event Type</Label>
+                <Select 
+                  value={formData.event_type || ''} 
+                  onValueChange={(value) => handleInputChange('event_type', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Regular Menu Item</SelectItem>
+                    <SelectItem value="hibachi_dinner">Hibachi Dinner</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.event_type === 'hibachi_dinner' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Protein Types (Select 2)</Label>
+                      <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
+                        {proteinOptions.map((protein) => (
+                          <div key={protein} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`protein-${protein}`}
+                              checked={formData.protein_types?.includes(protein) || false}
+                              onCheckedChange={(checked) => {
+                                const current = formData.protein_types || [];
+                                if (checked && current.length < 2) {
+                                  handleInputChange('protein_types', [...current, protein]);
+                                } else if (!checked) {
+                                  handleInputChange('protein_types', current.filter(p => p !== protein));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`protein-${protein}`} className="text-sm">{protein}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Side Types (Select 2)</Label>
+                      <div className="space-y-2">
+                        {sideOptions.map((side) => (
+                          <div key={side} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`side-${side}`}
+                              checked={formData.side_types?.includes(side) || false}
+                              onCheckedChange={(checked) => {
+                                const current = formData.side_types || [];
+                                if (checked && current.length < 2) {
+                                  handleInputChange('side_types', [...current, side]);
+                                } else if (!checked) {
+                                  handleInputChange('side_types', current.filter(s => s !== side));
+                                }
+                              }}
+                            />
+                            <Label htmlFor={`side-${side}`} className="text-sm">{side}</Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="vegetable">Vegetable Type</Label>
+                      <Input
+                        id="vegetable"
+                        value={formData.vegetable_type || ''}
+                        onChange={(e) => handleInputChange('vegetable_type', e.target.value)}
+                        placeholder="e.g., Mixed Vegetables"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="appetizer">Appetizer Type</Label>
+                      <Select 
+                        value={formData.appetizer_type || ''} 
+                        onValueChange={(value) => handleInputChange('appetizer_type', value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select appetizer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {appetizerOptions.map((appetizer) => (
+                            <SelectItem key={appetizer} value={appetizer}>
+                              {appetizer}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              )}
               
               <div className="space-y-2">
                 <Label htmlFor="description">Description</Label>
@@ -297,14 +421,14 @@ export default function MenuManagement() {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Main Courses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredDishes.length}</div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Protein Items</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{filteredDishes.length}</div>
+            </CardContent>
+          </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -339,7 +463,7 @@ export default function MenuManagement() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Items</SelectItem>
-              <SelectItem value="main">Main Courses Only</SelectItem>
+              <SelectItem value="protein">Protein Items Only</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
