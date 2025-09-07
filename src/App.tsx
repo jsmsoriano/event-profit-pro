@@ -17,6 +17,7 @@ import Analytics from "./pages/Analytics";
 import MyEvents from './pages/MyEvents';
 import MenuBuilder from './pages/MenuBuilder';
 import MenuManagement from './pages/MenuManagement';
+import Wiki from './pages/Wiki';
 
 import AdminDashboard from "./pages/AdminDashboard";
 import RoleTest from "./pages/RoleTest";
@@ -52,6 +53,7 @@ const App = () => (
                   <Route path="/admin/clients" element={<Contacts />} />
                   <Route path="/admin/menu" element={<MenuManagement />} />
                   <Route path="/admin/billing" element={<Billing />} />
+                  <Route path="/admin/wiki" element={<Wiki />} />
                   <Route path="/admin/analytics" element={<Analytics />} />
                   <Route path="/admin/settings" element={<RoleTest />} />
                   

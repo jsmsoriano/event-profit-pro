@@ -21,6 +21,7 @@ const adminItems = [
   { title: "Clients", url: "/admin/clients", icon: Users },
   { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
   { title: "Billing", url: "/admin/billing", icon: CreditCard },
+  { title: "Wiki", url: "/admin/wiki", icon: BookOpen },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
   { title: "Staff Management", url: "/staff-management", icon: Users },
