@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from './use-toast';
 
 export interface Staff {
@@ -29,13 +30,20 @@ export interface StaffAssignment {
 export function useStaff() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   const fetchStaff = async () => {
+    if (!user) {
+      setStaff([]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('staff')
         .select('*')
-        .eq('user_id', 'default-user')
+        .eq('user_id', user.id)
         .order('name');
 
       if (error) throw error;
@@ -52,10 +60,19 @@ export function useStaff() {
   };
 
   const createStaff = async (staffData: Omit<Staff, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "You must be logged in to create staff members",
+        variant: "destructive",
+      });
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from('staff')
-        .insert([{ ...staffData, user_id: 'default-user' }])
+        .insert([{ ...staffData, user_id: user.id }])
         .select()
         .single();
 
@@ -185,8 +202,10 @@ export function useStaff() {
   };
 
   useEffect(() => {
-    fetchStaff();
-  }, []);
+    if (user) {
+      fetchStaff();
+    }
+  }, [user]);
 
   return {
     staff,

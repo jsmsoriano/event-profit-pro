@@ -729,10 +729,13 @@ export type Database = {
       }
       dishes: {
         Row: {
+          appetizer_type: string | null
           base_price_per_guest: number | null
           category: string | null
+          chicken_count: number | null
           created_at: string
           description: string | null
+          event_type: string | null
           id: string
           is_active: boolean | null
           is_gluten_free: boolean | null
@@ -740,14 +743,23 @@ export type Database = {
           is_vegetarian: boolean | null
           name: string
           organization_id: string | null
+          protein_types: string[] | null
+          protein_upgrades: Json | null
+          shrimp_count: number | null
+          side_types: string[] | null
+          steak_count: number | null
           updated_at: string
           user_id: string | null
+          vegetable_type: string | null
         }
         Insert: {
+          appetizer_type?: string | null
           base_price_per_guest?: number | null
           category?: string | null
+          chicken_count?: number | null
           created_at?: string
           description?: string | null
+          event_type?: string | null
           id?: string
           is_active?: boolean | null
           is_gluten_free?: boolean | null
@@ -755,14 +767,23 @@ export type Database = {
           is_vegetarian?: boolean | null
           name: string
           organization_id?: string | null
+          protein_types?: string[] | null
+          protein_upgrades?: Json | null
+          shrimp_count?: number | null
+          side_types?: string[] | null
+          steak_count?: number | null
           updated_at?: string
           user_id?: string | null
+          vegetable_type?: string | null
         }
         Update: {
+          appetizer_type?: string | null
           base_price_per_guest?: number | null
           category?: string | null
+          chicken_count?: number | null
           created_at?: string
           description?: string | null
+          event_type?: string | null
           id?: string
           is_active?: boolean | null
           is_gluten_free?: boolean | null
@@ -770,8 +791,14 @@ export type Database = {
           is_vegetarian?: boolean | null
           name?: string
           organization_id?: string | null
+          protein_types?: string[] | null
+          protein_upgrades?: Json | null
+          shrimp_count?: number | null
+          side_types?: string[] | null
+          steak_count?: number | null
           updated_at?: string
           user_id?: string | null
+          vegetable_type?: string | null
         }
         Relationships: [
           {
@@ -2788,25 +2815,25 @@ export type Database = {
         Insert: {
           event_date?: string | null
           event_id?: string | null
-          food_cost?: never
+          food_cost?: number | null
           gross_profit?: never
           guest_count?: number | null
-          labor_cost?: never
-          revenue_menu?: never
+          labor_cost?: number | null
+          revenue_menu?: number | null
           status?: string | null
-          subtotal_revenue?: never
+          subtotal_revenue?: number | null
           title?: string | null
         }
         Update: {
           event_date?: string | null
           event_id?: string | null
-          food_cost?: never
+          food_cost?: number | null
           gross_profit?: never
           guest_count?: number | null
-          labor_cost?: never
-          revenue_menu?: never
+          labor_cost?: number | null
+          revenue_menu?: number | null
           status?: string | null
-          subtotal_revenue?: never
+          subtotal_revenue?: number | null
           title?: string | null
         }
         Relationships: []
