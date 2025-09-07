@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, Edit2, Trash2, X, Check } from 'lucide-react';
+import { Settings, Plus, Edit2, Trash2, X, Check, Calendar } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import EventTypesManagement from './EventTypesManagement';
 
 interface LaborRole {
   id: string;
@@ -322,7 +323,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="budget" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto">
             <TabsTrigger value="budget" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Budget Allocation</span>
               <span className="sm:hidden">Budget</span>
@@ -330,6 +331,10 @@ const Admin = () => {
             <TabsTrigger value="roles" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Labor Roles & Pay</span>
               <span className="sm:hidden">Roles</span>
+            </TabsTrigger>
+            <TabsTrigger value="event-types" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
+              <span className="hidden sm:inline">Event Types</span>
+              <span className="sm:hidden">Types</span>
             </TabsTrigger>
             <TabsTrigger value="expenses" className="text-xs sm:text-sm py-2 px-1 sm:px-3">
               <span className="hidden sm:inline">Expense Types</span>
@@ -1075,6 +1080,10 @@ const Admin = () => {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="event-types" className="space-y-4 mt-4">
+            <EventTypesManagement />
           </TabsContent>
 
           <TabsContent value="expenses" className="space-y-4 mt-4">

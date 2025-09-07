@@ -25,6 +25,7 @@ import Auth from './pages/Auth';
 
 import AdminDashboard from "./pages/AdminDashboard";
 import RoleTest from "./pages/RoleTest";
+import EventTypesManagement from './pages/EventTypesManagement';
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
                         <Route path="/admin/events/:id" element={<MyEvents />} />
                         <Route path="/admin/clients" element={<Contacts />} />
                         <Route path="/admin/menu" element={<MenuManagement />} />
+                        <Route path="/admin/event-types" element={<EventTypesManagement />} />
                         <Route path="/admin/billing" element={<Billing />} />
                         <Route path="/admin/wiki" element={<Wiki />} />
                         <Route path="/admin/messages" element={<Messages />} />

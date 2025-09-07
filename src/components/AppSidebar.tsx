@@ -20,6 +20,7 @@ const adminItems = [
   { title: "Events", url: "/admin/events", icon: CalendarDays },
   { title: "Clients", url: "/admin/clients", icon: Users },
   { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
+  { title: "Event Types", url: "/admin/event-types", icon: Calendar },
   { title: "Billing", url: "/admin/billing", icon: CreditCard },
   { title: "Wiki", url: "/admin/wiki", icon: BookOpen },
   { title: "Messages", url: "/admin/messages", icon: MessageCircle },

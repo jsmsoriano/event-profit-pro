@@ -20,8 +20,9 @@ export interface EventData {
   numberOfGuests: number
   status: 'booked' | 'cancelled' | 'completed' | 'confirmed' | 'pending'
   guests: EventGuest[]
-  title?: string
+  eventTypeId?: string
   guestCount?: number
+  specialRequests?: string
 }
 
 export const useEvents = () => {
@@ -63,7 +64,9 @@ export const useEvents = () => {
           event_time: eventData.eventTime || null,
           number_of_guests: eventData.numberOfGuests,
           gratuity: 20,
-          status: eventData.status
+          status: eventData.status,
+          event_type_id: eventData.eventTypeId || null,
+          special_requests: eventData.specialRequests || null
         })
         .select()
         .single()
@@ -116,9 +119,12 @@ export const useEvents = () => {
     try {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          event_types(name)
+        `)
         .eq('id', eventId)
-        .eq('user_id', user.id) // Ensure user can only access their own events
+        .eq('user_id', user.id)
         .single()
 
       if (eventError) throw eventError
@@ -171,8 +177,11 @@ export const useEvents = () => {
     try {
       const { data, error } = await supabase
         .from('events')
-        .select('id, client_name, event_date, status, number_of_guests, event_time, created_at')
-        .eq('user_id', user.id) // Only load user's own events
+        .select(`
+          id, client_name, event_date, status, number_of_guests, event_time, created_at,
+          event_types(name)
+        `)
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false })
 
       if (error) throw error

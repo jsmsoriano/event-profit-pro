@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, CalendarIcon, Clock, MapPin, Users, ArrowLeft, Save } from 'lucide-react';
 import { useEvents } from '@/hooks/useEvents';
+import { useEventTypes } from '@/hooks/useEventTypes';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -15,6 +16,7 @@ export default function CreateEvent() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { saveEvent, loading } = useEvents();
+  const { eventTypes, loading: eventTypesLoading } = useEventTypes();
 
   // Get date from URL parameter if provided
   const preselectedDate = searchParams.get('date');
@@ -26,7 +28,7 @@ export default function CreateEvent() {
     address: '',
     numberOfGuests: 10,
     status: 'booked' as const,
-    title: '',
+    eventTypeId: '',
     specialRequests: ''
   });
 
@@ -45,6 +47,16 @@ export default function CreateEvent() {
       return;
     }
 
+    if (eventTypes.length === 0) {
+      toast.error('Please set up event types first in Admin Settings → Event Types');
+      return;
+    }
+
+    if (!formData.eventTypeId) {
+      toast.error('Please select an event type');
+      return;
+    }
+
     const eventData = {
       ...formData,
       guests: [] // Empty guests array for now
@@ -57,7 +69,7 @@ export default function CreateEvent() {
     }
   };
 
-  const isFormValid = formData.clientName && formData.eventDate;
+  const isFormValid = formData.clientName && formData.eventDate && (eventTypes.length === 0 || formData.eventTypeId);
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -105,15 +117,35 @@ export default function CreateEvent() {
                 />
               </div>
               <div>
-                <Label htmlFor="title">
-                  Event Title
+                <Label htmlFor="eventType">
+                  Event Type *
                 </Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => updateFormData('title', e.target.value)}
-                  placeholder="Optional custom title"
-                />
+                <Select
+                  value={formData.eventTypeId}
+                  onValueChange={(value) => updateFormData('eventTypeId', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={eventTypes.length === 0 ? "No event types available" : "Select event type"} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50">
+                    {eventTypes.length === 0 ? (
+                      <SelectItem value="" disabled>
+                        No event types found - Set up event types in settings
+                      </SelectItem>
+                    ) : (
+                      eventTypes.map((eventType) => (
+                        <SelectItem key={eventType.id} value={eventType.id}>
+                          {eventType.name} {eventType.base_price > 0 && `- $${eventType.base_price}`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {eventTypes.length === 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Go to Admin Settings → Event Types to add event types like "Hibachi" or "Catering"
+                  </p>
+                )}
               </div>
             </div>
 
@@ -179,7 +211,7 @@ export default function CreateEvent() {
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-background border shadow-lg z-50">
                   <SelectItem value="booked">Booked</SelectItem>
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>

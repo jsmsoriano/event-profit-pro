@@ -1101,6 +1101,50 @@ export type Database = {
           },
         ]
       }
+      event_types: {
+        Row: {
+          base_price: number | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          organization_id: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          base_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          organization_id?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          base_price?: number | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          organization_id?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_types_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           address: string | null
@@ -1111,6 +1155,7 @@ export type Database = {
           deposit_paid: boolean | null
           event_date: string | null
           event_time: string | null
+          event_type_id: string | null
           final_count_due_on: string | null
           food_cost: number | null
           gratuity: number | null
@@ -1135,6 +1180,7 @@ export type Database = {
           deposit_paid?: boolean | null
           event_date?: string | null
           event_time?: string | null
+          event_type_id?: string | null
           final_count_due_on?: string | null
           food_cost?: number | null
           gratuity?: number | null
@@ -1159,6 +1205,7 @@ export type Database = {
           deposit_paid?: boolean | null
           event_date?: string | null
           event_time?: string | null
+          event_type_id?: string | null
           final_count_due_on?: string | null
           food_cost?: number | null
           gratuity?: number | null
@@ -1175,6 +1222,13 @@ export type Database = {
           venue_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "events_organization_id_fkey"
             columns: ["organization_id"]
