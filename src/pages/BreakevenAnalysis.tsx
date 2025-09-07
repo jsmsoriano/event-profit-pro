@@ -202,8 +202,18 @@ const BreakevenAnalysis = () => {
 
       <Tabs defaultValue="parameters" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="parameters">Event Parameters</TabsTrigger>
-          <TabsTrigger value="labor-budget">Labor & Budget</TabsTrigger>
+          <TabsTrigger 
+            value="parameters" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Event Parameters
+          </TabsTrigger>
+          <TabsTrigger 
+            value="labor-budget"
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+          >
+            Labor & Budget
+          </TabsTrigger>
         </TabsList>
         
         <TabsContent value="parameters" className="space-y-6">
