@@ -9,11 +9,16 @@ import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 
 export default function AdminDashboard() {
-  const { events, loading } = useEvents();
+  const { events, loading, loadUserEvents } = useEvents();
   const { analytics } = useRevenue();
   const navigate = useNavigate();
   const [todayEvents, setTodayEvents] = useState<any[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+
+  // Load events on component mount
+  useEffect(() => {
+    loadUserEvents();
+  }, []);
 
   useEffect(() => {
     if (events) {
@@ -70,10 +75,6 @@ export default function AdminDashboard() {
           <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
           <p className="text-muted-foreground">Welcome back! Here's what's happening today.</p>
         </div>
-        <Button onClick={() => navigate('/admin/events/new')}>
-          <Plus className="h-4 w-4 mr-2" />
-          New Event
-        </Button>
       </div>
 
       {/* KPI Cards */}

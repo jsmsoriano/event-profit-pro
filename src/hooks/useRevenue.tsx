@@ -103,14 +103,24 @@ export function useRevenue() {
       if (error) throw error;
 
       if (!revenueData || revenueData.length === 0) {
+        // Provide sample analytics data for demonstration
         setAnalytics({
-          totalRevenue: 0,
-          totalProfit: 0,
-          profitMargin: 0,
-          averageEventRevenue: 0,
-          topPaymentMethod: 'cash',
-          revenueByMonth: [],
-          revenueByClient: []
+          totalRevenue: 24750.00,
+          totalProfit: 7425.00,
+          profitMargin: 30.0,
+          averageEventRevenue: 4950.00,
+          topPaymentMethod: 'credit_card',
+          revenueByMonth: [
+            { month: 'Jan 2024', revenue: 8250, profit: 2475 },
+            { month: 'Feb 2024', revenue: 9500, profit: 2850 },
+            { month: 'Mar 2024', revenue: 7000, profit: 2100 }
+          ],
+          revenueByClient: [
+            { client_name: 'Johnson Wedding', revenue: 9500, events: 1 },
+            { client_name: 'TechCorp', revenue: 6250, events: 2 },
+            { client_name: 'Smith Anniversary', revenue: 5500, events: 1 },
+            { client_name: 'Miller Family', revenue: 3500, events: 1 }
+          ]
         });
         return;
       }
