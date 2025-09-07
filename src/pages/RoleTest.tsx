@@ -3,9 +3,11 @@ import { useRole, UserRole } from '@/hooks/useRole';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Shield, Settings, Users, BarChart3 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PermissionsManager } from '@/components/admin/PermissionsManager';
 
 export default function RoleTest() {
   const { role, loading, isAdmin } = useRole();
@@ -39,63 +41,136 @@ export default function RoleTest() {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Current Permissions</CardTitle>
-            <CardDescription>Based on your current role: {role}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span>Is Admin:</span>
-              <Badge variant={isAdmin() ? 'default' : 'secondary'}>
-                {isAdmin() ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span>Navigation Access:</span>
-              <Badge variant="outline">
-                Full Admin Access
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
+      <Tabs defaultValue="permissions" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="permissions" className="flex items-center gap-2">
+            <Shield className="h-4 w-4" />
+            Permissions
+          </TabsTrigger>
+          <TabsTrigger value="users" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Users
+          </TabsTrigger>
+          <TabsTrigger value="system" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            System
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Analytics
+          </TabsTrigger>
+        </TabsList>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>System Information</CardTitle>
-            <CardDescription>Current system status</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">System Role:</label>
-              <div className="p-2 bg-muted rounded">Admin</div>
-            </div>
-            <Button 
-              onClick={handleRoleUpdate} 
-              disabled={updating}
-              className="w-full"
-            >
-              {updating ? 'Updating...' : 'Confirm Admin Access'}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="permissions" className="space-y-6">
+          <PermissionsManager />
+        </TabsContent>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Admin Role Description</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold text-primary">Administrator</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Full access to all business management features including event management, analytics, 
-              staff management, menu management, billing, client management, and system settings.
-            </p>
+        <TabsContent value="users" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="h-5 w-5 mr-2" />
+                User Management
+              </CardTitle>
+              <CardDescription>
+                Manage user accounts and role assignments
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">User Management</h3>
+                <p className="text-muted-foreground">
+                  User management features will be implemented here.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Current Permissions</CardTitle>
+                <CardDescription>Based on your current role: {role}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span>Is Admin:</span>
+                  <Badge variant={isAdmin() ? 'default' : 'secondary'}>
+                    {isAdmin() ? 'Yes' : 'No'}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span>Navigation Access:</span>
+                  <Badge variant="outline">
+                    Full Admin Access
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>System Information</CardTitle>
+                <CardDescription>Current system status</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">System Role:</label>
+                  <div className="p-2 bg-muted rounded">Admin</div>
+                </div>
+                <Button 
+                  onClick={handleRoleUpdate} 
+                  disabled={updating}
+                  className="w-full"
+                >
+                  {updating ? 'Updating...' : 'Confirm Admin Access'}
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Admin Role Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold text-primary">Administrator</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Full access to all business management features including event management, analytics, 
+                  staff management, menu management, billing, client management, and system settings.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart3 className="h-5 w-5 mr-2" />
+                System Analytics
+              </CardTitle>
+              <CardDescription>
+                Monitor system usage and performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8">
+                <BarChart3 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Analytics Dashboard</h3>
+                <p className="text-muted-foreground">
+                  Advanced analytics and reporting features will be available here.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
