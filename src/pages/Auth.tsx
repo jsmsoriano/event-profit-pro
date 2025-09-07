@@ -1,20 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { useAuth } from '@/hooks/useAuth';
+import { SignInForm } from '@/components/auth/SignInForm';
+import { SignUpForm } from '@/components/auth/SignUpForm';
+import { TestingModePanel } from '@/components/auth/TestingModePanel';
+import { TEST_ACCOUNTS, TestAccountRole } from '@/config/testAccounts';
+import { isAuthError, shouldRetryLogin, logAuthAttempt } from '@/utils/authErrors';
+import { AUTH_CONFIG } from '@/constants/auth';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
-  const [role, setRole] = useState<'customer' | 'admin'>('customer');
+  const [role, setRole] = useState<TestAccountRole>('customer');
   const [testingMode, setTestingMode] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
@@ -27,13 +28,63 @@ export default function Auth() {
   }, [user, navigate]);
 
   // Auto-login bypass for testing mode
+  const handleTestLogin = useCallback(async () => {
+    setLoading(true);
+    
+    const testAccount = TEST_ACCOUNTS[role];
+    
+    try {
+      logAuthAttempt('test login attempt', testAccount.email, false);
+      
+      // Try to sign in first
+      const { error: signInError } = await signIn(testAccount.email, testAccount.password);
+      
+      if (signInError && shouldRetryLogin(signInError)) {
+        // If account doesn't exist or needs confirmation, create it
+        logAuthAttempt('creating test account', testAccount.email, false);
+        
+        const { error: signUpError } = await signUp(testAccount.email, testAccount.password, {
+          first_name: testAccount.firstName,
+          last_name: testAccount.lastName,
+          role: role,
+        });
+        
+        if (signUpError) {
+          logAuthAttempt('test account creation', testAccount.email, false);
+        } else {
+          logAuthAttempt('test account creation', testAccount.email, true);
+          
+          // After successful signup, try to sign in again
+          setTimeout(async () => {
+            const { error: secondSignInError } = await signIn(testAccount.email, testAccount.password);
+            if (!secondSignInError) {
+              logAuthAttempt('test login retry', testAccount.email, true);
+              navigate('/');
+            } else {
+              logAuthAttempt('test login retry', testAccount.email, false);
+            }
+          }, AUTH_CONFIG.RETRY_DELAY);
+        }
+      } else if (!signInError) {
+        logAuthAttempt('test login', testAccount.email, true);
+        navigate('/');
+      } else {
+        logAuthAttempt('test login', testAccount.email, false);
+      }
+    } catch (error) {
+      logAuthAttempt('test login error', testAccount.email, false);
+    }
+    
+    setLoading(false);
+  }, [role, signIn, signUp, navigate]);
+
   useEffect(() => {
     if (testingMode && !user && !loading) {
       handleTestLogin();
     }
-  }, [testingMode, user, loading]);
+  }, [testingMode, user, loading, handleTestLogin]);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignIn = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
@@ -44,71 +95,9 @@ export default function Auth() {
     }
     
     setLoading(false);
-  };
+  }, [email, password, signIn, navigate]);
 
-  // Fixed test accounts for each role
-  const testAccounts = {
-    customer: {
-      email: 'testcustomer@gmail.com',
-      password: 'TestPassword123!',
-      firstName: 'Test',
-      lastName: 'Customer'
-    },
-    admin: {
-      email: 'testadmin@gmail.com', 
-      password: 'TestPassword123!',
-      firstName: 'Test',
-      lastName: 'Admin'
-    }
-  };
-
-  const handleTestLogin = async () => {
-    setLoading(true);
-    
-    const testAccount = testAccounts[role];
-    
-    try {
-      console.log(`Attempting to sign in with: ${testAccount.email}`);
-      // Try to sign in first
-      const { error: signInError } = await signIn(testAccount.email, testAccount.password);
-      
-      if (signInError && (signInError.message.includes('Invalid login credentials') || signInError.message.includes('Email not confirmed'))) {
-        // If account doesn't exist, create it
-        console.log('Creating test account:', testAccount.email);
-        const { error: signUpError } = await signUp(testAccount.email, testAccount.password, {
-          first_name: testAccount.firstName,
-          last_name: testAccount.lastName,
-          role: role,
-        });
-        
-        if (signUpError) {
-          console.error('Signup error:', signUpError);
-        } else {
-          console.log('Test account created successfully, attempting login...');
-          // After successful signup, try to sign in again
-          setTimeout(async () => {
-            const { error: secondSignInError } = await signIn(testAccount.email, testAccount.password);
-            if (!secondSignInError) {
-              navigate('/');
-            } else {
-              console.error('Second signin error:', secondSignInError);
-            }
-          }, 2000);
-        }
-      } else if (!signInError) {
-        console.log('Signed in successfully');
-        navigate('/');
-      } else {
-        console.error('Signin error:', signInError);
-      }
-    } catch (error) {
-      console.error('Test login error:', error);
-    }
-    
-    setLoading(false);
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleSignUp = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
@@ -119,7 +108,7 @@ export default function Auth() {
     });
     
     setLoading(false);
-  };
+  }, [email, password, firstName, lastName, role, signUp]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
@@ -140,153 +129,36 @@ export default function Auth() {
             </TabsList>
             
             <TabsContent value="signin">
-              <form onSubmit={handleSignIn} className="space-y-4">
-                <div>
-                  <Label htmlFor="signin-email">Email</Label>
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                    className="input-modern"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="signin-password">Password</Label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    required
-                    className="input-modern"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Signing in...' : 'Sign In'}
-                </Button>
-              </form>
+              <SignInForm
+                email={email}
+                password={password}
+                loading={loading}
+                onEmailChange={setEmail}
+                onPasswordChange={setPassword}
+                onSubmit={handleSignIn}
+              />
               
-              {/* Testing Mode Toggle */}
-              <div className="mt-4 pt-4 border-t border-border">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="testing-mode" className="text-sm font-medium">
-                    Testing Mode (Auto-Login)
-                  </Label>
-                  <Switch
-                    id="testing-mode"
-                    checked={testingMode}
-                    onCheckedChange={setTestingMode}
-                    className="border border-border data-[state=checked]:border-primary"
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {testingMode ? `Auto-logging in as ${role}...` : 'Enable to bypass login completely'}
-                </p>
-              </div>
-              
-              {/* Testing Mode Section - Only visible when toggle is on */}
-              {testingMode && (
-                <div className="mt-4 pt-4 border-t border-border">
-                  <div className="text-center mb-3">
-                    <Label className="text-sm text-muted-foreground font-medium">Quick Role Switch</Label>
-                  </div>
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="test-role" className="text-xs">Switch to Role:</Label>
-                      <Select value={role} onValueChange={(value: 'customer' | 'admin') => setRole(value)}>
-                        <SelectTrigger className="input-modern bg-background">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-background border border-border z-50">
-                          <SelectItem value="customer">Customer View</SelectItem>
-                          <SelectItem value="admin">Admin View</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <p className="text-xs text-muted-foreground text-center">
-                      <strong>Current Test Account:</strong><br/>
-                      {testAccounts[role].email}<br/>
-                      Password: {testAccounts[role].password}
-                    </p>
-                  </div>
-                </div>
-              )}
+              <TestingModePanel
+                testingMode={testingMode}
+                role={role}
+                onTestingModeChange={setTestingMode}
+                onRoleChange={setRole}
+              />
             </TabsContent>
             
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="first-name">First Name</Label>
-                    <Input
-                      id="first-name"
-                      type="text"
-                      value={firstName}
-                      onChange={(e) => setFirstName(e.target.value)}
-                      placeholder="First name"
-                      required
-                      className="input-modern"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="last-name">Last Name</Label>
-                    <Input
-                      id="last-name"
-                      type="text"
-                      value={lastName}
-                      onChange={(e) => setLastName(e.target.value)}
-                      placeholder="Last name"
-                      required
-                      className="input-modern"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="role">Account Type</Label>
-                  <div className="input-modern bg-muted/50 p-2 rounded-md">
-                    <span className="text-sm">Administrator - Full management access</span>
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="signup-email">Email</Label>
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    required
-                    className="input-modern"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="signup-password">Password</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Create a password"
-                    required
-                    className="input-modern"
-                  />
-                </div>
-                <Button
-                  type="submit"
-                  className="w-full btn-primary"
-                  disabled={loading}
-                >
-                  {loading ? 'Creating account...' : 'Create Account'}
-                </Button>
-              </form>
+              <SignUpForm
+                firstName={firstName}
+                lastName={lastName}
+                email={email}
+                password={password}
+                loading={loading}
+                onFirstNameChange={setFirstName}
+                onLastNameChange={setLastName}
+                onEmailChange={setEmail}
+                onPasswordChange={setPassword}
+                onSubmit={handleSignUp}
+              />
             </TabsContent>
           </Tabs>
         </CardContent>
