@@ -45,7 +45,7 @@ const App = () => (
               <main className="flex-1 overflow-auto">
                 <Routes>
                   {/* Client-facing routes */}
-                  <Route path="/" element={<Home />} />
+                  <Route path="/" element={<AdminDashboard />} />
                   <Route path="/menu" element={<Menu />} />
                   <Route path="/book-event" element={<BookEvent />} />
                   <Route path="/my-events" element={<MyEvents />} />
