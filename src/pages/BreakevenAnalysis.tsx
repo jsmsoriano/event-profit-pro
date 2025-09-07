@@ -3,9 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Plus, Trash2, Edit } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
 interface LaborRole {
@@ -32,6 +36,7 @@ interface AdminSettings {
 }
 
 const BreakevenAnalysis = () => {
+  const { toast } = useToast();
   const [guestCount, setGuestCount] = useState(15);
   const [pricePerPerson, setPricePerPerson] = useState(60);
   const [gratuityPercent, setGratuityPercent] = useState(20);
@@ -41,7 +46,13 @@ const BreakevenAnalysis = () => {
   const [profitPercent, setProfitPercent] = useState(15);
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
   const [budgetProfiles, setBudgetProfiles] = useState<BudgetProfile[]>([]);
-  const [isCashOnly, setIsCashOnly] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [editingProfile, setEditingProfile] = useState<BudgetProfile | null>(null);
+  const [newProfileName, setNewProfileName] = useState('');
+  const [newProfileLabor, setNewProfileLabor] = useState(30);
+  const [newProfileFood, setNewProfileFood] = useState(35);
+  const [newProfileReserves, setNewProfileReserves] = useState(20);
+  const [newProfileProfit, setNewProfileProfit] = useState(15);
 
   useEffect(() => {
     // Load admin settings to get labor roles and budget profiles
@@ -82,6 +93,7 @@ const BreakevenAnalysis = () => {
           setFoodPercent(creditCardProfile.foodPercent);
           setBusinessReservesPercent(creditCardProfile.businessReservesPercent);
           setProfitPercent(creditCardProfile.profitPercent);
+          setSelectedProfileId(creditCardProfile.id);
         }
       } catch (error) {
         console.error('Error parsing admin settings:', error);
@@ -136,22 +148,166 @@ const BreakevenAnalysis = () => {
     }
   }, []);
 
-  const toggleCashOnly = (enabled: boolean) => {
-    setIsCashOnly(enabled);
-    const cashOnlyProfile = budgetProfiles.find(p => p.id === 'cash-only');
-    const creditCardProfile = budgetProfiles.find(p => p.id === 'credit-card');
-    
-    if (enabled && cashOnlyProfile) {
-      setLaborPercent(cashOnlyProfile.laborPercent);
-      setFoodPercent(cashOnlyProfile.foodPercent);
-      setBusinessReservesPercent(cashOnlyProfile.businessReservesPercent);
-      setProfitPercent(cashOnlyProfile.profitPercent);
-    } else if (!enabled && creditCardProfile) {
-      setLaborPercent(creditCardProfile.laborPercent);
-      setFoodPercent(creditCardProfile.foodPercent);
-      setBusinessReservesPercent(creditCardProfile.businessReservesPercent);
-      setProfitPercent(creditCardProfile.profitPercent);
+  const selectProfile = (profileId: string) => {
+    const profile = budgetProfiles.find(p => p.id === profileId);
+    if (profile) {
+      setLaborPercent(profile.laborPercent);
+      setFoodPercent(profile.foodPercent);
+      setBusinessReservesPercent(profile.businessReservesPercent);
+      setProfitPercent(profile.profitPercent);
+      setSelectedProfileId(profileId);
     }
+  };
+
+  const validateProfileTotal = (labor: number, food: number, reserves: number, profit: number) => {
+    return labor + food + reserves + profit === 100;
+  };
+
+  const createProfile = () => {
+    if (!newProfileName.trim()) {
+      toast({
+        title: "Error",
+        description: "Profile name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)) {
+      toast({
+        title: "Invalid Allocation",
+        description: "Profile allocations must total 100%",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newProfile: BudgetProfile = {
+      id: Date.now().toString(),
+      name: newProfileName,
+      laborPercent: newProfileLabor,
+      foodPercent: newProfileFood,
+      businessReservesPercent: newProfileReserves,
+      profitPercent: newProfileProfit,
+    };
+
+    const updatedProfiles = [...budgetProfiles, newProfile];
+    setBudgetProfiles(updatedProfiles);
+    
+    // Save to localStorage
+    const savedSettings = localStorage.getItem('adminSettings');
+    const adminSettings = savedSettings ? JSON.parse(savedSettings) : {};
+    adminSettings.budgetProfiles = updatedProfiles;
+    localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+
+    // Reset form
+    setNewProfileName('');
+    setNewProfileLabor(30);
+    setNewProfileFood(35);
+    setNewProfileReserves(20);
+    setNewProfileProfit(15);
+
+    toast({
+      title: "Profile Created",
+      description: `Budget profile "${newProfile.name}" has been created successfully`,
+    });
+  };
+
+  const updateProfile = () => {
+    if (!editingProfile || !newProfileName.trim()) {
+      toast({
+        title: "Error",
+        description: "Profile name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)) {
+      toast({
+        title: "Invalid Allocation", 
+        description: "Profile allocations must total 100%",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updatedProfile: BudgetProfile = {
+      ...editingProfile,
+      name: newProfileName,
+      laborPercent: newProfileLabor,
+      foodPercent: newProfileFood,
+      businessReservesPercent: newProfileReserves,
+      profitPercent: newProfileProfit,
+    };
+
+    const updatedProfiles = budgetProfiles.map(p => p.id === editingProfile.id ? updatedProfile : p);
+    setBudgetProfiles(updatedProfiles);
+
+    // Save to localStorage
+    const savedSettings = localStorage.getItem('adminSettings');
+    const adminSettings = savedSettings ? JSON.parse(savedSettings) : {};
+    adminSettings.budgetProfiles = updatedProfiles;
+    localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+
+    // If this was the selected profile, update current percentages
+    if (selectedProfileId === editingProfile.id) {
+      setLaborPercent(updatedProfile.laborPercent);
+      setFoodPercent(updatedProfile.foodPercent);
+      setBusinessReservesPercent(updatedProfile.businessReservesPercent);
+      setProfitPercent(updatedProfile.profitPercent);
+    }
+
+    setEditingProfile(null);
+    resetProfileForm();
+
+    toast({
+      title: "Profile Updated",
+      description: `Budget profile "${updatedProfile.name}" has been updated successfully`,
+    });
+  };
+
+  const deleteProfile = (profileId: string) => {
+    const updatedProfiles = budgetProfiles.filter(p => p.id !== profileId);
+    setBudgetProfiles(updatedProfiles);
+
+    // Save to localStorage
+    const savedSettings = localStorage.getItem('adminSettings');
+    const adminSettings = savedSettings ? JSON.parse(savedSettings) : {};
+    adminSettings.budgetProfiles = updatedProfiles;
+    localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+
+    // If this was the selected profile, reset selection
+    if (selectedProfileId === profileId) {
+      setSelectedProfileId('');
+    }
+
+    toast({
+      title: "Profile Deleted",
+      description: "Budget profile has been deleted successfully",
+    });
+  };
+
+  const startEditProfile = (profile: BudgetProfile) => {
+    setEditingProfile(profile);
+    setNewProfileName(profile.name);
+    setNewProfileLabor(profile.laborPercent);
+    setNewProfileFood(profile.foodPercent);
+    setNewProfileReserves(profile.businessReservesPercent);
+    setNewProfileProfit(profile.profitPercent);
+  };
+
+  const resetProfileForm = () => {
+    setNewProfileName('');
+    setNewProfileLabor(30);
+    setNewProfileFood(35);
+    setNewProfileReserves(20);
+    setNewProfileProfit(15);
+  };
+
+  const cancelEdit = () => {
+    setEditingProfile(null);
+    resetProfileForm();
   };
 
   const formatCurrency = (amount: number) => {
@@ -259,19 +415,6 @@ const BreakevenAnalysis = () => {
                       min="0"
                       max="100"
                       className="text-base sm:text-lg h-12"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                  <h3 className="font-semibold text-base sm:text-lg">Payment Settings</h3>
-                  <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg">
-                    <Label htmlFor="cash-only" className="text-base sm:text-lg font-medium whitespace-nowrap">Cash Only</Label>
-                    <Switch
-                      id="cash-only"
-                      checked={isCashOnly}
-                      onCheckedChange={toggleCashOnly}
-                      className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-400"
                     />
                   </div>
                 </div>
@@ -386,12 +529,184 @@ const BreakevenAnalysis = () => {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
-                    <div className="space-y-4">
-                      <p className="text-muted-foreground text-sm">
-                        Set percentage allocations for different budget categories
-                      </p>
-                      
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-6">
+                      {/* Budget Profile Selection */}
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-semibold text-base">Budget Profiles</h4>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button size="sm" className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                New Profile
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  {editingProfile ? 'Edit Budget Profile' : 'Create New Budget Profile'}
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Create a budget profile with specific allocation percentages. All percentages must total 100%.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <div className="space-y-4">
+                                <div>
+                                  <Label htmlFor="profile-name">Profile Name</Label>
+                                  <Input
+                                    id="profile-name"
+                                    value={newProfileName}
+                                    onChange={(e) => setNewProfileName(e.target.value)}
+                                    placeholder="e.g., Cash Only, Credit Card"
+                                  />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                  <div>
+                                    <Label htmlFor="new-labor">Labor (%)</Label>
+                                    <Input
+                                      id="new-labor"
+                                      type="number"
+                                      value={newProfileLabor}
+                                      onChange={(e) => setNewProfileLabor(Number(e.target.value))}
+                                      min="0"
+                                      max="100"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="new-food">Food & Supplies (%)</Label>
+                                    <Input
+                                      id="new-food"
+                                      type="number"
+                                      value={newProfileFood}
+                                      onChange={(e) => setNewProfileFood(Number(e.target.value))}
+                                      min="0"
+                                      max="100"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="new-reserves">Business Reserves (%)</Label>
+                                    <Input
+                                      id="new-reserves"
+                                      type="number"
+                                      value={newProfileReserves}
+                                      onChange={(e) => setNewProfileReserves(Number(e.target.value))}
+                                      min="0"
+                                      max="100"
+                                    />
+                                  </div>
+                                  <div>
+                                    <Label htmlFor="new-profit">Profit (%)</Label>
+                                    <Input
+                                      id="new-profit"
+                                      type="number"
+                                      value={newProfileProfit}
+                                      onChange={(e) => setNewProfileProfit(Number(e.target.value))}
+                                      min="0"
+                                      max="100"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="p-3 bg-muted rounded-lg">
+                                  <div className="flex justify-between text-sm">
+                                    <span>Total:</span>
+                                    <span className={`font-semibold ${
+                                      validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)
+                                        ? 'text-green-600' : 'text-red-600'
+                                    }`}>
+                                      {newProfileLabor + newProfileFood + newProfileReserves + newProfileProfit}%
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel onClick={cancelEdit}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction 
+                                  onClick={editingProfile ? updateProfile : createProfile}
+                                  disabled={!validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)}
+                                >
+                                  {editingProfile ? 'Update' : 'Create'} Profile
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="profile-select">Select Budget Profile</Label>
+                          <Select value={selectedProfileId} onValueChange={selectProfile}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choose a budget profile" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {budgetProfiles.map((profile) => (
+                                <SelectItem key={profile.id} value={profile.id}>
+                                  {profile.name} ({profile.laborPercent}% / {profile.foodPercent}% / {profile.businessReservesPercent}% / {profile.profitPercent}%)
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        {budgetProfiles.length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="font-medium text-sm">Manage Profiles</h5>
+                            <div className="space-y-2">
+                              {budgetProfiles.map((profile) => (
+                                <div key={profile.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                  <div>
+                                    <span className="font-medium">{profile.name}</span>
+                                    <div className="text-sm text-muted-foreground">
+                                      Labor: {profile.laborPercent}% • Food: {profile.foodPercent}% • Reserves: {profile.businessReservesPercent}% • Profit: {profile.profitPercent}%
+                                    </div>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => startEditProfile(profile)}
+                                    >
+                                      <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button size="sm" variant="outline">
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Delete Budget Profile</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Are you sure you want to delete the budget profile "{profile.name}"? This action cannot be undone.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction 
+                                            onClick={() => deleteProfile(profile.id)}
+                                            className="bg-red-600 hover:bg-red-700"
+                                          >
+                                            Delete
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Current Allocation Display */}
+                      <div className="space-y-4">
+                        <h4 className="font-semibold text-base">Current Budget Allocation</h4>
+                        <p className="text-muted-foreground text-sm">
+                          Current percentage allocations for budget categories
+                        </p>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <Label htmlFor="labor-percent" className="text-base font-medium">
                             Labor Budget (%)
@@ -464,9 +779,10 @@ const BreakevenAnalysis = () => {
                               Note: Total allocation should equal 100% for optimal budget planning
                             </p>
                           )}
-                        </div>
-                      </div>
-                    </div>
+                         </div>
+                       </div>
+                     </div>
+                   </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
