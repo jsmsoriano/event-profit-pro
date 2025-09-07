@@ -9,12 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { DollarSign, Plus, Receipt, FileText, CheckCircle } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -32,19 +29,17 @@ interface Client {
   email: string;
 }
 
-const invoiceSchema = z.object({
-  client_id: z.string().min(1, "Please select a client"),
-  invoice_number: z.string().min(1, "Invoice number is required"),
-  billing_period_start: z.string().min(1, "Start date is required"),
-  billing_period_end: z.string().min(1, "End date is required"),
-  due_date: z.string().min(1, "Due date is required"),
-  invoice_amount: z.number().min(0.01, "Amount must be greater than 0"),
-  fee_percentage: z.number().min(0).max(100),
-  notes: z.string().optional(),
-  status: z.enum(['draft', 'sent']),
-});
-
-type InvoiceFormData = z.infer<typeof invoiceSchema>;
+interface InvoiceFormData {
+  client_id: string;
+  invoice_number: string;
+  billing_period_start: string;
+  billing_period_end: string;
+  due_date: string;
+  invoice_amount: number;
+  fee_percentage: number;
+  notes?: string;
+  status: 'draft' | 'sent';
+}
 
 export default function Billing() {
   const { invoices, loading, addPayment, createInvoice, updateInvoice } = useInvoices();
@@ -55,8 +50,12 @@ export default function Billing() {
 
   const { register, handleSubmit, reset, formState: { isSubmitting } } = useForm<PaymentForm>();
   
-  const invoiceForm = useForm<InvoiceFormData>({
-    resolver: zodResolver(invoiceSchema),
+  const { 
+    register: registerInvoice, 
+    handleSubmit: handleInvoiceSubmit, 
+    reset: resetInvoice, 
+    formState: { isSubmitting: isInvoiceSubmitting } 
+  } = useForm<InvoiceFormData>({
     defaultValues: {
       status: 'draft',
       fee_percentage: 15,
@@ -118,7 +117,7 @@ export default function Billing() {
     }).format(amount);
   };
 
-  const handleInvoiceSubmit = async (data: InvoiceFormData) => {
+  const handleInvoiceFormSubmit = async (data: InvoiceFormData) => {
     // Generate invoice number if not provided
     const invoiceNumber = data.invoice_number || generateInvoiceNumber();
 
@@ -140,7 +139,7 @@ export default function Billing() {
     const success = await createInvoice(invoiceData);
     if (success) {
       setInvoiceDialogOpen(false);
-      invoiceForm.reset();
+      resetInvoice();
       toast({
         title: "Invoice created",
         description: `Invoice ${invoiceNumber} has been created successfully`,
@@ -188,7 +187,15 @@ export default function Billing() {
   };
 
   const openInvoiceDialog = () => {
-    invoiceForm.setValue('invoice_number', generateInvoiceNumber());
+    // Pre-fill with generated invoice number
+    resetInvoice({
+      invoice_number: generateInvoiceNumber(),
+      status: 'draft',
+      fee_percentage: 15,
+      billing_period_start: format(new Date(), 'yyyy-MM-dd'),
+      billing_period_end: format(new Date(), 'yyyy-MM-dd'),
+      due_date: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+    });
     setInvoiceDialogOpen(true);
   };
 
@@ -318,191 +325,118 @@ export default function Billing() {
           <DialogHeader>
             <DialogTitle>Create New Invoice</DialogTitle>
           </DialogHeader>
-          <Form {...invoiceForm}>
-            <form onSubmit={invoiceForm.handleSubmit(handleInvoiceSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={invoiceForm.control}
-                  name="client_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Client</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a client" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {clients.map((client) => (
-                            <SelectItem key={client.id} value={client.id}>
-                              {client.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={invoiceForm.control}
-                  name="invoice_number"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Invoice Number</FormLabel>
-                      <FormControl>
-                        <Input {...field} placeholder="Auto-generated" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+          <form onSubmit={handleInvoiceSubmit(handleInvoiceFormSubmit)} className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="client_id">Client</Label>
+                <Select {...registerInvoice('client_id', { required: true })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a client" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="invoice_number">Invoice Number</Label>
+                <Input
+                  {...registerInvoice('invoice_number', { required: true })}
+                  placeholder="Auto-generated"
                 />
               </div>
+            </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <FormField
-                  control={invoiceForm.control}
-                  name="billing_period_start"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Period Start</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={invoiceForm.control}
-                  name="billing_period_end"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Period End</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={invoiceForm.control}
-                  name="due_date"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Due Date</FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="billing_period_start">Period Start</Label>
+                <Input 
+                  type="date" 
+                  {...registerInvoice('billing_period_start', { required: true })} 
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={invoiceForm.control}
-                  name="invoice_amount"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Invoice Amount</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          placeholder="0.00" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={invoiceForm.control}
-                  name="fee_percentage"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Fee Percentage</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          min="0" 
-                          max="100" 
-                          step="0.1"
-                          {...field}
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                          placeholder="15.0" 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="billing_period_end">Period End</Label>
+                <Input 
+                  type="date" 
+                  {...registerInvoice('billing_period_end', { required: true })} 
                 />
               </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="due_date">Due Date</Label>
+                <Input 
+                  type="date" 
+                  {...registerInvoice('due_date', { required: true })} 
+                />
+              </div>
+            </div>
 
-              <FormField
-                control={invoiceForm.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="sent">Sent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="invoice_amount">Invoice Amount</Label>
+                <Input 
+                  type="number" 
+                  step="0.01" 
+                  {...registerInvoice('invoice_amount', { required: true, min: 0.01, valueAsNumber: true })}
+                  placeholder="0.00" 
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="fee_percentage">Fee Percentage</Label>
+                <Input 
+                  type="number" 
+                  min="0" 
+                  max="100" 
+                  step="0.1"
+                  {...registerInvoice('fee_percentage', { required: true, min: 0, max: 100, valueAsNumber: true })}
+                  placeholder="15.0" 
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status">Status</Label>
+              <Select {...registerInvoice('status', { required: true })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Textarea 
+                {...registerInvoice('notes')} 
+                placeholder="Additional notes or description..."
+                rows={3}
               />
+            </div>
 
-              <FormField
-                control={invoiceForm.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Notes (Optional)</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        placeholder="Additional notes or description..."
-                        rows={3}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setInvoiceDialogOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={invoiceForm.formState.isSubmitting}>
-                  {invoiceForm.formState.isSubmitting ? 'Creating...' : 'Create Invoice'}
-                </Button>
-              </div>
-            </form>
-          </Form>
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setInvoiceDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isInvoiceSubmitting}>
+                {isInvoiceSubmitting ? 'Creating...' : 'Create Invoice'}
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
 
