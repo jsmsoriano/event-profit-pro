@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
 interface LaborRole {
@@ -199,259 +200,270 @@ const BreakevenAnalysis = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-        {/* Input Section */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Event Parameters</CardTitle>
-            <CardDescription className="text-base sm:text-lg">Enter your event details and budget allocations</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 p-3 sm:p-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="guests" className="text-base sm:text-lg font-medium">Number of Guests</Label>
-                <Input
-                  id="guests"
-                  type="number"
-                  value={guestCount}
-                  onChange={(e) => setGuestCount(Number(e.target.value))}
-                  min="1"
-                  className="text-base sm:text-lg h-12"
-                />
-              </div>
-              <div>
-                <Label htmlFor="price" className="text-base sm:text-lg font-medium">Price per Person</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  value={pricePerPerson}
-                  onChange={(e) => setPricePerPerson(Number(e.target.value))}
-                  min="0"
-                  step="0.01"
-                  className="text-base sm:text-lg h-12"
-                />
-              </div>
-              <div className="sm:col-span-2">
-                <Label htmlFor="gratuity" className="text-base sm:text-lg font-medium">Gratuity (%)</Label>
-                <Input
-                  id="gratuity"
-                  type="number"
-                  value={gratuityPercent}
-                  onChange={(e) => setGratuityPercent(Number(e.target.value))}
-                  min="0"
-                  max="100"
-                  className="text-base sm:text-lg h-12"
-                />
-              </div>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-              <h3 className="font-semibold text-base sm:text-lg">Payment Settings</h3>
-              <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg">
-                <Label htmlFor="cash-only" className="text-base sm:text-lg font-medium whitespace-nowrap">Cash Only</Label>
-                <Switch
-                  id="cash-only"
-                  checked={isCashOnly}
-                  onCheckedChange={toggleCashOnly}
-                  className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-400"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Current Scenario */}
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle className="text-xl sm:text-2xl">Current Scenario</CardTitle>
-            <CardDescription className="text-base sm:text-lg break-words">
-              {guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-3 sm:p-6">
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableBody>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Base Revenue</TableCell>
-                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.baseRevenue)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Gratuity ({gratuityPercent}%)</TableCell>
-                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.gratuityAmount)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Total Revenue</TableCell>
-                    <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Business Reserves</TableCell>
-                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.businessReservesToSetAside)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Labor Budget</TableCell>
-                    <TableCell className="text-right font-semibold text-primary">{formatCurrency(currentScenario.laborBudget)}</TableCell>
-                  </TableRow>
-                  <TableRow>
-                    <TableCell className="font-medium text-muted-foreground">Food & Supplies</TableCell>
-                    <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.foodBudget)}</TableCell>
-                  </TableRow>
-                  <TableRow className="bg-green-50 dark:bg-green-950/20">
-                    <TableCell className="font-medium text-muted-foreground">Profit</TableCell>
-                    <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </div>
-            
-            <div className="mt-4 sm:mt-6 p-4 sm:p-5 bg-muted rounded-lg">
-              <h4 className="font-semibold mb-3 text-base sm:text-lg">Labor Budget Breakdown</h4>
-              <div className="space-y-2 text-sm sm:text-base">
-                <div className="flex justify-between items-center">
-                  <span className="truncate">Maximum Labor Budget:</span>
-                  <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="truncate">Business Reserves:</span>
-                  <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.businessReservesToSetAside)}</span>
-                </div>
-                {laborRoles.map((role) => (
-                  <div key={role.id} className="flex justify-between items-center">
-                    <span className="truncate">{role.name} Pay ({role.laborPercentage}% of labor):</span>
-                    <span className="font-semibold text-primary text-right">{formatCurrency(currentScenario.laborBudget * (role.laborPercentage / 100))}</span>
+      <Tabs defaultValue="parameters" className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="parameters">Event Parameters</TabsTrigger>
+          <TabsTrigger value="labor-budget">Labor & Budget</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="parameters" className="space-y-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
+            {/* Input Section */}
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle className="text-xl sm:text-2xl">Event Parameters</CardTitle>
+                <CardDescription className="text-base sm:text-lg">Enter your event details and budget allocations</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 p-3 sm:p-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="guests" className="text-base sm:text-lg font-medium">Number of Guests</Label>
+                    <Input
+                      id="guests"
+                      type="number"
+                      value={guestCount}
+                      onChange={(e) => setGuestCount(Number(e.target.value))}
+                      min="1"
+                      className="text-base sm:text-lg h-12"
+                    />
                   </div>
-                ))}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Labor & Budget Management */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl">Labor & Budget Management</CardTitle>
-          <CardDescription className="text-base sm:text-lg">
-            Manage labor roles and budget allocations for your event
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-3 sm:p-6">
-          <Accordion type="multiple" defaultValue={["labor-roles", "budget-allocation"]} className="w-full">
-            <AccordionItem value="labor-roles" className="border rounded-lg mb-4">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold">Labor Roles</span>
-                  <span className="text-sm text-muted-foreground">
-                    ({laborRoles.length} role{laborRoles.length !== 1 ? 's' : ''})
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <LaborRoleManager 
-                  laborRoles={laborRoles} 
-                  onRolesChange={setLaborRoles}
-                  totalBudget={currentScenario.laborBudget}
-                  gratuityAmount={currentScenario.gratuityAmount}
-                />
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="budget-allocation" className="border rounded-lg">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg font-semibold">Budget Allocation</span>
-                  <span className="text-sm text-muted-foreground">
-                    ({laborPercent + foodPercent + businessReservesPercent + profitPercent}% total)
-                  </span>
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="space-y-4">
-                  <p className="text-muted-foreground text-sm">
-                    Set percentage allocations for different budget categories
-                  </p>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="labor-percent" className="text-base font-medium">
-                        Labor Budget (%)
-                      </Label>
-                      <Input
-                        id="labor-percent"
-                        type="number"
-                        value={laborPercent}
-                        onChange={(e) => setLaborPercent(Number(e.target.value))}
-                        min="0"
-                        max="100"
-                        className="text-base h-10"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="food-percent" className="text-base font-medium">
-                        Food & Supplies (%)
-                      </Label>
-                      <Input
-                        id="food-percent"
-                        type="number"
-                        value={foodPercent}
-                        onChange={(e) => setFoodPercent(Number(e.target.value))}
-                        min="0"
-                        max="100"
-                        className="text-base h-10"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="reserves-percent" className="text-base font-medium">
-                        Business Reserves (%)
-                      </Label>
-                      <Input
-                        id="reserves-percent"
-                        type="number"
-                        value={businessReservesPercent}
-                        onChange={(e) => setBusinessReservesPercent(Number(e.target.value))}
-                        min="0"
-                        max="100"
-                        className="text-base h-10"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="profit-percent" className="text-base font-medium">
-                        Profit Target (%)
-                      </Label>
-                      <Input
-                        id="profit-percent"
-                        type="number"
-                        value={profitPercent}
-                        onChange={(e) => setProfitPercent(Number(e.target.value))}
-                        min="0"
-                        max="100"
-                        className="text-base h-10"
-                      />
-                    </div>
+                  <div>
+                    <Label htmlFor="price" className="text-base sm:text-lg font-medium">Price per Person</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={pricePerPerson}
+                      onChange={(e) => setPricePerPerson(Number(e.target.value))}
+                      min="0"
+                      step="0.01"
+                      className="text-base sm:text-lg h-12"
+                    />
                   </div>
-                  
-                  <div className="mt-4 p-4 bg-muted rounded-lg">
-                    <h4 className="font-semibold mb-2 text-base">Allocation Summary</h4>
-                    <div className="text-sm space-y-1">
-                      <div className="flex justify-between">
-                        <span>Total Allocation:</span>
-                        <span className={`font-semibold ${(laborPercent + foodPercent + businessReservesPercent + profitPercent) === 100 ? 'text-green-600' : 'text-red-600'}`}>
-                          {laborPercent + foodPercent + businessReservesPercent + profitPercent}%
-                        </span>
+                  <div className="sm:col-span-2">
+                    <Label htmlFor="gratuity" className="text-base sm:text-lg font-medium">Gratuity (%)</Label>
+                    <Input
+                      id="gratuity"
+                      type="number"
+                      value={gratuityPercent}
+                      onChange={(e) => setGratuityPercent(Number(e.target.value))}
+                      min="0"
+                      max="100"
+                      className="text-base sm:text-lg h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                  <h3 className="font-semibold text-base sm:text-lg">Payment Settings</h3>
+                  <div className="flex items-center space-x-2 p-3 border border-gray-300 rounded-lg">
+                    <Label htmlFor="cash-only" className="text-base sm:text-lg font-medium whitespace-nowrap">Cash Only</Label>
+                    <Switch
+                      id="cash-only"
+                      checked={isCashOnly}
+                      onCheckedChange={toggleCashOnly}
+                      className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-400"
+                    />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Current Scenario */}
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle className="text-xl sm:text-2xl">Current Scenario</CardTitle>
+                <CardDescription className="text-base sm:text-lg break-words">
+                  {guestCount} guests at {formatCurrency(pricePerPerson)} per person + {gratuityPercent}% gratuity
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-3 sm:p-6">
+                <div className="border rounded-lg overflow-hidden">
+                  <Table>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Base Revenue</TableCell>
+                        <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.baseRevenue)}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Gratuity ({gratuityPercent}%)</TableCell>
+                        <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.gratuityAmount)}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Total Revenue</TableCell>
+                        <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.totalRevenue)}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Business Reserves</TableCell>
+                        <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.businessReservesToSetAside)}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Labor Budget</TableCell>
+                        <TableCell className="text-right font-semibold text-primary">{formatCurrency(currentScenario.laborBudget)}</TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium text-muted-foreground">Food & Supplies</TableCell>
+                        <TableCell className="text-right font-semibold">{formatCurrency(currentScenario.foodBudget)}</TableCell>
+                      </TableRow>
+                      <TableRow className="bg-green-50 dark:bg-green-950/20">
+                        <TableCell className="font-medium text-muted-foreground">Profit</TableCell>
+                        <TableCell className="text-right font-semibold text-green-600">{formatCurrency(currentScenario.profitBudget)}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </div>
+                
+                <div className="mt-4 sm:mt-6 p-4 sm:p-5 bg-muted rounded-lg">
+                  <h4 className="font-semibold mb-3 text-base sm:text-lg">Labor Budget Breakdown</h4>
+                  <div className="space-y-2 text-sm sm:text-base">
+                    <div className="flex justify-between items-center">
+                      <span className="truncate">Maximum Labor Budget:</span>
+                      <span className="font-semibold text-right">{formatCurrency(currentScenario.laborBudget)}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="truncate">Business Reserves:</span>
+                      <span className="font-semibold text-orange-600 text-right">{formatCurrency(currentScenario.businessReservesToSetAside)}</span>
+                    </div>
+                    {laborRoles.map((role) => (
+                      <div key={role.id} className="flex justify-between items-center">
+                        <span className="truncate">{role.name} Pay ({role.laborPercentage}% of labor):</span>
+                        <span className="font-semibold text-primary text-right">{formatCurrency(currentScenario.laborBudget * (role.laborPercentage / 100))}</span>
                       </div>
-                      {(laborPercent + foodPercent + businessReservesPercent + profitPercent) !== 100 && (
-                        <p className="text-red-600 text-xs mt-2">
-                          Note: Total allocation should equal 100% for optimal budget planning
-                        </p>
-                      )}
-                    </div>
+                    ))}
                   </div>
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </CardContent>
-      </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="labor-budget" className="space-y-6">
+          {/* Labor & Budget Management */}
+          <Card className="w-full">
+            <CardHeader>
+              <CardTitle className="text-xl sm:text-2xl">Labor & Budget Management</CardTitle>
+              <CardDescription className="text-base sm:text-lg">
+                Manage labor roles and budget allocations for your event
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-3 sm:p-6">
+              <Accordion type="multiple" defaultValue={["labor-roles", "budget-allocation"]} className="w-full">
+                <AccordionItem value="labor-roles" className="border rounded-lg mb-4">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-semibold">Labor Roles</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({laborRoles.length} role{laborRoles.length !== 1 ? 's' : ''})
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <LaborRoleManager 
+                      laborRoles={laborRoles} 
+                      onRolesChange={setLaborRoles}
+                      totalBudget={currentScenario.laborBudget}
+                      gratuityAmount={currentScenario.gratuityAmount}
+                    />
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="budget-allocation" className="border rounded-lg">
+                  <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-semibold">Budget Allocation</span>
+                      <span className="text-sm text-muted-foreground">
+                        ({laborPercent + foodPercent + businessReservesPercent + profitPercent}% total)
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 pb-4">
+                    <div className="space-y-4">
+                      <p className="text-muted-foreground text-sm">
+                        Set percentage allocations for different budget categories
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="labor-percent" className="text-base font-medium">
+                            Labor Budget (%)
+                          </Label>
+                          <Input
+                            id="labor-percent"
+                            type="number"
+                            value={laborPercent}
+                            onChange={(e) => setLaborPercent(Number(e.target.value))}
+                            min="0"
+                            max="100"
+                            className="text-base h-10"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="food-percent" className="text-base font-medium">
+                            Food & Supplies (%)
+                          </Label>
+                          <Input
+                            id="food-percent"
+                            type="number"
+                            value={foodPercent}
+                            onChange={(e) => setFoodPercent(Number(e.target.value))}
+                            min="0"
+                            max="100"
+                            className="text-base h-10"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="reserves-percent" className="text-base font-medium">
+                            Business Reserves (%)
+                          </Label>
+                          <Input
+                            id="reserves-percent"
+                            type="number"
+                            value={businessReservesPercent}
+                            onChange={(e) => setBusinessReservesPercent(Number(e.target.value))}
+                            min="0"
+                            max="100"
+                            className="text-base h-10"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="profit-percent" className="text-base font-medium">
+                            Profit Target (%)
+                          </Label>
+                          <Input
+                            id="profit-percent"
+                            type="number"
+                            value={profitPercent}
+                            onChange={(e) => setProfitPercent(Number(e.target.value))}
+                            min="0"
+                            max="100"
+                            className="text-base h-10"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 p-4 bg-muted rounded-lg">
+                        <h4 className="font-semibold mb-2 text-base">Allocation Summary</h4>
+                        <div className="text-sm space-y-1">
+                          <div className="flex justify-between">
+                            <span>Total Allocation:</span>
+                            <span className={`font-semibold ${(laborPercent + foodPercent + businessReservesPercent + profitPercent) === 100 ? 'text-green-600' : 'text-red-600'}`}>
+                              {laborPercent + foodPercent + businessReservesPercent + profitPercent}%
+                            </span>
+                          </div>
+                          {(laborPercent + foodPercent + businessReservesPercent + profitPercent) !== 100 && (
+                            <p className="text-red-600 text-xs mt-2">
+                              Note: Total allocation should equal 100% for optimal budget planning
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
 
     </div>
   );
