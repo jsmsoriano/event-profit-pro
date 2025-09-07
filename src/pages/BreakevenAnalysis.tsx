@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Switch } from "@/components/ui/switch";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import LaborRoleManager from "@/components/LaborRoleManager";
 
 interface LaborRole {
@@ -326,98 +327,129 @@ const BreakevenAnalysis = () => {
         </Card>
       </div>
 
-      {/* Labor Roles Management */}
-      <LaborRoleManager 
-        laborRoles={laborRoles} 
-        onRolesChange={setLaborRoles}
-        totalBudget={currentScenario.laborBudget}
-        gratuityAmount={currentScenario.gratuityAmount}
-      />
-
-      {/* Budget Allocation Settings */}
+      {/* Labor & Budget Management */}
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-xl sm:text-2xl">Budget Allocation</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">Labor & Budget Management</CardTitle>
           <CardDescription className="text-base sm:text-lg">
-            Set percentage allocations for different budget categories
+            Manage labor roles and budget allocations for your event
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 p-3 sm:p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="labor-percent" className="text-base sm:text-lg font-medium">
-                Labor Budget (%)
-              </Label>
-              <Input
-                id="labor-percent"
-                type="number"
-                value={laborPercent}
-                onChange={(e) => setLaborPercent(Number(e.target.value))}
-                min="0"
-                max="100"
-                className="text-base sm:text-lg h-12"
-              />
-            </div>
-            <div>
-              <Label htmlFor="food-percent" className="text-base sm:text-lg font-medium">
-                Food & Supplies (%)
-              </Label>
-              <Input
-                id="food-percent"
-                type="number"
-                value={foodPercent}
-                onChange={(e) => setFoodPercent(Number(e.target.value))}
-                min="0"
-                max="100"
-                className="text-base sm:text-lg h-12"
-              />
-            </div>
-            <div>
-              <Label htmlFor="reserves-percent" className="text-base sm:text-lg font-medium">
-                Business Reserves (%)
-              </Label>
-              <Input
-                id="reserves-percent"
-                type="number"
-                value={businessReservesPercent}
-                onChange={(e) => setBusinessReservesPercent(Number(e.target.value))}
-                min="0"
-                max="100"
-                className="text-base sm:text-lg h-12"
-              />
-            </div>
-            <div>
-              <Label htmlFor="profit-percent" className="text-base sm:text-lg font-medium">
-                Profit Target (%)
-              </Label>
-              <Input
-                id="profit-percent"
-                type="number"
-                value={profitPercent}
-                onChange={(e) => setProfitPercent(Number(e.target.value))}
-                min="0"
-                max="100"
-                className="text-base sm:text-lg h-12"
-              />
-            </div>
-          </div>
-          
-          <div className="mt-4 p-4 bg-muted rounded-lg">
-            <h4 className="font-semibold mb-2 text-base sm:text-lg">Allocation Summary</h4>
-            <div className="text-sm sm:text-base space-y-1">
-              <div className="flex justify-between">
-                <span>Total Allocation:</span>
-                <span className={`font-semibold ${(laborPercent + foodPercent + businessReservesPercent + profitPercent) === 100 ? 'text-green-600' : 'text-red-600'}`}>
-                  {laborPercent + foodPercent + businessReservesPercent + profitPercent}%
-                </span>
-              </div>
-              {(laborPercent + foodPercent + businessReservesPercent + profitPercent) !== 100 && (
-                <p className="text-red-600 text-xs mt-2">
-                  Note: Total allocation should equal 100% for optimal budget planning
-                </p>
-              )}
-            </div>
-          </div>
+        <CardContent className="p-3 sm:p-6">
+          <Accordion type="multiple" defaultValue={["labor-roles", "budget-allocation"]} className="w-full">
+            <AccordionItem value="labor-roles" className="border rounded-lg mb-4">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">Labor Roles</span>
+                  <span className="text-sm text-muted-foreground">
+                    ({laborRoles.length} role{laborRoles.length !== 1 ? 's' : ''})
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <LaborRoleManager 
+                  laborRoles={laborRoles} 
+                  onRolesChange={setLaborRoles}
+                  totalBudget={currentScenario.laborBudget}
+                  gratuityAmount={currentScenario.gratuityAmount}
+                />
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="budget-allocation" className="border rounded-lg">
+              <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-semibold">Budget Allocation</span>
+                  <span className="text-sm text-muted-foreground">
+                    ({laborPercent + foodPercent + businessReservesPercent + profitPercent}% total)
+                  </span>
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4">
+                <div className="space-y-4">
+                  <p className="text-muted-foreground text-sm">
+                    Set percentage allocations for different budget categories
+                  </p>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="labor-percent" className="text-base font-medium">
+                        Labor Budget (%)
+                      </Label>
+                      <Input
+                        id="labor-percent"
+                        type="number"
+                        value={laborPercent}
+                        onChange={(e) => setLaborPercent(Number(e.target.value))}
+                        min="0"
+                        max="100"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="food-percent" className="text-base font-medium">
+                        Food & Supplies (%)
+                      </Label>
+                      <Input
+                        id="food-percent"
+                        type="number"
+                        value={foodPercent}
+                        onChange={(e) => setFoodPercent(Number(e.target.value))}
+                        min="0"
+                        max="100"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="reserves-percent" className="text-base font-medium">
+                        Business Reserves (%)
+                      </Label>
+                      <Input
+                        id="reserves-percent"
+                        type="number"
+                        value={businessReservesPercent}
+                        onChange={(e) => setBusinessReservesPercent(Number(e.target.value))}
+                        min="0"
+                        max="100"
+                        className="text-base h-10"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="profit-percent" className="text-base font-medium">
+                        Profit Target (%)
+                      </Label>
+                      <Input
+                        id="profit-percent"
+                        type="number"
+                        value={profitPercent}
+                        onChange={(e) => setProfitPercent(Number(e.target.value))}
+                        min="0"
+                        max="100"
+                        className="text-base h-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 p-4 bg-muted rounded-lg">
+                    <h4 className="font-semibold mb-2 text-base">Allocation Summary</h4>
+                    <div className="text-sm space-y-1">
+                      <div className="flex justify-between">
+                        <span>Total Allocation:</span>
+                        <span className={`font-semibold ${(laborPercent + foodPercent + businessReservesPercent + profitPercent) === 100 ? 'text-green-600' : 'text-red-600'}`}>
+                          {laborPercent + foodPercent + businessReservesPercent + profitPercent}%
+                        </span>
+                      </div>
+                      {(laborPercent + foodPercent + businessReservesPercent + profitPercent) !== 100 && (
+                        <p className="text-red-600 text-xs mt-2">
+                          Note: Total allocation should equal 100% for optimal budget planning
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </CardContent>
       </Card>
 
