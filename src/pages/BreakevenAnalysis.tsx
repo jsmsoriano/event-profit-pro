@@ -47,6 +47,7 @@ const BreakevenAnalysis = () => {
   const [laborRoles, setLaborRoles] = useState<LaborRole[]>([]);
   const [budgetProfiles, setBudgetProfiles] = useState<BudgetProfile[]>([]);
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [defaultProfileId, setDefaultProfileId] = useState<string>('');
   const [editingProfile, setEditingProfile] = useState<BudgetProfile | null>(null);
   const [newProfileName, setNewProfileName] = useState('');
   const [newProfileLabor, setNewProfileLabor] = useState(30);
@@ -86,7 +87,7 @@ const BreakevenAnalysis = () => {
         ];
         setBudgetProfiles(profiles);
 
-        // Set initial percentages from credit card profile
+        // Set initial percentages from credit card profile as default
         const creditCardProfile = profiles.find(p => p.id === 'credit-card');
         if (creditCardProfile) {
           setLaborPercent(creditCardProfile.laborPercent);
@@ -94,6 +95,7 @@ const BreakevenAnalysis = () => {
           setBusinessReservesPercent(creditCardProfile.businessReservesPercent);
           setProfitPercent(creditCardProfile.profitPercent);
           setSelectedProfileId(creditCardProfile.id);
+          setDefaultProfileId(creditCardProfile.id);
         }
       } catch (error) {
         console.error('Error parsing admin settings:', error);
@@ -156,6 +158,29 @@ const BreakevenAnalysis = () => {
       setBusinessReservesPercent(profile.businessReservesPercent);
       setProfitPercent(profile.profitPercent);
       setSelectedProfileId(profileId);
+    }
+  };
+
+  const setAsDefaultProfile = (profileId: string) => {
+    const profile = budgetProfiles.find(p => p.id === profileId);
+    if (profile) {
+      setDefaultProfileId(profileId);
+      setLaborPercent(profile.laborPercent);
+      setFoodPercent(profile.foodPercent);
+      setBusinessReservesPercent(profile.businessReservesPercent);
+      setProfitPercent(profile.profitPercent);
+      setSelectedProfileId(profileId);
+
+      // Save default profile to localStorage
+      const savedSettings = localStorage.getItem('adminSettings');
+      const adminSettings = savedSettings ? JSON.parse(savedSettings) : {};
+      adminSettings.defaultProfileId = profileId;
+      localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
+
+      toast({
+        title: "Default Profile Set",
+        description: `"${profile.name}" is now the default budget profile`,
+      });
     }
   };
 
@@ -258,6 +283,11 @@ const BreakevenAnalysis = () => {
       setProfitPercent(updatedProfile.profitPercent);
     }
 
+    // If this was the default profile, keep it as default
+    if (defaultProfileId === editingProfile.id) {
+      setDefaultProfileId(updatedProfile.id);
+    }
+
     setEditingProfile(null);
     resetProfileForm();
 
@@ -277,9 +307,12 @@ const BreakevenAnalysis = () => {
     adminSettings.budgetProfiles = updatedProfiles;
     localStorage.setItem('adminSettings', JSON.stringify(adminSettings));
 
-    // If this was the selected profile, reset selection
+    // If this was the selected or default profile, reset selection
     if (selectedProfileId === profileId) {
       setSelectedProfileId('');
+    }
+    if (defaultProfileId === profileId) {
+      setDefaultProfileId('');
     }
 
     toast({
@@ -495,7 +528,7 @@ const BreakevenAnalysis = () => {
             <CardHeader>
               <CardTitle className="text-xl sm:text-2xl">Labor & Budget Management</CardTitle>
               <CardDescription className="text-base sm:text-lg">
-                Manage labor roles and budget allocations for your event
+                Manage labor roles and budget profiles for your event
               </CardDescription>
             </CardHeader>
             <CardContent className="p-3 sm:p-6">
@@ -522,15 +555,15 @@ const BreakevenAnalysis = () => {
                 <AccordionItem value="budget-allocation" className="border rounded-lg">
                   <AccordionTrigger className="px-4 py-3 hover:no-underline">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold">Budget Allocation</span>
+                      <span className="text-lg font-semibold">Budget Profiles</span>
                       <span className="text-sm text-muted-foreground">
-                        ({laborPercent + foodPercent + businessReservesPercent + profitPercent}% total)
+                        ({budgetProfiles.length} profile{budgetProfiles.length !== 1 ? 's' : ''})
                       </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 pb-4">
                     <div className="space-y-6">
-                      {/* Budget Profile Selection */}
+                      {/* Budget Profile Management */}
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold text-base">Budget Profiles</h4>
@@ -631,35 +664,42 @@ const BreakevenAnalysis = () => {
                           </AlertDialog>
                         </div>
 
-                        <div>
-                          <Label htmlFor="profile-select">Select Budget Profile</Label>
-                          <Select value={selectedProfileId} onValueChange={selectProfile}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Choose a budget profile" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {budgetProfiles.map((profile) => (
-                                <SelectItem key={profile.id} value={profile.id}>
-                                  {profile.name} ({profile.laborPercent}% / {profile.foodPercent}% / {profile.businessReservesPercent}% / {profile.profitPercent}%)
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
                         {budgetProfiles.length > 0 && (
-                          <div className="space-y-2">
+                          <div className="space-y-4">
                             <h5 className="font-medium text-sm">Manage Profiles</h5>
                             <div className="space-y-2">
                               {budgetProfiles.map((profile) => (
                                 <div key={profile.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                  <div>
-                                    <span className="font-medium">{profile.name}</span>
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2">
+                                      <span className="font-medium">{profile.name}</span>
+                                      {defaultProfileId === profile.id && (
+                                        <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                                          Default
+                                        </span>
+                                      )}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                       Labor: {profile.laborPercent}% • Food: {profile.foodPercent}% • Reserves: {profile.businessReservesPercent}% • Profit: {profile.profitPercent}%
                                     </div>
                                   </div>
                                   <div className="flex gap-2">
+                                    {defaultProfileId !== profile.id && (
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() => setAsDefaultProfile(profile.id)}
+                                      >
+                                        Set Default
+                                      </Button>
+                                    )}
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => selectProfile(profile.id)}
+                                    >
+                                      Use
+                                    </Button>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <Button
@@ -787,91 +827,49 @@ const BreakevenAnalysis = () => {
                           </div>
                         )}
                       </div>
-
-                      {/* Current Allocation Display */}
-                      <div className="space-y-4">
-                        <h4 className="font-semibold text-base">Current Budget Allocation</h4>
-                        <p className="text-muted-foreground text-sm">
-                          Current percentage allocations for budget categories
-                        </p>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="labor-percent" className="text-base font-medium">
-                            Labor Budget (%)
-                          </Label>
-                          <Input
-                            id="labor-percent"
-                            type="number"
-                            value={laborPercent}
-                            onChange={(e) => setLaborPercent(Number(e.target.value))}
-                            min="0"
-                            max="100"
-                            className="text-base h-10"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="food-percent" className="text-base font-medium">
-                            Food & Supplies (%)
-                          </Label>
-                          <Input
-                            id="food-percent"
-                            type="number"
-                            value={foodPercent}
-                            onChange={(e) => setFoodPercent(Number(e.target.value))}
-                            min="0"
-                            max="100"
-                            className="text-base h-10"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="reserves-percent" className="text-base font-medium">
-                            Business Reserves (%)
-                          </Label>
-                          <Input
-                            id="reserves-percent"
-                            type="number"
-                            value={businessReservesPercent}
-                            onChange={(e) => setBusinessReservesPercent(Number(e.target.value))}
-                            min="0"
-                            max="100"
-                            className="text-base h-10"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="profit-percent" className="text-base font-medium">
-                            Profit Target (%)
-                          </Label>
-                          <Input
-                            id="profit-percent"
-                            type="number"
-                            value={profitPercent}
-                            onChange={(e) => setProfitPercent(Number(e.target.value))}
-                            min="0"
-                            max="100"
-                            className="text-base h-10"
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="mt-4 p-4 bg-muted rounded-lg">
-                        <h4 className="font-semibold mb-2 text-base">Allocation Summary</h4>
-                        <div className="text-sm space-y-1">
-                          <div className="flex justify-between">
-                            <span>Total Allocation:</span>
-                            <span className={`font-semibold ${(laborPercent + foodPercent + businessReservesPercent + profitPercent) === 100 ? 'text-green-600' : 'text-red-600'}`}>
-                              {laborPercent + foodPercent + businessReservesPercent + profitPercent}%
-                            </span>
+                     
+                      {/* Current Profile Display */}
+                      {selectedProfileId && (
+                        <div className="space-y-2">
+                          <h4 className="font-semibold text-base">Current Profile</h4>
+                          <div className="p-4 bg-muted rounded-lg">
+                            {(() => {
+                              const currentProfile = budgetProfiles.find(p => p.id === selectedProfileId);
+                              return currentProfile ? (
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className="font-medium">{currentProfile.name}</span>
+                                    {defaultProfileId === currentProfile.id && (
+                                      <span className="text-xs bg-primary text-primary-foreground px-2 py-1 rounded">
+                                        Default
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div className="flex justify-between">
+                                      <span>Labor:</span>
+                                      <span className="font-semibold">{currentProfile.laborPercent}%</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Food & Supplies:</span>
+                                      <span className="font-semibold">{currentProfile.foodPercent}%</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Business Reserves:</span>
+                                      <span className="font-semibold">{currentProfile.businessReservesPercent}%</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Profit:</span>
+                                      <span className="font-semibold">{currentProfile.profitPercent}%</span>
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : null;
+                            })()}
                           </div>
-                          {(laborPercent + foodPercent + businessReservesPercent + profitPercent) !== 100 && (
-                            <p className="text-red-600 text-xs mt-2">
-                              Note: Total allocation should equal 100% for optimal budget planning
-                            </p>
-                          )}
-                         </div>
-                       </div>
-                     </div>
-                   </div>
+                        </div>
+                      )}
+                    </div>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -879,7 +877,6 @@ const BreakevenAnalysis = () => {
           </Card>
         </TabsContent>
       </Tabs>
-
     </div>
   );
 };
