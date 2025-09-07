@@ -166,12 +166,32 @@ export default function CreateEvent() {
                 <Label htmlFor="eventTime">
                   Event Time
                 </Label>
-                <Input
-                  id="eventTime"
-                  type="time"
+                <Select
                   value={formData.eventTime}
-                  onChange={(e) => updateFormData('eventTime', e.target.value)}
-                />
+                  onValueChange={(value) => updateFormData('eventTime', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event time" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border shadow-lg z-50 max-h-60">
+                    {/* Generate time options every 30 minutes from 6:00 AM to 11:30 PM */}
+                    {Array.from({ length: 36 }, (_, i) => {
+                      const totalMinutes = 360 + (i * 30); // Start at 6:00 AM (360 minutes)
+                      const hours = Math.floor(totalMinutes / 60);
+                      const minutes = totalMinutes % 60;
+                      const hour12 = hours > 12 ? hours - 12 : hours === 0 ? 12 : hours;
+                      const ampm = hours >= 12 ? 'PM' : 'AM';
+                      const timeValue = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                      const timeDisplay = `${hour12}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+                      
+                      return (
+                        <SelectItem key={timeValue} value={timeValue}>
+                          {timeDisplay}
+                        </SelectItem>
+                      );
+                    })}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label htmlFor="numberOfGuests">
