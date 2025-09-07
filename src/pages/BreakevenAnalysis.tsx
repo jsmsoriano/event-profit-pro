@@ -536,7 +536,7 @@ const BreakevenAnalysis = () => {
                           <h4 className="font-semibold text-base">Budget Profiles</h4>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button size="sm" className="gap-2">
+                              <Button size="sm" className="gap-2" onClick={resetProfileForm}>
                                 <Plus className="h-4 w-4" />
                                 New Profile
                               </Button>
@@ -660,13 +660,102 @@ const BreakevenAnalysis = () => {
                                     </div>
                                   </div>
                                   <div className="flex gap-2">
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      onClick={() => startEditProfile(profile)}
-                                    >
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
+                                    <AlertDialog>
+                                      <AlertDialogTrigger asChild>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() => startEditProfile(profile)}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                      </AlertDialogTrigger>
+                                      <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                          <AlertDialogTitle>Edit Budget Profile</AlertDialogTitle>
+                                          <AlertDialogDescription>
+                                            Modify the budget profile allocation percentages. All percentages must total 100%.
+                                          </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <div className="space-y-4">
+                                          <div>
+                                            <Label htmlFor="edit-profile-name">Profile Name</Label>
+                                            <Input
+                                              id="edit-profile-name"
+                                              value={newProfileName}
+                                              onChange={(e) => setNewProfileName(e.target.value)}
+                                              placeholder="e.g., Cash Only, Credit Card"
+                                            />
+                                          </div>
+                                          <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                              <Label htmlFor="edit-labor">Labor (%)</Label>
+                                              <Input
+                                                id="edit-labor"
+                                                type="number"
+                                                value={newProfileLabor}
+                                                onChange={(e) => setNewProfileLabor(Number(e.target.value))}
+                                                min="0"
+                                                max="100"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label htmlFor="edit-food">Food & Supplies (%)</Label>
+                                              <Input
+                                                id="edit-food"
+                                                type="number"
+                                                value={newProfileFood}
+                                                onChange={(e) => setNewProfileFood(Number(e.target.value))}
+                                                min="0"
+                                                max="100"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label htmlFor="edit-reserves">Business Reserves (%)</Label>
+                                              <Input
+                                                id="edit-reserves"
+                                                type="number"
+                                                value={newProfileReserves}
+                                                onChange={(e) => setNewProfileReserves(Number(e.target.value))}
+                                                min="0"
+                                                max="100"
+                                              />
+                                            </div>
+                                            <div>
+                                              <Label htmlFor="edit-profit">Profit (%)</Label>
+                                              <Input
+                                                id="edit-profit"
+                                                type="number"
+                                                value={newProfileProfit}
+                                                onChange={(e) => setNewProfileProfit(Number(e.target.value))}
+                                                min="0"
+                                                max="100"
+                                              />
+                                            </div>
+                                          </div>
+                                          <div className="p-3 bg-muted rounded-lg">
+                                            <div className="flex justify-between text-sm">
+                                              <span>Total:</span>
+                                              <span className={`font-semibold ${
+                                                validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)
+                                                  ? 'text-green-600' : 'text-red-600'
+                                              }`}>
+                                                {newProfileLabor + newProfileFood + newProfileReserves + newProfileProfit}%
+                                              </span>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <AlertDialogFooter>
+                                          <AlertDialogCancel onClick={cancelEdit}>Cancel</AlertDialogCancel>
+                                          <AlertDialogAction 
+                                            onClick={updateProfile}
+                                            disabled={!validateProfileTotal(newProfileLabor, newProfileFood, newProfileReserves, newProfileProfit)}
+                                          >
+                                            Update Profile
+                                          </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                      </AlertDialogContent>
+                                    </AlertDialog>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <Button size="sm" variant="outline">
