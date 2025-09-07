@@ -31,7 +31,6 @@ export function useStaff() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const { user } = useAuth();
 
   const fetchStaff = async () => {
     if (!user) {
@@ -39,7 +38,7 @@ export function useStaff() {
       setLoading(false);
       return;
     }
-
+    
     try {
       const { data, error } = await supabase
         .from('staff')
@@ -64,12 +63,12 @@ export function useStaff() {
     if (!user) {
       toast({
         title: "Authentication required",
-        description: "You must be logged in to create staff members",
+        description: "You must be logged in to add staff",
         variant: "destructive",
       });
       return null;
     }
-
+    
     try {
       const { data, error } = await supabase
         .from('staff')
@@ -203,9 +202,7 @@ export function useStaff() {
   };
 
   useEffect(() => {
-    if (user) {
-      fetchStaff();
-    }
+    fetchStaff();
   }, [user]);
 
   return {
