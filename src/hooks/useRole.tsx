@@ -1,10 +1,45 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 
-export type UserRole = 'admin';
+export type UserRole = 'admin' | 'customer' | null;
 
 export function useRole() {
-  const [role] = useState<UserRole>('admin'); // Default to admin since auth is disabled
-  const [loading] = useState(false); // No loading needed since we're not fetching
+  const { user } = useAuth();
+  const [role, setRole] = useState<UserRole>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) {
+      setRole(null);
+      setLoading(false);
+      return;
+    }
+
+    const fetchUserRole = async () => {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        if (error) {
+          console.error('Error fetching user role:', error);
+          setRole(null);
+        } else {
+          setRole(profile?.role || null);
+        }
+      } catch (error) {
+        console.error('Error in fetchUserRole:', error);
+        setRole(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserRole();
+  }, [user]);
 
   const hasRole = (requiredRoles: UserRole[]) => {
     return role && requiredRoles.includes(role);
