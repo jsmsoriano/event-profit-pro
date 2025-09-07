@@ -31,6 +31,7 @@ export function useStaff() {
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const { user } = useAuth();
 
   const fetchStaff = async () => {
     if (!user) {
