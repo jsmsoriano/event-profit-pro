@@ -1,4 +1,4 @@
-import { Calculator, Users, FileText, Contact, TrendingUp, Settings, BarChart3, Clock, Home, ChefHat, BookOpen, CreditCard, CalendarDays, Calendar } from "lucide-react"
+import { Calculator, Users, FileText, Contact, TrendingUp, Settings, BarChart3, Clock, Home, ChefHat, BookOpen, CreditCard, CalendarDays, Calendar, MessageCircle } from "lucide-react"
 import { NavLink, useLocation } from "react-router-dom"
 import { useRole } from "@/hooks/useRole"
 
@@ -22,6 +22,7 @@ const adminItems = [
   { title: "Menu Management", url: "/admin/menu", icon: ChefHat },
   { title: "Billing", url: "/admin/billing", icon: CreditCard },
   { title: "Wiki", url: "/admin/wiki", icon: BookOpen },
+  { title: "Messages", url: "/admin/messages", icon: MessageCircle },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
   { title: "Event Calculator", url: "/breakeven-analysis", icon: Calculator },
   { title: "Staff Management", url: "/staff-management", icon: Users },
