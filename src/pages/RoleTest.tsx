@@ -8,15 +8,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function RoleTest() {
-  const { role, loading, isAdmin, isCustomer } = useRole();
-  const [testRole, setTestRole] = useState<UserRole>('customer');
+  const { role, loading, isAdmin } = useRole();
   const [updating, setUpdating] = useState(false);
 
   const handleRoleUpdate = async () => {
     setUpdating(true);
     try {
       // Simulate role update - in a real app without auth, this would be handled differently
-      toast.success(`Role updated to ${testRole} (simulated)`);
+      toast.success(`Admin role confirmed (simulated)`);
       // Refresh the page to see changes
       window.location.reload();
     } catch (error) {
@@ -34,8 +33,8 @@ export default function RoleTest() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Role Testing & Management</h1>
-        <Badge variant={role === 'admin' ? 'default' : 'secondary'}>
+        <h1 className="text-3xl font-bold">Admin Settings & Management</h1>
+        <Badge variant="default">
           Current Role: {role || 'None'}
         </Badge>
       </div>
@@ -54,15 +53,9 @@ export default function RoleTest() {
               </Badge>
             </div>
             <div className="flex items-center justify-between">
-              <span>Is Customer:</span>
-              <Badge variant={isCustomer() ? 'default' : 'secondary'}>
-                {isCustomer() ? 'Yes' : 'No'}
-              </Badge>
-            </div>
-            <div className="flex items-center justify-between">
               <span>Navigation Access:</span>
               <Badge variant="outline">
-                {role === 'customer' ? 'Menu, Book Event, Support' : 'Full Admin Access'}
+                Full Admin Access
               </Badge>
             </div>
           </CardContent>
@@ -70,28 +63,20 @@ export default function RoleTest() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Role Management</CardTitle>
-            <CardDescription>Test different roles (for development)</CardDescription>
+            <CardTitle>System Information</CardTitle>
+            <CardDescription>Current system status</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Test Role:</label>
-              <Select value={testRole} onValueChange={(value: UserRole) => setTestRole(value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer">Customer</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-sm font-medium">System Role:</label>
+              <div className="p-2 bg-muted rounded">Admin</div>
             </div>
             <Button 
               onClick={handleRoleUpdate} 
               disabled={updating}
               className="w-full"
             >
-              {updating ? 'Updating...' : `Set Role to ${testRole}`}
+              {updating ? 'Updating...' : 'Confirm Admin Access'}
             </Button>
           </CardContent>
         </Card>
@@ -99,22 +84,15 @@ export default function RoleTest() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Role Descriptions</CardTitle>
+          <CardTitle>Admin Role Description</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-blue-600">Customer</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Can view menu, book events, and access support. Limited to customer-facing features only.
-              </p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-red-600">Admin</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Full access to all features including event management, analytics, staff management, inventory, and system settings.
-              </p>
-            </div>
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold text-primary">Administrator</h3>
+            <p className="text-sm text-muted-foreground mt-1">
+              Full access to all business management features including event management, analytics, 
+              staff management, menu management, billing, client management, and system settings.
+            </p>
           </div>
         </CardContent>
       </Card>

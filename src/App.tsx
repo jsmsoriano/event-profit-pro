@@ -10,18 +10,14 @@ import BreakevenAnalysis from "./pages/BreakevenAnalysis";
 import Billing from "./pages/Billing";
 import Reporting from "./pages/Reporting";
 import Team from "./pages/Team";
-import Quotes from "./pages/Quotes";
 import Contacts from "./pages/Contacts";
 import Admin from "./pages/Admin";
 import StaffManagement from "./pages/StaffManagement";
 import Analytics from "./pages/Analytics";
-import Home from "./pages/Home";
-import Menu from "./pages/Menu";
-import BookEvent from "./pages/BookEvent";
 import MyEvents from './pages/MyEvents';
 import MenuBuilder from './pages/MenuBuilder';
 import MenuManagement from './pages/MenuManagement';
-import Support from "./pages/Support";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import RoleTest from "./pages/RoleTest";
 import NotFound from "./pages/NotFound";
@@ -44,20 +40,14 @@ const App = () => (
               </header>
               <main className="flex-1 overflow-auto">
                 <Routes>
-                  {/* Client-facing routes */}
+                  {/* Default route */}
                   <Route path="/" element={<AdminDashboard />} />
-                  <Route path="/menu" element={<Menu />} />
-                  <Route path="/book-event" element={<BookEvent />} />
-                  <Route path="/my-events" element={<MyEvents />} />
-                  <Route path="/my-events/:id" element={<MyEvents />} />
-                  <Route path="/support" element={<Support />} />
                   
                   {/* Admin routes */}
                   <Route path="/admin" element={<AdminDashboard />} />
                   <Route path="/admin/dashboard" element={<AdminDashboard />} />
                   <Route path="/admin/events" element={<MyEvents />} />
                   <Route path="/admin/events/new" element={<MenuBuilder />} />
-                  <Route path="/book" element={<BookEvent />} />
                   <Route path="/admin/events/:id" element={<MyEvents />} />
                   <Route path="/admin/clients" element={<Contacts />} />
                   <Route path="/admin/menu" element={<MenuManagement />} />
@@ -72,7 +62,6 @@ const App = () => (
                   <Route path="/staff-management" element={<StaffManagement />} />
                   <Route path="/reporting" element={<Reporting />} />
                   <Route path="/team" element={<Team />} />
-                  <Route path="/quotes" element={<Quotes />} />
                   <Route path="/contacts" element={<Contacts />} />
                   <Route path="/role-test" element={<RoleTest />} />
                   <Route path="/admin-old" element={<Admin />} />

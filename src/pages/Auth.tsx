@@ -251,15 +251,9 @@ export default function Auth() {
                 </div>
                 <div>
                   <Label htmlFor="role">Account Type</Label>
-                  <Select value={role} onValueChange={(value: 'customer' | 'admin') => setRole(value)}>
-                    <SelectTrigger className="input-modern">
-                      <SelectValue placeholder="Select account type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="customer">Customer - Book events and view menu</SelectItem>
-                      <SelectItem value="admin">Admin - Full management access</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="input-modern bg-muted/50 p-2 rounded-md">
+                    <span className="text-sm">Administrator - Full management access</span>
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="signup-email">Email</Label>

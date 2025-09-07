@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type UserRole = 'customer' | 'admin';
+export type UserRole = 'admin';
 
 export function useRole() {
   const [role] = useState<UserRole>('admin'); // Default to admin since auth is disabled
@@ -14,18 +14,12 @@ export function useRole() {
     return role === 'admin';
   };
 
-  const isCustomer = () => {
-    return role === 'customer';
-  };
-
   return {
     role,
     loading,
     hasRole,
     isAdmin,
-    isCustomer,
     // Additional convenience properties
     isAdminUser: role === 'admin',
-    isCustomerUser: role === 'customer',
   };
 }

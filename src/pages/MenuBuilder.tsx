@@ -289,11 +289,11 @@ export default function MenuBuilder() {
 
       {/* Navigation */}
       <div className="flex justify-between">
-        <Button variant="outline" onClick={() => navigate('/menu')}>
-          Browse Full Menu Instead
+        <Button variant="outline" onClick={() => navigate('/admin/menu')}>
+          Back to Menu Management
         </Button>
         <Button onClick={handleNext} disabled={!canProceed()}>
-          Continue to Event Details
+          Save Menu & Continue
           <ArrowRight className="h-4 w-4 ml-2" />
         </Button>
       </div>
