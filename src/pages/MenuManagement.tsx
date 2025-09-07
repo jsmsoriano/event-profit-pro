@@ -27,6 +27,14 @@ interface DishFormData {
   side_types?: string[];
   vegetable_type?: string;
   appetizer_type?: string;
+  // Hibachi dinner specific fields
+  chicken_count?: number;
+  steak_count?: number;
+  shrimp_count?: number;
+  protein_upgrades?: Array<{
+    name: string;
+    price: number;
+  }>;
 }
 
 const initialFormData: DishFormData = {
@@ -42,7 +50,11 @@ const initialFormData: DishFormData = {
   protein_types: [],
   side_types: [],
   vegetable_type: '',
-  appetizer_type: 'none'
+  appetizer_type: 'none',
+  chicken_count: 0,
+  steak_count: 0,
+  shrimp_count: 0,
+  protein_upgrades: []
 };
 
 const categories = [
@@ -91,20 +103,9 @@ export default function MenuManagement() {
 
     // Validate hibachi dinner requirements
     if (formData.event_type === 'hibachi_dinner') {
-      if ((formData.protein_types?.length || 0) !== 2) {
-        toast.error('Please select exactly 2 protein types for hibachi dinner');
-        return;
-      }
-      if ((formData.side_types?.length || 0) !== 2) {
-        toast.error('Please select exactly 2 side types for hibachi dinner');
-        return;
-      }
-      if (!formData.vegetable_type) {
-        toast.error('Please specify a vegetable type for hibachi dinner');
-        return;
-      }
-      if (!formData.appetizer_type || formData.appetizer_type === 'none') {
-        toast.error('Please select an appetizer type for hibachi dinner');
+      const totalProteins = (formData.chicken_count || 0) + (formData.steak_count || 0) + (formData.shrimp_count || 0);
+      if (totalProteins === 0) {
+        toast.error('Please specify quantities for at least one protein type');
         return;
       }
     }
@@ -139,7 +140,11 @@ export default function MenuManagement() {
       protein_types: dish.protein_types || [],
       side_types: dish.side_types || [],
       vegetable_type: dish.vegetable_type || '',
-      appetizer_type: dish.appetizer_type || 'none'
+      appetizer_type: dish.appetizer_type || 'none',
+      chicken_count: dish.chicken_count || 0,
+      steak_count: dish.steak_count || 0,
+      shrimp_count: dish.shrimp_count || 0,
+      protein_upgrades: dish.protein_upgrades || []
     });
     setEditingDish(dish.id);
     setIsDialogOpen(true);
@@ -254,85 +259,126 @@ export default function MenuManagement() {
                 </div>
 
               {formData.event_type === 'hibachi_dinner' && (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Protein Types (Select 2)</Label>
-                      <div className="space-y-2 max-h-32 overflow-y-auto border rounded-md p-2">
-                        {proteinOptions.map((protein) => (
-                          <div key={protein} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`protein-${protein}`}
-                              checked={formData.protein_types?.includes(protein) || false}
-                              onCheckedChange={(checked) => {
-                                const current = formData.protein_types || [];
-                                if (checked && current.length < 2) {
-                                  handleInputChange('protein_types', [...current, protein]);
-                                } else if (!checked) {
-                                  handleInputChange('protein_types', current.filter(p => p !== protein));
-                                }
-                              }}
-                            />
-                            <Label htmlFor={`protein-${protein}`} className="text-sm">{protein}</Label>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                <div className="space-y-6">
+                  {/* Included Items Info */}
+                  <div className="bg-muted/50 p-4 rounded-lg">
+                    <h4 className="font-medium text-sm mb-2">All hibachi dinners include:</h4>
+                    <p className="text-sm text-muted-foreground">Fried Rice, Noodles, Hibachi Vegetables, and Side Salad</p>
+                  </div>
 
-                    <div className="space-y-2">
-                      <Label>Side Types (Select 2)</Label>
+                  {/* Protein Quantities */}
+                  <div className="space-y-3">
+                    <Label className="text-base font-medium">Protein Quantities</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="space-y-2">
-                        {sideOptions.map((side) => (
-                          <div key={side} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`side-${side}`}
-                              checked={formData.side_types?.includes(side) || false}
-                              onCheckedChange={(checked) => {
-                                const current = formData.side_types || [];
-                                if (checked && current.length < 2) {
-                                  handleInputChange('side_types', [...current, side]);
-                                } else if (!checked) {
-                                  handleInputChange('side_types', current.filter(s => s !== side));
-                                }
-                              }}
-                            />
-                            <Label htmlFor={`side-${side}`} className="text-sm">{side}</Label>
-                          </div>
-                        ))}
+                        <Label htmlFor="chicken-count">Chicken</Label>
+                        <Input
+                          id="chicken-count"
+                          type="number"
+                          min="0"
+                          value={formData.chicken_count || 0}
+                          onChange={(e) => handleInputChange('chicken_count', parseInt(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="steak-count">Steak</Label>
+                        <Input
+                          id="steak-count"
+                          type="number"
+                          min="0"
+                          value={formData.steak_count || 0}
+                          onChange={(e) => handleInputChange('steak_count', parseInt(e.target.value) || 0)}
+                          placeholder="0"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="shrimp-count">Shrimp</Label>
+                        <Input
+                          id="shrimp-count"
+                          type="number"
+                          min="0"
+                          value={formData.shrimp_count || 0}
+                          onChange={(e) => handleInputChange('shrimp_count', parseInt(e.target.value) || 0)}
+                          placeholder="0"
+                        />
                       </div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="vegetable">Vegetable Type</Label>
-                      <Input
-                        id="vegetable"
-                        value={formData.vegetable_type || ''}
-                        onChange={(e) => handleInputChange('vegetable_type', e.target.value)}
-                        placeholder="e.g., Mixed Vegetables"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="appetizer">Appetizer Type</Label>
-                      <Select 
-                        value={formData.appetizer_type || 'none'} 
-                        onValueChange={(value) => handleInputChange('appetizer_type', value === 'none' ? '' : value)}
+                  {/* Protein Upgrades */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-base font-medium">Protein Upgrades/Substitutes</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          const current = formData.protein_upgrades || [];
+                          handleInputChange('protein_upgrades', [...current, { name: '', price: 0 }]);
+                        }}
                       >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select appetizer" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">No appetizer</SelectItem>
-                          {appetizerOptions.map((appetizer) => (
-                            <SelectItem key={appetizer} value={appetizer}>
-                              {appetizer}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Upgrade
+                      </Button>
                     </div>
+                    
+                    {formData.protein_upgrades && formData.protein_upgrades.length > 0 && (
+                      <div className="space-y-3">
+                        {formData.protein_upgrades.map((upgrade, index) => (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
+                            <div className="flex-1">
+                              <Input
+                                placeholder="e.g., Filet Mignon"
+                                value={upgrade.name}
+                                onChange={(e) => {
+                                  const current = [...(formData.protein_upgrades || [])];
+                                  current[index] = { ...current[index], name: e.target.value };
+                                  handleInputChange('protein_upgrades', current);
+                                }}
+                              />
+                            </div>
+                            <div className="w-24">
+                              <div className="relative">
+                                <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-sm text-muted-foreground">+$</span>
+                                <Input
+                                  type="number"
+                                  step="0.01"
+                                  min="0"
+                                  placeholder="0.00"
+                                  className="pl-8"
+                                  value={upgrade.price}
+                                  onChange={(e) => {
+                                    const current = [...(formData.protein_upgrades || [])];
+                                    current[index] = { ...current[index], price: parseFloat(e.target.value) || 0 };
+                                    handleInputChange('protein_upgrades', current);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const current = [...(formData.protein_upgrades || [])];
+                                current.splice(index, 1);
+                                handleInputChange('protein_upgrades', current);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
+                    {(!formData.protein_upgrades || formData.protein_upgrades.length === 0) && (
+                      <div className="text-sm text-muted-foreground p-3 border-2 border-dashed rounded-lg text-center">
+                        No protein upgrades added. Click "Add Upgrade" to add options like Filet Mignon +$5, Scallops +$3.
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
