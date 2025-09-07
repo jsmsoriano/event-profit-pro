@@ -16,6 +16,7 @@ import Admin from "./pages/Admin";
 import StaffManagement from "./pages/StaffManagement";
 import Analytics from "./pages/Analytics";
 import MyEvents from './pages/MyEvents';
+import CreateEvent from './pages/CreateEvent';
 import MenuBuilder from './pages/MenuBuilder';
 import MenuManagement from './pages/MenuManagement';
 import Wiki from './pages/Wiki';
@@ -58,7 +59,7 @@ const App = () => (
                         <Route path="/admin" element={<AdminDashboard />} />
                         <Route path="/admin/dashboard" element={<AdminDashboard />} />
                         <Route path="/admin/events" element={<MyEvents />} />
-                        <Route path="/admin/events/new" element={<MenuBuilder />} />
+                        <Route path="/admin/events/new" element={<CreateEvent />} />
                         <Route path="/admin/events/:id" element={<MyEvents />} />
                         <Route path="/admin/clients" element={<Contacts />} />
                         <Route path="/admin/menu" element={<MenuManagement />} />

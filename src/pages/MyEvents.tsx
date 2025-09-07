@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar as CalendarIcon, Users, Clock, MapPin, Phone, Mail, DollarSign, Eye, CalendarDays } from 'lucide-react';
+import { Calendar as CalendarIcon, Users, Clock, MapPin, List, Eye, CalendarDays, Plus } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { useEvents } from '@/hooks/useEvents';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +12,8 @@ export default function MyEvents() {
   const { events, loading } = useEvents();
   const navigate = useNavigate();
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-  const [pastEvents, setPastEvents] = useState<any[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
 
   useEffect(() => {
     if (events) {
@@ -22,12 +21,8 @@ export default function MyEvents() {
       const upcoming = events.filter(event => 
         event.eventDate && new Date(event.eventDate) >= now
       );
-      const past = events.filter(event => 
-        event.eventDate && new Date(event.eventDate) < now
-      );
       
       setUpcomingEvents(upcoming);
-      setPastEvents(past);
     }
   }, [events]);
 
@@ -49,6 +44,15 @@ export default function MyEvents() {
   const getSelectedDateEvents = () => {
     if (!selectedDate) return [];
     return getEventsForDate(selectedDate);
+  };
+
+  const handleCalendarDateClick = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  const handleAddEventToDate = (date: Date) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    navigate(`/admin/events/new?date=${dateStr}`);
   };
 
   const EventCard = ({ event, isPast = false }: { event: any; isPast?: boolean }) => (
@@ -133,7 +137,7 @@ export default function MyEvents() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Upcoming Events</CardTitle>
@@ -141,16 +145,6 @@ export default function MyEvents() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{upcomingEvents.length}</div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Past Events</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pastEvents.length}</div>
           </CardContent>
         </Card>
         
@@ -165,15 +159,148 @@ export default function MyEvents() {
         </Card>
       </div>
 
-      {/* Events Tabs */}
-      <Tabs defaultValue="upcoming" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="upcoming">Upcoming Events</TabsTrigger>
-          <TabsTrigger value="past">Past Events</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar View</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="upcoming" className="space-y-4">
+      {/* View Toggle */}
+      <div className="flex justify-between items-center">
+        <div className="flex gap-2">
+          <Button
+            variant={viewMode === 'calendar' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('calendar')}
+          >
+            <CalendarDays className="h-4 w-4 mr-2" />
+            Calendar View
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+          >
+            <List className="h-4 w-4 mr-2" />
+            List View
+          </Button>
+        </div>
+      </div>
+
+      {/* Calendar View */}
+      {viewMode === 'calendar' && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <CalendarDays className="h-5 w-5 mr-2" />
+                  Events Calendar
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => selectedDate && handleAddEventToDate(selectedDate)}
+                  disabled={!selectedDate}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Event
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleCalendarDateClick}
+                modifiers={{
+                  hasEvent: (date) => getEventsForDate(date).length > 0
+                }}
+                modifiersStyles={{
+                  hasEvent: { 
+                    backgroundColor: 'hsl(var(--primary))',
+                    color: 'hsl(var(--primary-foreground))',
+                    fontWeight: 'bold'
+                  }
+                }}
+                className="rounded-md border pointer-events-auto"
+                onDayClick={(date) => handleCalendarDateClick(date)}
+              />
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>
+                  {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
+                </span>
+                {selectedDate && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddEventToDate(selectedDate)}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Event
+                  </Button>
+                )}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedDate ? (
+                <div className="space-y-3">
+                  {getSelectedDateEvents().length > 0 ? (
+                    getSelectedDateEvents().map((event) => (
+                      <div key={event.id} className="border rounded-lg p-3 hover:bg-accent/50 cursor-pointer"
+                           onClick={() => navigate(`/my-events/${event.id}`)}>
+                        <div className="flex justify-between items-start mb-2">
+                          <h4 className="font-medium">{event.clientName || 'Your Event'}</h4>
+                          <Badge className={getStatusColor(event.status)}>
+                            {event.status}
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground space-y-1">
+                          {event.eventTime && (
+                            <div className="flex items-center">
+                              <Clock className="h-4 w-4 mr-2" />
+                              {event.eventTime}
+                            </div>
+                          )}
+                          <div className="flex items-center">
+                            <Users className="h-4 w-4 mr-2" />
+                            {event.numberOfGuests || 'Not specified'} guests
+                          </div>
+                          {event.address && (
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{event.address}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <CalendarIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground mb-4">No events scheduled for this date</p>
+                      <Button
+                        size="sm"
+                        onClick={() => handleAddEventToDate(selectedDate)}
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Create Event
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <CalendarIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">Select a date to view or create events</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* List View */}
+      {viewMode === 'list' && (
+        <div className="space-y-4">
           {loading ? (
             <div className="text-center py-8">Loading your events...</div>
           ) : upcomingEvents.length > 0 ? (
@@ -196,114 +323,8 @@ export default function MyEvents() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
-        
-        <TabsContent value="past" className="space-y-4">
-          {pastEvents.length > 0 ? (
-            <div className="grid md:grid-cols-2 gap-6">
-              {pastEvents.map((event) => (
-                <EventCard key={event.id} event={event} isPast />
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Clock className="h-12 w-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No past events</h3>
-                <p className="text-muted-foreground text-center">
-                  Your past events will appear here after they've concluded.
-                </p>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="calendar" className="space-y-4">
-          <div className="grid lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CalendarDays className="h-5 w-5 mr-2" />
-                  Events Calendar
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Calendar
-                  mode="single"
-                  selected={selectedDate}
-                  onSelect={setSelectedDate}
-                  modifiers={{
-                    hasEvent: (date) => getEventsForDate(date).length > 0
-                  }}
-                  modifiersStyles={{
-                    hasEvent: { 
-                      backgroundColor: 'hsl(var(--primary))',
-                      color: 'hsl(var(--primary-foreground))',
-                      fontWeight: 'bold'
-                    }
-                  }}
-                  className="rounded-md border pointer-events-auto"
-                />
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date'}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedDate ? (
-                  <div className="space-y-3">
-                    {getSelectedDateEvents().length > 0 ? (
-                      getSelectedDateEvents().map((event) => (
-                        <div key={event.id} className="border rounded-lg p-3 hover:bg-accent/50 cursor-pointer"
-                             onClick={() => navigate(`/my-events/${event.id}`)}>
-                          <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-medium">{event.clientName || 'Your Event'}</h4>
-                            <Badge className={getStatusColor(event.status)}>
-                              {event.status}
-                            </Badge>
-                          </div>
-                          <div className="text-sm text-muted-foreground space-y-1">
-                            {event.eventTime && (
-                              <div className="flex items-center">
-                                <Clock className="h-4 w-4 mr-2" />
-                                {event.eventTime}
-                              </div>
-                            )}
-                            <div className="flex items-center">
-                              <Users className="h-4 w-4 mr-2" />
-                              {event.numberOfGuests || 'Not specified'} guests
-                            </div>
-                            {event.address && (
-                              <div className="flex items-center">
-                                <MapPin className="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">{event.address}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center py-8">
-                        <CalendarIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                        <p className="text-muted-foreground">No events scheduled for this date</p>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <CalendarIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                    <p className="text-muted-foreground">Select a date to view events</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }
