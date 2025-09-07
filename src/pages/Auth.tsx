@@ -72,7 +72,7 @@ export default function Auth() {
       // Try to sign in first
       const { error: signInError } = await signIn(testAccount.email, testAccount.password);
       
-      if (signInError && signInError.message.includes('Invalid login credentials')) {
+      if (signInError && (signInError.message.includes('Invalid login credentials') || signInError.message.includes('Email not confirmed'))) {
         // If account doesn't exist, create it
         console.log('Creating test account:', testAccount.email);
         const { error: signUpError } = await signUp(testAccount.email, testAccount.password, {
