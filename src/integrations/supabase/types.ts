@@ -2007,6 +2007,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           last_name: string | null
+          organization_id: string | null
           role: Database["public"]["Enums"]["app_role"]
           subscription_end_date: string | null
           subscription_start_date: string | null
@@ -2022,6 +2023,7 @@ export type Database = {
           id: string
           is_active?: boolean | null
           last_name?: string | null
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
@@ -2037,6 +2039,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           last_name?: string | null
+          organization_id?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           subscription_end_date?: string | null
           subscription_start_date?: string | null
@@ -2045,7 +2048,15 @@ export type Database = {
             | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       recipe_ingredients: {
         Row: {
