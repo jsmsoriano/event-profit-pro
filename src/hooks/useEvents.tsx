@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/integrations/supabase/client'
+import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 
 export interface EventGuest {
@@ -26,15 +27,36 @@ export interface EventData {
 export const useEvents = () => {
   const [loading, setLoading] = useState(false)
   const [events, setEvents] = useState<EventData[]>([])
+  const { user } = useAuth()
+
+  // Load user events on hook initialization
+  useEffect(() => {
+    if (user) {
+      loadUserEvents()
+    }
+  }, [user])
 
   const saveEvent = async (eventData: EventData) => {
+    if (!user) {
+      toast.error('You must be logged in to save events')
+      return null
+    }
+
     setLoading(true)
     try {
+      // Get user's organization
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('organization_id')
+        .eq('id', user.id)
+        .single()
+
       const { data: eventResult, error: eventError } = await supabase
         .from('events')
         .upsert({
           id: eventData.id,
-          user_id: 'default-user', // Placeholder since auth is disabled
+          user_id: user.id, // Use authenticated user ID
+          organization_id: profile?.organization_id,
           client_name: eventData.clientName,
           event_date: eventData.eventDate || null,
           address: eventData.address,
@@ -85,12 +107,18 @@ export const useEvents = () => {
   }
 
   const loadEvent = async (eventId: string): Promise<EventData | null> => {
+    if (!user) {
+      toast.error('You must be logged in to load events')
+      return null
+    }
+
     setLoading(true)
     try {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
         .eq('id', eventId)
+        .eq('user_id', user.id) // Ensure user can only access their own events
         .single()
 
       if (eventError) throw eventError
@@ -134,16 +162,22 @@ export const useEvents = () => {
   }
 
   const loadUserEvents = async () => {
+    if (!user) {
+      setEvents([])
+      return
+    }
+
     setLoading(true)
     try {
       const { data, error } = await supabase
         .from('events')
-        .select('id, client_name, event_date, status, number_of_guests, event_time')
+        .select('id, client_name, event_date, status, number_of_guests, event_time, created_at')
+        .eq('user_id', user.id) // Only load user's own events
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      let eventsData = data.map(event => {
+      const eventsData = data.map(event => {
         const status = event.status as string
         const validStatus = ['booked', 'cancelled', 'completed', 'confirmed', 'pending'].includes(status) 
           ? status as EventData['status']
@@ -159,83 +193,10 @@ export const useEvents = () => {
           guestCount: event.number_of_guests,
           title: event.client_name,
           status: validStatus,
-          guests: []
+          guests: [],
+          createdAt: event.created_at
         }
       })
-
-      // If no events in database, provide sample data for demonstration
-      if (eventsData.length === 0) {
-        const today = new Date()
-        const tomorrow = new Date(today)
-        tomorrow.setDate(today.getDate() + 1)
-        const nextWeek = new Date(today)
-        nextWeek.setDate(today.getDate() + 7)
-        const nextMonth = new Date(today)
-        nextMonth.setMonth(today.getMonth() + 1)
-
-        eventsData = [
-          {
-            id: 'sample-1',
-            clientName: 'Johnson Wedding',
-            title: 'Johnson Wedding',
-            eventDate: today.toISOString().split('T')[0],
-            address: '123 Main St, Downtown',
-            eventTime: '18:00',
-            numberOfGuests: 120,
-            guestCount: 120,
-            status: 'confirmed',
-            guests: []
-          },
-          {
-            id: 'sample-2', 
-            clientName: 'Corporate Lunch - TechCorp',
-            title: 'Corporate Lunch - TechCorp',
-            eventDate: tomorrow.toISOString().split('T')[0],
-            address: '456 Business Ave, Suite 200',
-            eventTime: '12:00',
-            numberOfGuests: 25,
-            guestCount: 25,
-            status: 'confirmed',
-            guests: []
-          },
-          {
-            id: 'sample-3',
-            clientName: 'Smith Anniversary',
-            title: 'Smith Anniversary',
-            eventDate: nextWeek.toISOString().split('T')[0], 
-            address: '789 Garden Way',
-            eventTime: '17:30',
-            numberOfGuests: 50,
-            guestCount: 50,
-            status: 'pending',
-            guests: []
-          },
-          {
-            id: 'sample-4',
-            clientName: 'Birthday Party - Miller Family',
-            title: 'Birthday Party - Miller Family',
-            eventDate: nextMonth.toISOString().split('T')[0],
-            address: '321 Park Lane',
-            eventTime: '14:00',
-            numberOfGuests: 30,
-            guestCount: 30,
-            status: 'confirmed',
-            guests: []
-          },
-          {
-            id: 'sample-5',
-            clientName: 'Charity Gala - Hope Foundation',
-            title: 'Charity Gala - Hope Foundation',
-            eventDate: new Date(today.getFullYear(), today.getMonth() + 1, 15).toISOString().split('T')[0],
-            address: 'Grand Ballroom, City Center',
-            eventTime: '19:00',
-            numberOfGuests: 200,
-            guestCount: 200,
-            status: 'confirmed',
-            guests: []
-          }
-        ]
-      }
 
       setEvents(eventsData)
     } catch (error) {

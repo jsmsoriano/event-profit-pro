@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Settings, Users, BarChart3 } from 'lucide-react';
+import { Shield, Settings, Users, BarChart3, Building2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PermissionsManager } from '@/components/admin/PermissionsManager';
+import { OrganizationManager } from '@/components/admin/OrganizationManager';
 
 export default function RoleTest() {
   const { role, loading, isAdmin } = useRole();
@@ -42,10 +43,14 @@ export default function RoleTest() {
       </div>
 
       <Tabs defaultValue="permissions" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="permissions" className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
             Permissions
+          </TabsTrigger>
+          <TabsTrigger value="organizations" className="flex items-center gap-2">
+            <Building2 className="h-4 w-4" />
+            Organizations
           </TabsTrigger>
           <TabsTrigger value="users" className="flex items-center gap-2">
             <Users className="h-4 w-4" />
@@ -63,6 +68,10 @@ export default function RoleTest() {
 
         <TabsContent value="permissions" className="space-y-6">
           <PermissionsManager />
+        </TabsContent>
+
+        <TabsContent value="organizations" className="space-y-6">
+          <OrganizationManager />
         </TabsContent>
 
         <TabsContent value="users" className="space-y-6">

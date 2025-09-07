@@ -2785,6 +2785,30 @@ export type Database = {
           subtotal_revenue: number | null
           title: string | null
         }
+        Insert: {
+          event_date?: string | null
+          event_id?: string | null
+          food_cost?: never
+          gross_profit?: never
+          guest_count?: number | null
+          labor_cost?: never
+          revenue_menu?: never
+          status?: string | null
+          subtotal_revenue?: never
+          title?: string | null
+        }
+        Update: {
+          event_date?: string | null
+          event_id?: string | null
+          food_cost?: never
+          gross_profit?: never
+          guest_count?: number | null
+          labor_cost?: never
+          revenue_menu?: never
+          status?: string | null
+          subtotal_revenue?: never
+          title?: string | null
+        }
         Relationships: []
       }
       v_popular_dishes: {
@@ -2807,6 +2831,10 @@ export type Database = {
       }
       generate_slug: {
         Args: { title: string }
+        Returns: string
+      }
+      get_or_create_default_organization: {
+        Args: { user_id: string }
         Returns: string
       }
       get_user_role: {
