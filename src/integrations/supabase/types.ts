@@ -2645,6 +2645,90 @@ export type Database = {
           },
         ]
       }
+      wiki_articles: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string
+          created_by: string
+          excerpt: string | null
+          featured: boolean | null
+          id: string
+          is_published: boolean | null
+          slug: string
+          tags: string[] | null
+          title: string
+          updated_at: string
+          updated_by: string
+          user_id: string | null
+          view_count: number | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string
+          created_by?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          slug: string
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          updated_by?: string
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string
+          created_by?: string
+          excerpt?: string | null
+          featured?: boolean | null
+          id?: string
+          is_published?: boolean | null
+          slug?: string
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          updated_by?: string
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
+      wiki_categories: {
+        Row: {
+          color: string | null
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       v_event_profit: {
@@ -2679,6 +2763,10 @@ export type Database = {
       create_standard_checklist: {
         Args: { period_id: string }
         Returns: undefined
+      }
+      generate_slug: {
+        Args: { title: string }
+        Returns: string
       }
       get_user_role: {
         Args: { _user_id: string }
