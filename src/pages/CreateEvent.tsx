@@ -52,7 +52,7 @@ export default function CreateEvent() {
       return;
     }
 
-    if (!formData.eventTypeId) {
+    if (!formData.eventTypeId || formData.eventTypeId === 'no-types') {
       toast.error('Please select an event type');
       return;
     }
@@ -69,7 +69,7 @@ export default function CreateEvent() {
     }
   };
 
-  const isFormValid = formData.clientName && formData.eventDate && (eventTypes.length === 0 || formData.eventTypeId);
+  const isFormValid = formData.clientName && formData.eventDate && (eventTypes.length === 0 || (formData.eventTypeId && formData.eventTypeId !== 'no-types'));
 
   return (
     <div className="container mx-auto p-6 space-y-8">
@@ -129,7 +129,7 @@ export default function CreateEvent() {
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50">
                     {eventTypes.length === 0 ? (
-                      <SelectItem value="" disabled>
+                      <SelectItem value="no-types" disabled>
                         No event types found - Set up event types in settings
                       </SelectItem>
                     ) : (
