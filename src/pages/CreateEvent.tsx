@@ -170,7 +170,7 @@ export default function CreateEvent() {
                   value={formData.eventTime}
                   onValueChange={(value) => updateFormData('eventTime', value)}
                 >
-                  <SelectTrigger className="border">
+                  <SelectTrigger>
                     <SelectValue placeholder="Select event time" />
                   </SelectTrigger>
                   <SelectContent className="bg-background border shadow-lg z-50 max-h-60">
