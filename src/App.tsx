@@ -19,6 +19,7 @@ import MyEvents from './pages/MyEvents';
 import CreateEvent from './pages/CreateEvent';
 import MenuBuilder from './pages/MenuBuilder';
 import MenuManagement from './pages/MenuManagement';
+import IngredientCostManagement from './pages/IngredientCostManagement';
 import Wiki from './pages/Wiki';
 import Messages from './pages/Messages';
 import Auth from './pages/Auth';
@@ -63,7 +64,8 @@ const App = () => (
                         <Route path="/admin/events/new" element={<CreateEvent />} />
                         <Route path="/admin/events/:id" element={<MyEvents />} />
                         <Route path="/admin/clients" element={<Contacts />} />
-                        <Route path="/admin/menu" element={<MenuManagement />} />
+                          <Route path="/admin/menu" element={<MenuManagement />} />
+                          <Route path="/admin/ingredients" element={<IngredientCostManagement />} />
                         <Route path="/admin/event-types" element={<EventTypesManagement />} />
                         <Route path="/admin/billing" element={<Billing />} />
                         <Route path="/admin/wiki" element={<Wiki />} />
